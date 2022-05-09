@@ -1,0 +1,11 @@
+{
+	"year": 2022,
+	"month": 1,
+	"event": [
+		{ "day": "8", "title": "9:30　食育・アレルギー研修", "type": "blue","type2": ""},
+				{ "day": "8", "title": "編集する", "type": "blue link","type2": "edit.php"},
+			{ "day": "15", "title": "12:30　保健衛生・安全対策研修", "type": "purple","type2": ""},
+						{ "day": "15", "title": "編集する", "type": "blue link","type2": "edit.php"}
+	],
+	"holiday": ["1","10"]
+}

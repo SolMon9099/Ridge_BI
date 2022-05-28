@@ -37,6 +37,13 @@ $(function () {
     $("#btn span").toggleClass("change");
   });
 });
+$(function () {
+  $("ul.three-btns li button").click(function () {
+    $("ul.three-btns li button").removeClass("active"); /*ふわっと表示*/
+    $(this).addClass("active");
+  });
+});
+
 
 $(function () {
   const formInputs = document.getElementsByClassName("file");
@@ -69,6 +76,26 @@ $(function () {
     $(this).addClass('active');
   });
 
+	
+$(function(){
+ 
+var hash = location.hash;
+if(hash.length){
+if(hash.match(/#tab/)){
+$('.list .inner').hide();
+    $('.tab li').removeClass('active');
+var tabname = hash.slice(4.1);
+tabname = tabname - 1;
+$('.list .inner').eq(tabname).fadeIn();
+    $('.tab li').eq(tabname).addClass('active');
+}else{
+    $('.tab li').eq(0).addClass('active');
+$('.list .inner').hide();
+$('.list .inner').eq(0).fadeIn();
+}
+}
+});
+	
   //ページャーをクリックしたときの動作
   $('.tab_sub li').click(function () {
     //クリックしたページャーのindexを取得

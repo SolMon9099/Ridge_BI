@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 class AdminController extends Controller
 {
     protected $platform = 'admin';
-    protected $per_page = 20;
+    protected $per_page = 10;
 
     public function __construct()
     {

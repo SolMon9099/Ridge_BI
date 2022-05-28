@@ -12,6 +12,10 @@
     -webkit-text-size-adjust: 100%;
   }
 }
+p.set{
+	margin: 20px 0;
+	font-size:14px;
+}
 .w10 {
   width: 10%;
 }
@@ -23,6 +27,9 @@
 }
 .w42 {
   width: 42%;
+}
+.w90 {
+  width: 90% !important;
 }
 @media only screen and (max-width:768px) {
   .w30, .w42 {
@@ -1163,10 +1170,21 @@ input[type=button].back {
   margin: 0 auto;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
-	display: block;
+}
+.detail {
+  border: 1px solid #3682fa;
+  background: none;
+  padding: 5px 15px;
+  border-radius: 50px;
+  color: #3682fa;
+  letter-spacing:1px;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
 }
 .edit.left{
 	margin: 0 !important;
+font-size:14px;
 }
 .history{
   border: 1px solid #999;
@@ -1179,6 +1197,22 @@ input[type=button].back {
   cursor: pointer;
   transition: all 0.3s ease-in-out;
 	display: block;
+}
+.history2{
+  border: none;
+  background: #999;
+  padding: 5px 15px;
+  border-radius: 50px;
+  color: #FFF;
+  letter-spacing:1px;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+	display: block;
+}
+.history2:before{
+	content:"×";
+	margin: 0 5px 0 0;
 }
 ul.list-radio li {
   float: left;
@@ -1822,6 +1856,9 @@ ul.coil-list li {
 }
 input[type=checkbox] {
   display: none; /* checkboxを非表示にする */
+}
+input[type=checkbox].opa + label{
+	opacity: .5 !important;
 }
 .radio_button input[type=radio] {
   display: inline-block;
@@ -3988,7 +4025,7 @@ input[type=submit].tuika {
   width: 20px;
   height: 20px;
   display: block;
-  position: absolute;
+  position: relative;
   left: 0;
   top: 5px;
 }
@@ -4039,17 +4076,51 @@ margin-right: 10px;
 }
 .sort select {
   background: #FFF;
-  width: 50%;
-  border-bottom: 1px solid #00253a;
+	border:none !important;
+  width: 100%;
+  border-bottom: 1px solid #999 !important;
+	padding: 5px 15px 5px 10px !important;
   border-radius: 0 !important;
+	font-size: 12px;
+	font-weight: normal !important;
+}
+.sort select option{
+	padding: 5px;
 }
 @media screen and (max-width: 768px) {
   .sort select {
     width: 70%;
   }
 }
+select::-ms-expand {
+  display: none; /* デフォルトの矢印を非表示(IE用) */
+}
+/* セレクトボックスの矢印デザイン変更 */
+
+.select-c{
+	position: relative;
+}
+.select-c.mapping{
+	margin: 15px 0;
+}
+.select-c.mapping select{
+	background: none;
+	border: 1px solid #CCC;
+}
+.select-c::before {
+content: "";
+    position: absolute;
+    right: 10px;
+    top: 15px;
+    width: 5px;
+    height: 5px;
+    border-top: 1px solid #555;
+    border-left: 1px solid #555;
+    transform: translateY(-50%) rotate(-135deg)
+}
+
 .sort button.apply {
-  background:linear-gradient(-135deg, #2ebf43, #00db4f);
+  background:linear-gradient(-135deg, #0062de , #3682fa);
   border:none;
   color: #FFF;
   font-size: 13px;
@@ -4108,10 +4179,16 @@ input[type="file"] + label.image img {
 .fileclear:before {
   content: "×";
 }
+
 img#preview {
-  width:33%;
+  width:50%;
   display: block;
-  margin:0;
+  margin:0 0 15px 0;
+}
+p.image-title{
+	margin:0 0 15px;
+	color: #999;
+	font-size: 13px;
 }
 .select-box {
   position: relative;
@@ -4242,6 +4319,13 @@ ul.date-list {
   display: flex;
   align-items: center;
 }
+ul.date-list.centre{
+		justify-content: center;
+}
+.sort.centre{
+	justify-content: center;
+	margin-bottom: 20px;
+}
 ul.date-list li {
   margin: 0 10px 0 0 !important;
 }
@@ -4264,6 +4348,7 @@ ul.date-list li input[type=date] {
   font-size: 14px;
   padding: 5px 5px 2px 5px;
   border: none;
+	border-radius: 0;
   border-bottom: 1px solid #999;
   font-family: "Renner*" !important;
   background: none;
@@ -4315,6 +4400,12 @@ button.ok {
   color: #999;
   font-size: 15px;
 		cursor: pointer;
+}
+.tab li a{
+	display: block;
+}
+.tab li.active a{
+	color: #FFF;
 }
 @media screen and (max-width: 768px) {
   .tab {
@@ -4446,13 +4537,13 @@ ul.radio-list{
 	margin-left: 10px;
 }
 ul.radio-list li label:before{
-	top:9px;
+	top:11px;
 }
 ul.radio-list li label:after{
-		top:9px;
+		top:11px;
 }
 ul.radio-list li label{
-	top:3px;
+	top:0;
 	padding-left: 15px;
 }
 ul.radio-list li {
@@ -4577,4 +4668,36 @@ button.set{
 #debug{
 	color: #999;
 	font-size:13px;
+}
+ul.delete-list li{
+	display: flex;
+	margin-bottom: 10px;
+}
+.sort ul li ul li{
+	margin-right: 20px !important;
+}
+.sort ul li ul li label{
+	font-size: 13px;
+	color: #555;
+}
+ul.three-btns{
+	display: flex;
+	justify-content: space-between;
+}
+ul.three-btns li{
+	width:32%;
+}
+ul.three-btns li button{
+	width:100%;
+	background: #FFF;
+	border: none;
+	border-radius:10px;
+	padding: 10px;
+	box-sizing: border-box;
+	font-size:14px;
+	letter-spacing: .1em;
+}
+ul.three-btns li button.active{
+	background: #3682fa;
+	color: #FFF;
 }

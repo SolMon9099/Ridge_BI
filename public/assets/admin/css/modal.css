@@ -42,7 +42,15 @@
 	transition: all .2s ease-in-out;
 }
 .modal-open.blue{
-	background: #3682fa;
+	background:transparent;
+	color: #666;
+}
+.modal-open.blue:hover {
+	color: #999;
+}
+li.active .modal-open.blue{
+	background: transparent !important;
+	color: #FFF;
 }
 .modal-open.setting{
 	background: transparent;
@@ -135,6 +143,10 @@
   transform: translate(-50%, -50%);
   box-sizing: border-box;
   transition: all 0.5s ease-in-out;
+}
+.textarea.narrow{
+	width: 20%;
+	
 }
 .textarea .listing{
 	background: #FFF;

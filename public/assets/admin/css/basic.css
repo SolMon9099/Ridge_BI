@@ -78,12 +78,11 @@ ul, li {
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
 }
 p {
 	margin:0;
 	padding:0;
-	font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+
 }
 q:before, q:after {
 	content: '';

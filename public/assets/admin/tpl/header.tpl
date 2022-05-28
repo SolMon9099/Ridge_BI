@@ -14,35 +14,65 @@ define("root" ,"/bi/");
         <ul>
           <li><a href="authority_group.php">権限グループ設定</a></li>
           <li><a href="account.php">アカウント管理</a></li>
+          <li><a href="notifications.php">通知設定</a></li>
         </ul>
       </li>
-					<li class="one"><a href="location.php">現場マスタ</a></li>
+      <li class="one"><a href="#">現場設定</a>
+        <ul>
+          <li><a href="location.php">現場名一覧</a></li>
+        </ul>
+      </li>
+					<li><a href="#">カメラ設定</a>
+        <ul>
+          <li><a href="camera.php">カメラ一覧</a></li>
+									<li><a href="camera_mapping.php">カメラマッピング</a></li>
+        </ul>
+      </li>
+					 <li><a href="#">危険エリア侵入検知</a>
+        <ul>
+          <li><a href="danger_area.php">ルール一覧</a></li>
+          <li><a href="danger_list.php">検知リスト</a></li>
+          <li><a href="danger_list2.php">詳細分析</a></li>
+        </ul>
+      </li>
+						 <li><a href="#">棚乱れ検知</a>
+        <ul>
+          <li><a href="shelf_area.php">ルール一覧</a></li>
+          <li><a href="shelf_list.php">検知リスト</a></li>
+          <li><a href="shelf_list2.php">詳細分析</a></li>
+        </ul>
+      </li>
+					<li><a href="#">検針メーター検知</a>
+        <ul>
+          <li><a href="meter_area.php">ルール一覧</a></li>
+          <li><a href="meter_list.php">検知リスト</a></li>
+          <li><a href="meter_list2.php">詳細分析</a></li>
+        </ul>
+      </li>
+					<!--
       <li><a href="#">在席判定</a>
         <ul>
-									<li><a href="worker.php">作業員管理</a></li>
-          <li><a href="camera.php">カメラ設定</a></li>
+          <li><a href="worker.php">作業員管理</a></li>
           <li><a href="area_search.php">在席エリア判定(アーカイブ)</a></li>
-									 <li><a href="area_search_real.php">在席エリア判定(リアルタイム)</a></li>
+          <li><a href="area_search_real.php">在席エリア判定(リアルタイム)</a></li>
           <li><a href="area_history.php">判定検索履歴</a></li>
         </ul>
       </li>
-      <li><a href="#">危険エリア侵入判定</a>
+-->
+      <li><a href="#">過去分析</a>
         <ul>
-          <li><a href="notification.php">通知設定</a></li>
-          <li><a href="danger_camera.php">カメラ設定</a></li>
-          <li><a href="danger_area.php">危険エリア侵入判定</a></li>
-									  <li><a href="danger_list.php">危険エリア検知リスト(アーカイブ)</a></li>
-									<li><a href="danger_list_real.php">危険エリア検知リスト(リアルタイム)</a></li>
+          <li><a href="analyze.php">新規分析依頼</a></li>
+          <li><a href="analyze_now_list.php">分析依頼中リスト</a></li>
+          <li><a href="analyze_finish_list.php">分析済みリスト</a></li>
         </ul>
       </li>
-     
+      
       <!--nav-->
     </ul>
   </div>
 </div>
 <div id="rightside">
 <div id="r-head">
-  
   <div id="r-head-right">
     <ul>
       <li>

@@ -17,9 +17,19 @@ class Admin extends Authenticatable
         'name',
         'email',
         'password',
+        'department',
+        'is_enabled',
+        'authority_id',
+        'created_by',
+        'updated_by',
+        'deleted_by'
     ];
 
     /*public function routeNotificationForMail() {
         return $this->email;
     }*/
+
+    public function authority() {
+        return $this->belongsTo('App\Models\Authority', 'authority_id');
+    }
 }

@@ -15,11 +15,17 @@
     <link href="{{ asset('assets/admin/css/common.css') }}?{{ Carbon::now()->format('Ymdhis') }}" rel="stylesheet">
     <link href="{{ asset('assets/admin/css/modal.css') }}?{{ Carbon::now()->format('Ymdhis') }}" rel="stylesheet">
 
+    <!-- Customize Styles -->
+    @yield('page_css')
+
     <!-- Scripts -->
     <script src="{{ asset('assets/admin/js/jquery.js') }}?{{ Carbon::now()->format('Ymdhis') }}" ></script>
     <script src="{{ asset('assets/admin/js/modal.js') }}?{{ Carbon::now()->format('Ymdhis') }}" ></script>
     <script src="{{ asset('assets/admin/js/customize.js') }}?{{ Carbon::now()->format('Ymdhis') }}" ></script>
     <script src="{{ asset('assets/admin/js/ajaxzip3.js') }}?{{ Carbon::now()->format('Ymdhis') }}" ></script>
+
+    <!-- Customize Scripts -->
+    @yield('page_js')
 
 </head>
 <body>

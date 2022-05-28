@@ -9,27 +9,48 @@
     <ul class="nav" id="dropmenu">
       <li><a href="#">権限設定</a>
         <ul>
-          <li><a href="authority_group.php">権限グループ設定</a></li>
-          <li><a href="account.php">アカウント管理</a></li>
+          <li><a href="{{route('admin.top.permission_group')}}">権限グループ設定</a></li>
+          <li><a href="{{route('admin.account')}}">アカウント管理</a></li>
+          <li><a href="{{route('admin.notification')}}">通知設定</a></li>
         </ul>
       </li>
-					<li class="one"><a href="location.php">現場マスタ</a></li>
-      <li><a href="#">在席判定</a>
+      <li class="one"><a href="#">現場設定</a>
         <ul>
-									<li><a href="worker.php">作業員管理</a></li>
-          <li><a href="camera.php">カメラ設定</a></li>
-          <li><a href="area_search.php">在席エリア判定(アーカイブ)</a></li>
-									 <li><a href="area_search_real.php">在席エリア判定(リアルタイム)</a></li>
-          <li><a href="area_history.php">判定検索履歴</a></li>
+          <li><a href="{{route('admin.location')}}">現場名一覧</a></li>
         </ul>
       </li>
-      <li><a href="#">危険エリア侵入判定</a>
+      <li><a href="#">カメラ設定</a>
         <ul>
-          <li><a href="notification.php">通知設定</a></li>
-          <li><a href="danger_camera.php">カメラ設定</a></li>
-          <li><a href="danger_area.php">危険エリア侵入判定</a></li>
-									  <li><a href="danger_list.php">危険エリア検知リスト(アーカイブ)</a></li>
-									<li><a href="danger_list_real.php">危険エリア検知リスト(リアルタイム)</a></li>
+          <li><a href="{{route('admin.camera')}}">カメラ一覧</a></li>
+          <li><a href="{{route('admin.camera.mapping')}}">カメラマッピング</a></li>
+        </ul>
+      </li>
+      <li><a href="#">危険エリア侵入検知</a>
+        <ul>
+          <li><a href="{{route('admin.danger')}}">ルール一覧</a></li>
+          <li><a href="{{route('admin.danger.list')}}">検知リスト</a></li>
+          <li><a href="{{route('admin.danger.list2')}}">詳細分析</a></li>
+        </ul>
+      </li>
+      <li><a href="#">棚乱れ検知</a>
+        <ul>
+          <li><a href="{{route('admin.shelf')}}">ルール一覧</a></li>
+          <li><a href="{{route('admin.shelf.list')}}">検知リスト</a></li>
+          <li><a href="{{route('admin.shelf.list2')}}">詳細分析</a></li>
+        </ul>
+      </li>
+      <li><a href="#">検針メーター検知</a>
+        <ul>
+          <li><a href="{{route('admin.meter')}}">ルール一覧</a></li>
+          <li><a href="{{route('admin.meter.list')}}">検知リスト</a></li>
+          <li><a href="{{route('admin.meter.list2')}}">詳細分析</a></li>
+        </ul>
+      </li>
+      <li><a href="#">過去分析</a>
+        <ul>
+          <li><a href="{{route('admin.analyze')}}">新規分析依頼</a></li>
+          <li><a href="{{route('admin.analyze.now_list')}}">分析依頼中リスト</a></li>
+          <li><a href="{{route('admin.analyze.finish_list')}}">分析済みリスト</a></li>
         </ul>
       </li>
 

@@ -58,21 +58,32 @@ class CameraController extends AdminController
 
     public function store_mapping(Request $request)
     {
-        return view('admin.camera.mapping');
+        $camera_mapping_info = json_decode($request['camera_mapping_info']);
+        if (CameraService::storeMapping($camera_mapping_info)) {
+            $request->session()->flash('success', '登録しました。');
+
+            return redirect()->route('admin.camera.mapping');
+        } else {
+            $request->session()->flash('error', '登録に失敗しました。');
+
+            return redirect()->route('admin.camera.mapping');
+        }
     }
 
     public function mappingDetail(Request $request, LocationDrawing $drawing)
     {
         $drawings = LocationDrawingService::getDataByLocation($drawing->location_id);
+        $cameras = CameraService::getCameraByLocation($drawing->location_id);
         $camera_mapping_info = [];
         foreach ($drawings as $drawing_item) {
-            $camera_mapping_info[$drawing_item->id][] = $drawing_item->obj_camera_mappings();
+            $camera_mapping_info[$drawing_item->id] = $drawing_item->obj_camera_mappings;
         }
 
         return view('admin.camera.mapping_detail')->with([
             'drawings' => $drawings,
             'selected_drawing' => $drawing,
             'camera_mapping_info' => $camera_mapping_info,
+            'cameras' => $cameras,
         ]);
     }
 

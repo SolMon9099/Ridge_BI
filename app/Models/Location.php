@@ -15,4 +15,9 @@ class Location extends Model
     {
         return $this->hasMany(LocationDrawing::class, 'location_id');
     }
+
+    public function obj_cameras()
+    {
+        return $this->hasMany(Camera::class, 'location_id');
+    }
 }

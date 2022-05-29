@@ -14,9 +14,9 @@ $(function () {
   $('.scrollbar').hide();
   // 「.modal-open」をクリック
   $('.modal-open').click(function () {
-			if($(this).hasClass('play')){
-    video.play();
-}
+	  if($(this).hasClass('play')){
+      video.play();
+    }
     $('#modal-open').css('display', 'block');
     // html、bodyを固定（overflow:hiddenにする）
     $('html, body').addClass('lock');
@@ -44,10 +44,9 @@ $(function () {
     });
     // 「.modal-overlay」あるいは「.modal-close」をクリック
     $('.modal-wrap, .modal-close, .ok').off().click(function () {
-      
-							if($('.modal-open').hasClass('play')){
-  video.pause();
-							}
+			if($('.modal-open').hasClass('play')){
+        video.pause();
+			}
       $('#redcover img').fadeIn();
       $('#redcover img').fadeOut();
       $('#redcover').animate({

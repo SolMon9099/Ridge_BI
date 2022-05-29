@@ -9,6 +9,7 @@
         $floors[$drawing->id] = $drawing->floor_number;
         $drawing_files[$drawing->id] = $drawing->drawing_file_path;
     }
+
 ?>
 <div id="wrapper">
     <div class="breadcrumb">
@@ -26,9 +27,9 @@
         <form action="{{route('admin.camera.mapping.store')}}" method="post" name="form1" id="form1">
         @csrf
         <ul class="three-btns">
-            <li><button type="button" class="new">設置場所の新規登録</button></li>
-            <li><button type="button" class="new">設置場所の編集</button></li>
-            <li><button type="button" class="new">設置場所の削除</button></li>
+            <li><button type="button" class="new modal-open" data-target="add_camera" onclick="buttonClick('add')">設置場所の新規登録</button></li>
+            <li><button type="button" class="new" onclick="buttonClick('edit')">設置場所の編集</button></li>
+            <li><button type="button" class="new" onclick="buttonClick('delete')">設置場所の削除</button></li>
         </ul>
         @include('admin.layouts.flash-message')
         <div class="select-c mapping">
@@ -50,8 +51,7 @@
                 $file_url = asset('storage/drawings/' . $file_url);
             }
         ?>
-        <div id = "canvas-container" style="background: url({{$file_url}})">
-            <canvas onclick="pointMark(event)" id="canvas"></canvas>
+        <div id = "container-canvas" style="background: url({{$file_url}})">
         </div>
         <div class="btns">
             <button type="submit" class="ok">更新</button>
@@ -60,7 +60,50 @@
         <input type = "hidden" name="camera_mapping_info" id = "camera_mapping_info" value="" />
         </form>
     </div>
-  </div>
+</div>
+
+<div id="add_camera" class="modal-content">
+    <div class="textarea">
+        <div class="listing">
+            <div class="scroll active sp-pl0">
+                <table class="table2 text-centre">
+                    <thead>
+                    <tr>
+                        <th class="w10"></th>
+                        <th>ID</th>
+                        <th>カメラNo</th>
+                        <th>設置フロア</th>
+                        <th>設置場所</th>
+                        <th>備考</th>
+                    </tr>
+                    </thead>
+                    <tbody class="camera_candidates">
+                        @foreach ($cameras as $camera)
+                        <tr id="tr_{{$camera->id}}">
+                            <td class="stick-t">
+                                <div class="checkbtn-wrap">
+                                    <input name="selected_camera" type="radio" id="td_{{$camera->id}}" value="{{$camera->id}}">
+                                    <label for="td_{{$camera->id}}"></label>
+                                </div>
+                            </td>
+                            <td>{{$camera->id}}</td>
+                            <td>{{$camera->camera_id}}</td>
+                            <td>{{$camera->installation_floor}}</td>
+                            <td>{{$camera->installation_position}}</td>
+                            <td>{{$camera->remarks}}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <p class="error-message">カメラを選択してください。</p>
+                <div class="modal-set">
+                    <button onclick="selectCamera()" type="submit" class="">設 定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="closemodal"><a class="modal-close">×</a></p>
+</div>
 
 
 <div id="dialog-confirm" title="test" style="display:none">
@@ -74,9 +117,10 @@
 
 <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <script src="{{ asset('assets/admin/js/helper.js?2') }}"></script>
+<script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 
 <style>
-    #canvas-container{
+    #container-canvas{
         background-repeat: no-repeat!important;
         background-size:contain!important;
     }
@@ -87,43 +131,242 @@
         width: 100%;
         height: 100%;
     }
+    .modal-open{
+        color:black;
+    }
+    .modal-open:before{
+        content:none;
+    }
+    .error-messag{
+        display: none;
+    }
 </style>
 <script>
+    var stage = null;
+    var layer = null;
     var delete_id = "";
-    var radius = <?php echo config('const.camera_mark_radius');?>;
-    var points = [];
+    var type = "";
+    var selected_camera_id = '';
+    var selected_drawing_id = '';
+    var selected_edit_camera_id = '';
+    var selected_edit_camera_object = null;
+    var selected_edit_drawing_id = '';
+    var radius = "<?php echo config('const.camera_mark_radius');?>";
+    var camera_mapping_info = <?php echo json_encode($camera_mapping_info);?>;
+
+    function showCameraCandidates(){
+        var selected_camera_ids = [];
+        Object.keys(camera_mapping_info).map(drawing_id => {
+            camera_mapping_info[drawing_id].map(camera_item => {
+                if (camera_item.is_deleted != true){
+                    selected_camera_ids.push(parseInt(camera_item.camera_id));
+                }
+            })
+        })
+        $('.camera_candidates tr').each(function(){
+            $(this).show();
+        })
+        selected_camera_ids.map(selected_id => {
+            $('#tr_' + selected_id).hide();
+        })
+    }
+
     function changeFloor(){
-        var selected_drawing_id = $('#select_floor').find(":selected").val();
+        selected_drawing_id = $('#select_floor').find(":selected").val();
         var path_array = <?php echo json_encode($drawing_files);?>;
         var img_path =  '<?php echo asset('storage/drawings/');?>' + '/' + path_array[selected_drawing_id];
-        $('#canvas-container').css('background-image', 'url('+img_path+')');
+        $('#container-canvas').css('background-image', 'url('+img_path+')');
+
+        layer.find('Circle').map(circle_item => {
+            circle_item.destroy();
+        })
+        layer.draw();
+        drawCameraMapping();
     }
 
-    function pointMark(e){
-        let cvs = document.getElementById("canvas");
-        let cx = cvs.getContext('2d');
-        var container = document.getElementById('canvas-container');
-        cvs.width = container.clientWidth;
-        cvs.height = container.clientHeight;
-        points.push([e.offsetX, e.offsetY]);
+    function buttonClick(button_type){
+        type = button_type;
+        selected_camera_id = '';
+        $('.error-message').hide();
+        showCameraCandidates();
+    }
 
-        cx.clearRect(0, 0, cvs.width, cvs.height);
-        cx.strokeStyle = '#FF0000';
-        cx.fillStyle = '#FF0000';
-        cx.lineWidth = radius;
-        for (var i in points){
-            cx.beginPath();
-            cx.arc(points[i][0], points[i][1], radius, 0, 2 * Math.PI);
-            cx.fill();
+    function selectCamera(){
+        selected_camera_id = $('input[name="selected_camera"]:checked').val();
+        if (!(selected_camera_id > 0)) {
+            $('.error-message').show();
+            return;
+        }
+        $('.modal-overlay').fadeOut('fast', function () {
+            var modal = $('#add_camera');
+            modal.hide();
+            // html、bodyの固定解除
+            $('html, body').removeClass('lock');
+            // オーバーレイを削除
+            $('.modal-overlay').remove();
+            // モーダルコンテンツを囲む要素を削除
+            $(modal).unwrap("<div class='modal-wrap'></div>");
+        });
+    }
+
+    //init draw camera mapping--------------------
+    function drawCameraMapping(){
+        selected_drawing_id = $('#select_floor').find(":selected").val();
+        if (camera_mapping_info[selected_drawing_id] != undefined){
+            camera_mapping_info[selected_drawing_id].map(camera_item => {
+                console.log('camera_item', camera_item);
+                if (camera_item.is_deleted != true){
+                    var circle = new Konva.Circle({
+                        x: camera_item.x_coordinate,
+                        y: camera_item.y_coordinate,
+                        radius: parseInt(radius),
+                        fill: 'red',
+                        stroke: 'black',
+                        strokeWidth: 1,
+                        name:'camera_mark_' + camera_item.camera_id,
+                        id:camera_item.id > 0 ? camera_item.id : 0
+                    });
+                    circle.on('mouseenter', function () {
+                        stage.container().style.cursor = 'pointer';
+                    });
+
+                    circle.on('mouseleave', function () {
+                        stage.container().style.cursor = 'default';
+                    });
+                    layer.add(circle);
+                }
+            })
         }
     }
+    //------------------------------------------
 
     $(document).ready(function () {
-        let cvs = document.getElementById("canvas");
-        let cx = cvs.getContext('2d');
-        var container = document.getElementById('canvas-container');
-        cvs.width = container.clientWidth;
-        cvs.height = container.clientHeight;
+        var container = document.getElementById('container-canvas');
+        $('#camera_mapping_info').val(JSON.stringify(camera_mapping_info));
+        stage = new Konva.Stage({
+            container: 'container-canvas',
+            width: container.clientWidth,
+            height: window.innerHeight,
+        })
+
+        layer = new Konva.Layer();
+        stage.add(layer);
+        drawCameraMapping();
+
+        stage.on('click', function(e){
+            if (type == '') return;
+            switch(type){
+                case 'add':
+                    if (!(selected_camera_id > 0)) return;
+                    if (!e.target.name().includes('camera_mark')){
+                        var x = e.evt.offsetX;
+                        var y = e.evt.offsetY;
+                        var circle = new Konva.Circle({
+                            x: x,
+                            y: y,
+                            radius: parseInt(radius),
+                            fill: 'red',
+                            stroke: 'black',
+                            strokeWidth: 1,
+                            name:'camera_mark_' + selected_camera_id,
+                            id:0,
+                        });
+                        circle.on('mouseenter', function () {
+                            stage.container().style.cursor = 'pointer';
+                        });
+
+                        circle.on('mouseleave', function () {
+                            stage.container().style.cursor = 'default';
+                        });
+                        layer.add(circle);
+                        camera_mapping_info[selected_drawing_id].push({
+                            drawing_id:selected_drawing_id,
+                            camera_id:selected_camera_id,
+                            x_coordinate:x,
+                            y_coordinate:y
+                        });
+                        $('#camera_mapping_info').val(JSON.stringify(camera_mapping_info));
+
+                        selected_camera_id = '';
+                        $('input[name="selected_camera"]').prop('checked', false);
+                    }
+                    break;
+                case 'edit':
+                    if (e.target.name().includes('camera_mark')){
+                        var fill = e.target.fill() == 'red' ? '#00d00f' : 'red';
+                        e.target.fill(fill);
+                        if (fill == 'red'){
+                            selected_edit_camera_id = '';
+                            selected_edit_camera_object = null;
+                            selected_edit_drawing_id = '';
+                        } else {
+                            selected_edit_camera_id = parseInt(e.target.name().replace('camera_mark_', ''));
+                            selected_edit_camera_object = e.target;
+                            selected_edit_drawing_id = selected_drawing_id;
+                        }
+                    } else {
+                        if (selected_edit_camera_id > 0){
+                            if (selected_edit_drawing_id == selected_drawing_id){
+                                var index = camera_mapping_info[selected_drawing_id].findIndex(x => x.camera_id == selected_edit_camera_id);
+                                camera_mapping_info[selected_drawing_id][index].x_coordinate = e.evt.offsetX;
+                                camera_mapping_info[selected_drawing_id][index].y_coordinate = e.evt.offsetY;
+
+                                selected_edit_camera_object.x(e.evt.offsetX);
+                                selected_edit_camera_object.y(e.evt.offsetY);
+                                selected_edit_camera_object.fill('red');
+                            } else {
+                                camera_mapping_info[selected_drawing_id].push({
+                                    id:selected_edit_camera_object.id(),
+                                    drawing_id:selected_drawing_id,
+                                    camera_id:selected_edit_camera_id,
+                                    x_coordinate:e.evt.offsetX,
+                                    y_coordinate:e.evt.offsetY,
+                                });
+                                camera_mapping_info[selected_edit_drawing_id] = camera_mapping_info[selected_edit_drawing_id].filter(x => x.camera_id != selected_edit_camera_id);
+
+                                var circle = new Konva.Circle({
+                                    x: e.evt.offsetX,
+                                    y: e.evt.offsetY,
+                                    radius: parseInt(radius),
+                                    fill: 'red',
+                                    stroke: 'black',
+                                    strokeWidth: 1,
+                                    name:'camera_mark_' + selected_edit_camera_id,
+                                    id:selected_edit_camera_object.id(),
+                                });
+                                circle.on('mouseenter', function () {
+                                    stage.container().style.cursor = 'pointer';
+                                });
+
+                                circle.on('mouseleave', function () {
+                                    stage.container().style.cursor = 'default';
+                                });
+                                layer.add(circle);
+                            }
+
+                            $('#camera_mapping_info').val(JSON.stringify(camera_mapping_info));
+
+
+                            selected_edit_camera_id = '';
+                            selected_edit_camera_object = null;
+                        }
+                    }
+                    break;
+                case 'delete':
+                    if (e.target.name().includes('camera_mark')){
+                        if (e.target.id() > 0){
+                            camera_mapping_info[selected_drawing_id][camera_mapping_info[selected_drawing_id].findIndex(x => x.id == e.target.id())].is_deleted = true;
+                        } else {
+                            camera_mapping_info[selected_drawing_id] = camera_mapping_info[selected_drawing_id].filter(x => x.camera_id != parseInt(e.target.name().replace('camera_mark_', '')));
+                        }
+                        $('#camera_mapping_info').val(JSON.stringify(camera_mapping_info));
+                        e.target.remove();
+                    }
+                    break;
+            }
+        });
+
+        showCameraCandidates();
 
         $(".delete_drawings").click(function(e){
             e.preventDefault();

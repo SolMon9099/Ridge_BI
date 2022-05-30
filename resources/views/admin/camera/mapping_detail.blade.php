@@ -134,6 +134,9 @@
     .modal-open{
         color:black;
     }
+    .modal-open:hover{
+        color:black!important;
+    }
     .modal-open:before{
         content:none;
     }

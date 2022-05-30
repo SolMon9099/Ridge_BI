@@ -49,9 +49,9 @@ class DangerService
             $cur_Danger->camera_id = $params['camera_id'];
             if ($params['location_id'] == 0) {
                 $cur_Danger->location_id = null;
-        } else {
+            } else {
                 $cur_Danger->location_id = $params['location_id'];
-        }
+            }
             $cur_Danger->installation_floor = $params['installation_floor'];
             $cur_Danger->installation_position = $params['installation_position'];
             $cur_Danger->remarks = $params['remarks'];

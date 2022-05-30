@@ -19,8 +19,10 @@
           </svg>
           新規登録</a> </div>
       </div>
-      <form action="area_search_result.php" method="post" name="form1" id="form1">
-        <div class="scroll">
+
+            @include('admin.layouts.flash-message')
+            {{ $dangers->appends([])->links('vendor.pagination.admin-pagination') }}
+            <div class="scroll active">
           <table class="table2 text-centre">
             <thead>
               <tr>
@@ -35,46 +37,28 @@
               </tr>
             </thead>
             <tbody>
-           					  <tr>
-                <td><button type="button" class="edit" onclick="location.href='{{route('admin.danger.edit')}}'">編集</button></td>
-                <td> 12345</td>
-                <td>（仮称）ＧＳプロジェクト新築工事</td>
-                <td>3階</td>
-                <td>トイレ横の資材置き場</td>
-                <td>横たわる</td>
-															<td><input type="color" id="color1" name="color1" value="#C00000" disabled=""></td>
-               <td><button type="button" class="history">履歴表示</button></td>
-              </tr>
+                    @foreach($dangers as $danger)
 													  <tr>
-                <td><button type="button" class="edit" onclick="location.href='{{route('admin.danger.edit')}}'">編集</button></td>
-                <td> 12345</td>
-                <td>（仮称）ＧＳプロジェクト新築工事</td>
-                <td>3階</td>
-                <td>トイレ横の資材置き場</td>
-                <td>侵入する</td>
-                <td><input type="color" id="color2" name="color2" value="#2CC30E" disabled=""></td>
-               <td><button type="button" class="history">履歴表示</button></td>
+                            <td><button type="button" class="edit" onclick="location.href='{{route('admin.danger.edit', ['danger' => $danger->id])}}'">編集</button></td>
+                            <td>{{$danger->danger_id}}</td>
+                            <td>{{isset($locations[$danger->location_id])?$locations[$danger->location_id]:''}}</td>
+                            <td>{{$danger->installation_floor}}</td>
+                            <td>{{$danger->installation_position}}</td>
+                            <td>{{$danger->remarks}}</td>
+                            <td>{{config('const.danger_status')[$danger->is_enabled]}}</td>
+                            <td><button type="button" class="delete_dangers history" delete_index="{{ $danger->id }}">削除</button>
+{{--                                <form id="frm_delete_{{ $danger->id }}" action="{{ route('admin.danger.delete', ['danger'=> $danger->id]) }}" method="POST" style="display: none;">--}}
+{{--                                    @csrf--}}
+{{--                                    @method('delete')--}}
+{{--                                </form>--}}
+                            </td>
               </tr>
-																						  <tr>
-                <td><button type="button" class="edit" onclick="location.href='{{route('admin.danger.edit')}}'">編集</button></td>
-                <td> 12345</td>
-                <td>（仮称）ＧＳプロジェクト新築工事</td>
-                <td>3階</td>
-                <td>トイレ横の資材置き場</td>
-                <td>寄りかかる</td>
-                <td><input type="color" id="color3" name="color3" value="#FFE100" disabled=""></td>
-               <td><button type="button" class="history">履歴表示</button></td>
-              </tr>
+                    @endforeach
             </tbody>
           </table>
         </div>
-        <!--
-        <div class="tour-content mt25">
-          <div class="float-l pager"><a href="">＜</a><span class="current">1</span><a href="">2</a><a href="">3</a><a href="">4</a><a href="">5</a><a href="">＞</a></div>
-        </div>
--->
 
-      </form>
+            {{ $dangers->appends([])->links('vendor.pagination.admin-pagination') }}
     </div>
   </div>
 

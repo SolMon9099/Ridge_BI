@@ -82,6 +82,9 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::post('/create2', 'DangerController@create2')->name('admin.danger.create2');
         Route::get('/list', 'DangerController@list')->name('admin.danger.list');
         Route::get('/list2', 'DangerController@list2')->name('admin.danger.list2');
+        Route::post('/store', 'DangerController@store')->name('admin.danger.store');
+        Route::put('/update/{danger}', 'DangerController@update')->name('admin.danger.update');
+        Route::delete('/delete/{danger}', 'DangerController@delete')->name('admin.danger.delete');
     });
 
     Route::group(['prefix' => 'shelf'], function () {

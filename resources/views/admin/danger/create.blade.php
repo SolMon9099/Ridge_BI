@@ -16,6 +16,8 @@
       </div>
 					<div class="flow"><ul><li class="active"><span>Step.1</span>カメラを選択</li><li><span>Step.2</span>アクションとエリアを選択</li></ul></div>
       <form action="{{route('admin.danger.create2')}}" method="post" name="form1" id="form1">
+                @csrf
+                {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
         <div class="scroll">
           <table class="table2 text-centre">
             <thead>
@@ -30,38 +32,26 @@
               </tr>
             </thead>
             <tbody>
+                        @foreach($cameras as $camera)
               <tr>
              <td><div class="radio">
-                    <input id="radio-1" name="radio" type="radio">
-                    <label for="radio-1" class="radio-label"></label>
-                  </div></td>
-                <td> 12345</td>
-                <td>（仮称）ＧＳプロジェクト新築工事</td>
-                <td>3階</td>
-                <td>トイレ横の資材置き場</td>
-															<td></td>
-               <td>稼働中</td>
+                                        <input id="radio-{{$camera->id}}" name="radio" type="radio">
+                                        <label for="radio-{{$camera->id}}" class="radio-label"></label>
+                                    </div>
+                                </td>
+                                <td>{{$camera->camera_id}}</td>
+                                <td>{{isset($locations[$camera->location_id])?$locations[$camera->location_id]:''}}</td>
+                                <td>{{$camera->installation_floor}}</td>
+                                <td>{{$camera->installation_position}}</td>
+                                <td>{{$camera->remarks}}</td>
+                                <td>{{config('const.camera_status')[$camera->is_enabled]}}</td>
               </tr>
-													  <tr>
-               <td><div class="radio">
-                    <input id="radio-2" name="radio" type="radio">
-                    <label for="radio-2" class="radio-label"></label>
-                  </div></td>
-                <td> 12345</td>
-                <td>（仮称）ＧＳプロジェクト新築工事</td>
-                <td>3階</td>
-                <td>トイレ横の資材置き場</td>
-															<td></td>
-               <td>稼働中</td>
-              </tr>
+                        @endforeach
             </tbody>
           </table>
         </div>
-        <!--
-        <div class="tour-content mt25">
-          <div class="float-l pager"><a href="">＜</a><span class="current">1</span><a href="">2</a><a href="">3</a><a href="">4</a><a href="">5</a><a href="">＞</a></div>
-        </div>
--->
+                {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
+
 														<div class="btns">
         <button type="submit" class="ok">決定</button>
 							</div>

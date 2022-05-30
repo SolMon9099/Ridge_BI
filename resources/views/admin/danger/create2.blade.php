@@ -20,67 +20,9 @@
           <li class="active"><span>Step.2</span>アクションとエリアを選択</li>
         </ul>
       </div>
-      <div class="title-wrap sp-m">
-        <button type="button" class="edit left">＋ ルール追加</button>
-      </div>
-      <form action="danger_area.php" method="post" name="form1" id="form1">
-        <div class="scroll">
-          <table class="table2 text-centre">
-            <thead>
-              <tr>
-                <th>アクション</th>
-                <th>カラー</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><select class="select-box">
-                    <option>ルールを選択</option>
-                    <option>横たわる</option>
-                    <option>屈む</option>
-                    <option>寄りかかる</option>
-																	<option>侵入する</option>
-                  </select></td>
-                <td><input type="color" id="color1" name="color1"></td>
-                <td><button type="button" class="edit play-video" data-id="1">エリア選択</button></td>
-              </tr>
-              <tr>
-                <td><select class="select-box">
-                    <option>ルールを選択</option>
-                    <option>横たわる</option>
-                    <option>屈む</option>
-                    <option>寄りかかる</option>
-																	<option>侵入する</option>
-                  </select></td>
-                <td><input type="color" id="color2" name="color2"></td>
-                <td><button type="button" class="edit play-video" data-id="2">エリア選択</button></td>
-              </tr>
-              <tr>
-                <td><select class="select-box">
-                    <option>ルールを選択</option>
-                    <option>横たわる</option>
-                    <option>屈む</option>
-                    <option>寄りかかる</option>
-																	<option>侵入する</option>
-                  </select></td>
-                <td><input type="color" id="color3" name="color3"></td>
-                <td><button type="button" class="edit play-video" data-id="3">エリア選択</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="video-area">
-          <div id="canvas-container" style="background: url(common/img/canvas.jpg) no-repeat;	background-size:100%;">
-            <canvas id="c" onclick="drawSquare(event)" onmousemove="mouseMove(event)"></canvas>
-          </div>
-          <div id="debug"></div>
-									  <div class="btns" id="direction">
-          <button type="submit" class="ok">決定</button>
-        </div>
-        </div>
-      
-	<input type="hidden" id="is_rule_number" name="is_rule_number">
+        <form action="{{route('admin.danger.store')}}" method="post" name="form1" id="form1">
+            @csrf
+            @include('admin.danger._form')
       </form>
     </div>
   </div>

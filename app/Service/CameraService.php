@@ -121,4 +121,15 @@ class CameraService
             abort(403);
         }
     }
+
+    public static function getAllCameraNames()
+    {
+        $cameras = Camera::orderBy('id', 'asc')->get();
+        $cameras_array = [];
+        foreach ($cameras as $camera) {
+            $cameras_array[$camera->id] = $camera->camera_id;
+        }
+
+        return $cameras_array;
+    }
 }

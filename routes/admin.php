@@ -78,8 +78,8 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::get('/', 'DangerController@index')->name('admin.danger');
         Route::get('/edit', 'DangerController@edit')->name('admin.danger.edit');
         Route::post('/edit2', 'DangerController@edit2')->name('admin.danger.edit2');
-        Route::get('/create', 'DangerController@create')->name('admin.danger.create');
-        Route::post('/create2', 'DangerController@create2')->name('admin.danger.create2');
+        Route::get('/cameras_for_rule', 'DangerController@cameras_for_rule')->name('admin.danger.cameras_for_rule');
+        Route::post('/create_rule', 'DangerController@create_rule')->name('admin.danger.create_rule');
         Route::get('/list', 'DangerController@list')->name('admin.danger.list');
         Route::get('/list2', 'DangerController@list2')->name('admin.danger.list2');
         Route::post('/store', 'DangerController@store')->name('admin.danger.store');
@@ -92,7 +92,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::get('/edit', 'ShelfController@edit')->name('admin.shelf.edit');
         Route::post('/edit2', 'ShelfController@edit2')->name('admin.shelf.edit2');
         Route::get('/create', 'ShelfController@create')->name('admin.shelf.create');
-        Route::post('/create2', 'ShelfController@create2')->name('admin.shelf.create2');
+        Route::post('/create_rule', 'ShelfController@create_rule')->name('admin.shelf.create_rule');
         Route::get('/list', 'ShelfController@list')->name('admin.shelf.list');
         Route::get('/list2', 'ShelfController@list2')->name('admin.shelf.list2');
     });
@@ -100,7 +100,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
     Route::group(['prefix' => 'meter'], function () {
         Route::get('/', 'MeterController@index')->name('admin.meter');
         Route::get('/create', 'MeterController@create')->name('admin.meter.create');
-        Route::post('/create2', 'MeterController@create2')->name('admin.meter.create2');
+        Route::post('/create_rule', 'MeterController@create_rule')->name('admin.meter.create_rule');
         Route::get('/edit', 'MeterController@edit')->name('admin.meter.edit');
         Route::post('/edit2', 'MeterController@edit2')->name('admin.meter.edit2');
         Route::get('/list', 'MeterController@list')->name('admin.meter.list');

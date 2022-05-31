@@ -24,9 +24,9 @@ class ShelfController extends AdminController
         return view('admin.shelf.create');
     }
 
-    public function create2()
+    public function create_rule()
     {
-        return view('admin.shelf.create2');
+        return view('admin.shelf.create_rule');
     }
 
     public function list()

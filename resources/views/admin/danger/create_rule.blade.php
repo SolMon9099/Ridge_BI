@@ -5,8 +5,8 @@
 <div id="wrapper">
     <div class="breadcrumb">
       <ul>
-           <li>危険エリア侵入検知</li>
-        <li>ルール一覧</li>
+        <li><a href="{{route('admin.danger')}}">危険エリア侵入検知</a></li>
+        <li><a href="{{route('admin.danger')}}">ルール一覧</a></li>
         <li>ルール新規作成</li>
       </ul>
     </div>

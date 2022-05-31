@@ -15,7 +15,7 @@
         <h2 class="title">ルール新規作成</h2>
       </div>
 					<div class="flow"><ul><li class="active"><span>Step.1</span>カメラを選択</li><li><span>Step.2</span>エリアを選択</li></ul></div>
-      <form action="{{route('admin.shelf.create2')}}" method="post" name="form1" id="form1">
+      <form action="{{route('admin.shelf.create_rule')}}" method="post" name="form1" id="form1">
         <div class="scroll">
           <table class="table2 text-centre">
             <thead>

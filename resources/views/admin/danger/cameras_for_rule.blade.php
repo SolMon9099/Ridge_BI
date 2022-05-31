@@ -5,8 +5,8 @@
     <div id="wrapper">
         <div class="breadcrumb">
             <ul>
-                <li>危険エリア侵入検知</li>
-                <li>ルール一覧</li>
+                <li><a href="{{route('admin.danger')}}">危険エリア侵入検知</a></li>
+                <li><a href="{{route('admin.danger')}}">ルール一覧</a></li>
                 <li>ルール新規作成</li>
             </ul>
         </div>
@@ -15,7 +15,7 @@
                 <h2 class="title">ルール新規作成</h2>
             </div>
             <div class="flow"><ul><li class="active"><span>Step.1</span>カメラを選択</li><li><span>Step.2</span>アクションとエリアを選択</li></ul></div>
-            <form action="{{route('admin.danger.create2')}}" method="post" name="form1" id="form1">
+            <form action="{{route('admin.danger.create_rule')}}" method="post" name="form1" id="form1">
                 @csrf
                 {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
                 <div class="scroll">

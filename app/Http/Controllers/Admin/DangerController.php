@@ -24,30 +24,30 @@ class DangerController extends AdminController
         return view('admin.danger.index')->with([
             'dangers' => $dangers,
             'locations' => $locations,
-            'cameras'=>$cameras,
+            'cameras' => $cameras,
             'input' => $request,
         ]);
     }
 
-    public function create(Request $request)
+    public function cameras_for_rule(Request $request)
     {
         $locations = LocationService::getAllLocationNames();
         $cameras = Camera::orderBy('id', 'asc')->paginate($this->per_page);
 
-        return view('admin.danger.create')->with([
+        return view('admin.danger.cameras_for_rule')->with([
             'locations' => $locations,
-            'cameras'=>$cameras
+            'cameras' => $cameras,
         ]);
     }
 
-    public function create2(Request $request)
+    public function create_rule(Request $request)
     {
         $locations = LocationService::getAllLocationNames();
         $cameras = Camera::orderBy('id', 'asc')->paginate($this->per_page);
 
-        return view('admin.danger.create2')->with([
+        return view('admin.danger.create_rule')->with([
             'locations' => $locations,
-            'cameras'=>$cameras
+            'cameras' => $cameras,
         ]);
     }
 

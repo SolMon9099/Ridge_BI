@@ -14,9 +14,9 @@ class MeterController extends AdminController
         return view('admin.meter.create');
     }
 
-    public function create2()
+    public function create_rule()
     {
-        return view('admin.meter.create2');
+        return view('admin.meter.create_rule');
     }
 
     public function edit()

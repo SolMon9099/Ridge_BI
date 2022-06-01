@@ -217,7 +217,6 @@
         selected_drawing_id = $('#select_floor').find(":selected").val();
         if (camera_mapping_info[selected_drawing_id] != undefined){
             camera_mapping_info[selected_drawing_id].map(camera_item => {
-                console.log('camera_item', camera_item);
                 if (camera_item.is_deleted != true){
                     var circle = new Konva.Circle({
                         x: camera_item.x_coordinate,

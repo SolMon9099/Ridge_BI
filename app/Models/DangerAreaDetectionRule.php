@@ -10,4 +10,9 @@ class DangerAreaDetectionRule extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
+    public function getAllByCamera()
+    {
+        return $this->belongsTo('App\Models\Camera', 'camera_id');
+    }
 }

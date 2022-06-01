@@ -15,7 +15,7 @@
                 <h2 class="title">ルール新規作成</h2>
             </div>
             <div class="flow"><ul><li class="active"><span>Step.1</span>カメラを選択</li><li><span>Step.2</span>アクションとエリアを選択</li></ul></div>
-            <form action="{{route('admin.danger.create_rule')}}" method="post" name="form1" id="form1">
+            <form action="{{route('admin.danger.create_rule')}}" method="get" name="form1" id="form1">
                 @csrf
                 {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
                 <div class="scroll">
@@ -34,8 +34,9 @@
                         <tbody>
                         @foreach($cameras as $camera)
                             <tr>
-                                <td><div class="radio">
-                                        <input id="radio-{{$camera->id}}" name="radio" type="radio">
+                                <td>
+                                    <div class="radio">
+                                        <input id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
                                         <label for="radio-{{$camera->id}}" class="radio-label"></label>
                                     </div>
                                 </td>
@@ -49,6 +50,9 @@
                         @endforeach
                         </tbody>
                     </table>
+                    @error('selected_camera')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
                 </div>
                 {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
 

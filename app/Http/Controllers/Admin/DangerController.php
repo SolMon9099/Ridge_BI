@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\Admin\CameraRequest;
-use App\Http\Requests\Admin\LocationDrawingRequest;
-use App\Service\CameraService;
+use App\Http\Requests\Admin\DangerRequest;
 use Illuminate\Http\Request;
 use App\Service\DangerService;
 use App\Service\LocationService;
-use App\Service\LocationDrawingService;
 use App\Models\Camera;
-use App\Models\LocationDrawing;
+use App\Models\DangerAreaDetectionRule;
 
 class DangerController extends AdminController
 {
@@ -18,13 +15,10 @@ class DangerController extends AdminController
     {
         $dangers = DangerService::doSearch($request)->paginate($this->per_page);
         $locations = LocationService::getAllLocationNames();
-        $cameras = CameraService::getAllCameraNames();
-//        dd($cameras);
 
         return view('admin.danger.index')->with([
             'dangers' => $dangers,
             'locations' => $locations,
-            'cameras' => $cameras,
             'input' => $request,
         ]);
     }
@@ -40,153 +34,64 @@ class DangerController extends AdminController
         ]);
     }
 
-    public function create_rule(Request $request)
+    public function create_rule(DangerRequest $request)
     {
-        $locations = LocationService::getAllLocationNames();
-        $cameras = Camera::orderBy('id', 'asc')->paginate($this->per_page);
+        $danger_rules = DangerService::getRulesByCameraID($request['selected_camera']);
 
         return view('admin.danger.create_rule')->with([
-            'locations' => $locations,
-            'cameras' => $cameras,
+            'camera_id' => $request['selected_camera'],
+            'rules' => $danger_rules,
         ]);
     }
 
-    public function edit(Request $request, Camera $danger)
+    public function edit(Request $request, DangerAreaDetectionRule $danger)
     {
-        $locations = LocationService::getAllLocationNames();
+        $danger_rules = DangerService::getRulesByCameraID($danger->camera_id);
 
         return view('admin.danger.edit')->with([
             'danger' => $danger,
-            'locations' => $locations,
+            'camera_id' => $danger->camera_id,
+            'rules' => $danger_rules,
         ]);
     }
 
-    public function mapping(Request $request)
+    public function store(DangerRequest $request)
     {
-        $locations = LocationService::getAllLocationNames();
-        $drawings = LocationDrawingService::doSearch($request)->paginate($this->per_page);
+        $rule_data = json_decode($request['rule_data']);
+        $rule_data = (array) $rule_data;
+        if (DangerService::saveData($rule_data)) {
+            if (isset($rule_data['id']) && $rule_data['id'] > 0) {
+                $request->session()->flash('success', '変更しました。');
 
-        return view('admin.danger.mapping')->with([
-            'locations' => $locations,
-            'drawings' => $drawings,
-            'input' => $request,
-        ]);
-    }
+                return redirect()->route('admin.danger.edit', $rule_data['id']);
+            } else {
+                $request->session()->flash('success', '登録しました。');
 
-    public function store_mapping(Request $request)
-    {
-        return view('admin.danger.mapping');
-    }
-
-    public function mappingDetail(Request $request, LocationDrawing $drawing)
-    {
-        $drawings = LocationDrawingService::getDataByLocation($drawing->location_id);
-        $danger_mapping_info = [];
-        foreach ($drawings as $drawing_item) {
-            $danger_mapping_info[$drawing_item->id][] = $drawing_item->obj_danger_mappings();
-        }
-
-        return view('admin.danger.mapping_detail')->with([
-            'drawings' => $drawings,
-            'selected_drawing' => $drawing,
-            'danger_mapping_info' => $danger_mapping_info,
-        ]);
-    }
-
-    public function edit_drawing(Request $request, LocationDrawing $drawing)
-    {
-        $locations = LocationService::getAllLocationNames();
-
-        return view('admin.danger.edit_drawing')->with([
-            'drawing' => $drawing,
-            'locations' => $locations,
-        ]);
-    }
-
-    public function create_drawing()
-    {
-        $locations = LocationService::getAllLocationNames();
-
-        return view('admin.danger.create_drawing')->with([
-            'locations' => $locations,
-        ]);
-    }
-
-    public function store(CameraRequest $request)
-    {
-        if (DangerService::doCreate($request)) {
-            $request->session()->flash('success', '登録しました。');
-
-            return redirect()->route('admin.danger');
+                return redirect()->route('admin.danger.create_rule', ['selected_camera' => $rule_data['camera_id']]);
+            }
         } else {
-            $request->session()->flash('error', '登録に失敗しました。');
+            if (isset($rule_data['id']) && $rule_data['id'] > 0) {
+                $request->session()->flash('success', '変更に失敗しました。');
 
-            return redirect()->route('admin.danger');
+                return redirect()->route('admin.danger.edit', $rule_data['id']);
+            } else {
+                $request->session()->flash('success', '登録に失敗しました。', ['selected_camera' => $rule_data['camera_id']]);
+
+                return redirect()->route('admin.danger.create_rule');
+            }
         }
     }
 
-    public function update(CameraRequest $request, Camera $danger)
-    {
-        if (DangerService::doUpdate($request, $danger)) {
-            $request->session()->flash('success', '変更しました。');
-
-            return redirect()->route('admin.danger');
-        } else {
-            $request->session()->flash('error', '変更に失敗しました。');
-
-            return redirect()->route('admin.danger');
-        }
-    }
-
-    public function delete(Request $request, Camera $danger)
+    public function delete(Request $request, DangerAreaDetectionRule $danger)
     {
         if (DangerService::doDelete($danger)) {
-            $request->session()->flash('success', 'カメラを削除しました。');
+            $request->session()->flash('success', 'ルールを削除しました。');
 
             return redirect()->route('admin.danger');
         } else {
-            $request->session()->flash('error', 'カメラ削除が失敗しました。');
+            $request->session()->flash('error', 'ルール削除が失敗しました。');
 
             return redirect()->route('admin.danger');
-        }
-    }
-
-    public function store_drawing(LocationDrawingRequest $request)
-    {
-        if (LocationDrawingService::doCreate($request)) {
-            $request->session()->flash('success', '登録しました。');
-
-            return redirect()->route('admin.danger.mapping');
-        } else {
-            $request->session()->flash('error', '登録に失敗しました。');
-
-            return redirect()->route('admin.danger.mapping');
-        }
-    }
-
-    public function update_drawing(LocationDrawingRequest $request, LocationDrawing $drawing)
-    {
-        if (LocationDrawingService::doUpdate($request, $drawing)) {
-            $request->session()->flash('success', '変更しました。');
-
-            return redirect()->route('admin.danger.mapping');
-        } else {
-            $request->session()->flash('error', '変更に失敗しました。');
-
-            return redirect()->route('admin.danger.mapping');
-        }
-    }
-
-    public function delete_drawing(Request $request, LocationDrawing $drawing)
-    {
-        if (LocationDrawingService::doDelete($drawing)) {
-            $request->session()->flash('success', 'カメラを削除しました。');
-
-            return redirect()->route('admin.danger.mapping');
-        } else {
-            $request->session()->flash('error', 'カメラ削除が失敗しました。');
-
-            return redirect()->route('admin.danger.mapping');
         }
     }
 

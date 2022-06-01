@@ -40,17 +40,17 @@
                     @foreach($dangers as $danger)
                         <tr>
                             <td><button type="button" class="edit" onclick="location.href='{{route('admin.danger.edit', ['danger' => $danger->id])}}'">編集</button></td>
-                            <td>{{$danger->danger_id}}</td>
+                            <td>{{$danger->camera_no}}</td>
                             <td>{{isset($locations[$danger->location_id])?$locations[$danger->location_id]:''}}</td>
                             <td>{{$danger->installation_floor}}</td>
                             <td>{{$danger->installation_position}}</td>
-                            <td>{{$danger->remarks}}</td>
-                            <td>{{config('const.danger_status')[$danger->is_enabled]}}</td>
-                            <td><button type="button" class="delete_dangers history" delete_index="{{ $danger->id }}">削除</button>
-                                {{--                                <form id="frm_delete_{{ $danger->id }}" action="{{ route('admin.danger.delete', ['danger'=> $danger->id]) }}" method="POST" style="display: none;">--}}
-                                {{--                                    @csrf--}}
-                                {{--                                    @method('delete')--}}
-                                {{--                                </form>--}}
+                            <td>{{config('const.action')[$danger->action_id]}}</td>
+                            <td><input disabled type="color" value = "{{$danger->color}}"/></td>
+                            <td><button type="button" class="delete_danger_rules history" delete_index="{{ $danger->id }}">削除</button>
+                            <form id="frm_delete_{{ $danger->id }}" action="{{ route('admin.danger.delete', ['danger'=> $danger->id]) }}" method="POST" style="display: none;">
+                                @csrf
+                                @method('delete')
+                            </form>
                             </td>
                         </tr>
                     @endforeach
@@ -61,5 +61,29 @@
             {{ $dangers->appends([])->links('vendor.pagination.admin-pagination') }}
         </div>
     </div>
+
+<div id="dialog-confirm" title="test" style="display:none">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+    <span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
+
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
+
+<script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('assets/admin/js/helper.js?2') }}"></script>
+
+<script>
+    var delete_id = "";
+    $(document).ready(function () {
+      $(".delete_danger_rules").click(function(e){
+          e.preventDefault();
+          delete_id = $(this).attr('delete_index');
+          helper_confirm("dialog-confirm", "削除", "ルールを削除します。<br />よろしいですか？", 300, "確認", "閉じる", function(){
+              var frm_id = "#frm_delete_" + delete_id;
+              $(frm_id).submit();
+          });
+      });
+    });
+</script>
 
 @endsection

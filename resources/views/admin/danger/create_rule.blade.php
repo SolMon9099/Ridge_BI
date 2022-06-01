@@ -20,10 +20,11 @@
           <li class="active"><span>Step.2</span>アクションとエリアを選択</li>
         </ul>
       </div>
-        <form action="{{route('admin.danger.store')}}" method="post" name="form1" id="form1">
+        <form action="{{route('admin.danger.store')}}" method="post" name="form1" id="form_danger_rule">
             @csrf
+            <input type="hidden" name="camera_id" value="{{$camera_id}}" id = "camera_id" />
             @include('admin.danger._form')
-      </form>
+        </form>
     </div>
   </div>
 

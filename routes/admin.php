@@ -76,10 +76,9 @@ Route::group(['middleware' => 'auth:admin'], function () {
 
     Route::group(['prefix' => 'danger'], function () {
         Route::get('/', 'DangerController@index')->name('admin.danger');
-        Route::get('/edit', 'DangerController@edit')->name('admin.danger.edit');
-        Route::post('/edit2', 'DangerController@edit2')->name('admin.danger.edit2');
+        Route::get('/edit/{danger}', 'DangerController@edit')->name('admin.danger.edit');
         Route::get('/cameras_for_rule', 'DangerController@cameras_for_rule')->name('admin.danger.cameras_for_rule');
-        Route::post('/create_rule', 'DangerController@create_rule')->name('admin.danger.create_rule');
+        Route::get('/create_rule', 'DangerController@create_rule')->name('admin.danger.create_rule');
         Route::get('/list', 'DangerController@list')->name('admin.danger.list');
         Route::get('/list2', 'DangerController@list2')->name('admin.danger.list2');
         Route::post('/store', 'DangerController@store')->name('admin.danger.store');

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+
 use Illuminate\Http\Request;
 use App\Models\Authority;
 use App\Models\PageGroup;
@@ -13,16 +14,17 @@ class TopController extends AdminController
         return view('admin.top.index');
     }
 
-    public function permission_group() {
-        $authority_groups = array();
+    public function permission_group()
+    {
+        $authority_groups = [];
         $authorities = Authority::all();
         $page_groups = PageGroup::all();
 
-        foreach($authorities as $authority) {
-            foreach($page_groups as $page_group) {
+        foreach ($authorities as $authority) {
+            foreach ($page_groups as $page_group) {
                 $value = AuthorityGroup::where([
                     'authority_id' => $authority->id,
-                    'group_id' => $page_group->id
+                    'group_id' => $page_group->id,
                 ])->first();
                 if ($value && $value->access_flag) {
                     $authority_groups[$authority->id][$page_group->id] = 1;
@@ -35,21 +37,24 @@ class TopController extends AdminController
         return view('admin.top.permission_group')->with([
             'authorities' => $authorities,
             'page_groups' => $page_groups,
-            'authority_groups' => $authority_groups
+            'authority_groups' => $authority_groups,
         ]);
     }
 
-    public function permission_store(Request $request) {
+    public function permission_store(Request $request)
+    {
         $authorities = Authority::all();
         $page_groups = PageGroup::all();
         foreach ($authorities as $authority) {
             foreach ($page_groups as $page_group) {
-                $value = $request['checkbox'.$authority->id."_".$page_group->id];
+                $value = $request['checkbox'.$authority->id.'_'.$page_group->id];
                 $authority_group = AuthorityGroup::where([
                     'authority_id' => $authority->id,
-                    'group_id' => $page_group->id
+                    'group_id' => $page_group->id,
                 ])->first();
-                if ($authority->id == 1) $value = 1;
+                if ($authority->id == 1) {
+                    $value = 1;
+                }
                 if ($authority_group) {
                     if ($value) {
                         $authority_group->access_flag = 1;
@@ -62,19 +67,20 @@ class TopController extends AdminController
                         AuthorityGroup::create([
                             'authority_id' => $authority->id,
                             'group_id' => $page_group->id,
-                            'access_flag' => 1
+                            'access_flag' => 1,
                         ]);
                     } else {
                         AuthorityGroup::create([
                             'authority_id' => $authority->id,
                             'group_id' => $page_group->id,
-                            'access_flag' => 0
+                            'access_flag' => 0,
                         ]);
                     }
                 }
             }
         }
         $request->session()->flash('success', '登録しました。');
+
         return redirect()->route('admin.top.permission_group');
     }
 }

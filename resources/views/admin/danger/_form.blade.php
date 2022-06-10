@@ -56,7 +56,7 @@ $action_options = config('const.action');
         </table>
     </div>
     <div class="video-area">
-        <div id="image-container" style="background: url({{asset('assets/admin/img/canvas.jpg')}}) no-repeat;">
+        <div id="image-container" style="background: url('{{$camera_image_data}}') no-repeat;">
         </div>
         <p class="error-message area" style="display: none">エリアを選択してください。</p>
         <div class="btns" id="direction">

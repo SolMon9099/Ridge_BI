@@ -6,8 +6,11 @@ use App\Http\Requests\Admin\DangerRequest;
 use Illuminate\Http\Request;
 use App\Service\DangerService;
 use App\Service\LocationService;
+use App\Service\SafieApiService;
 use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
 
 class DangerController extends AdminController
 {
@@ -36,11 +39,27 @@ class DangerController extends AdminController
 
     public function create_rule(DangerRequest $request)
     {
+        $safie_code = Session::get('safie_code', '');
+        $access_token = Session::get('access_token', '');
+        $refresh_token = Session::get('refresh_token', '');
+
+        $safie_service = new SafieApiService();
+        if ($safie_code == '') {
+            $auth_url = $safie_service->getAuthUrl();
+
+            return Redirect::to($auth_url);
+        }
+        $camera_image_data = null;
+        if ($access_token != '') {
+            $camera_image_data = $safie_service->getDeviceImage($access_token);
+            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+        }
         $danger_rules = DangerService::getRulesByCameraID($request['selected_camera']);
 
         return view('admin.danger.create_rule')->with([
             'camera_id' => $request['selected_camera'],
             'rules' => $danger_rules,
+            'camera_image_data' => $camera_image_data,
         ]);
     }
 
@@ -93,6 +112,16 @@ class DangerController extends AdminController
 
             return redirect()->route('admin.danger');
         }
+    }
+
+    public function list()
+    {
+        return view('admin.danger.list');
+    }
+
+    public function list2()
+    {
+        return view('admin.danger.list2');
     }
 
     public function ajaxUploadFile(Request $request)

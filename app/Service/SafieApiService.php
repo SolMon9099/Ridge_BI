@@ -10,7 +10,10 @@ class SafieApiService
     private $secret = 'd25100e130499d0fb257df19cd5b0279';
 
     private $api_url = 'https://openapi.safie.link/v1/';
+    private $redirect_uri = 'http://54.95.92.211/';     //http://120.143.15.36/
+    private $device_id = 'FvY6rnGWP12obPgFUj0a';
     private $auth_authorize = 'auth/authorize';
+    private $auth_token = 'auth/token';
 
     private $session_id = null;
     private $auth_id = null;
@@ -27,58 +30,39 @@ class SafieApiService
         Log::debug("--- {$this->sms_content} 送信内容準備 ---");
     }
 
-    public function auth_authorize()
+    public function getAccessToken($code)
     {
-        $url = sprintf('%s%s', $this->api_url, $this->auth_authorize);
+        $url = sprintf('%s%s', $this->api_url, $this->auth_token);  //https://openapi.safie.link/v1/auth/token
         $params = [];
-        $params['client_id'] = $this->client_id;
-        $params['response_type'] = 'code';
-        $params['scope'] = 'safie-api';
-        $params['redirect_uri'] = 'http://127.0.0.1:8000';
-        $params['state'] = '';
-        $url = sprintf('%s?%s', $url, http_build_query($params));
-        // var_dump($url);
-        // exit;
-        $curl = curl_init($url);
-        Log::debug("--- {$url} ---");
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_POST, false);
-        $ch = curl_exec($curl);
-        if (curl_errno($curl)) {
-            Log::debug('--- Curl エラー ---');
-            echo curl_error($curl);
+        $params['client_id'] = $this->client_id;   //'dc2537ffb887'
+        $params['client_secret'] = $this->secret;   //'d25100e130499d0fb257df19cd5b0279'
+        $params['grant_type'] = 'authorization_code';
+        $params['redirect_uri'] = $this->redirect_uri;
+        $params['code'] = $code;    //認可コード
+        $response = $this->sendPostApi($url, null, $params, false);
 
-            return null;
-        }
-        $response = curl_multi_getcontent($curl);
-        var_dump($response);
-        exit;
+        return $response;
     }
 
-    public function send()
+    public function getAuthUrl()
     {
         $url = sprintf('%s%s', $this->api_url, $this->auth_authorize);
         $params = [];
         $params['client_id'] = $this->client_id;
         $params['response_type'] = 'code';
         $params['scope'] = 'safie-api';
-        $params['redirect_uri'] = 'http://127.0.0.1:8000';
+        $params['redirect_uri'] = $this->redirect_uri;
         $params['state'] = '';
-        // $url = sprintf('%s?%s', $url, http_build_query($params));
-        /*
-        device_id (device_serial_code): FvY6rnGWP12obPgFUj0a
-        {
-            "access_token": "c2e0473a-6b4c-4ce5-b943-d51cfaa96550",
-            "token_type": "Bearer",
-            "expires_in": 604800,
-            "refresh_token": "55263baf-afea-49d4-bc79-64f6d1980b89"
-        }
-        */
-        $device_id = 'FvY6rnGWP12obPgFUj0a';
+        $url = sprintf('%s?%s', $url, http_build_query($params));
+
+        return $url;
+    }
+
+    public function getDeviceImage($access_token)
+    {
+        $device_id = $this->device_id;
         $url = sprintf('https://openapi.safie.link/v1/devices/%s/image', $device_id);
-        // var_dump($url);
-        // exit;
-        $access_token = 'c2e0473a-6b4c-4ce5-b943-d51cfaa96550';
+
         $header = [
             'Authorization: Bearer '.$access_token,
             'Content-Type: application/json',
@@ -96,12 +80,8 @@ class SafieApiService
             return null;
         }
         $response = curl_multi_getcontent($curl);
-        var_dump($response);
-        exit;
-    }
 
-    public function send_content()
-    {
+        return $response;
     }
 
     /**
@@ -223,5 +203,123 @@ class SafieApiService
         Log::debug("---  {$this->sms_content} ---　{$res}");
 
         return $ret;
+    }
+
+    // リフレッシュトークンの再発行
+    // public static function regenerateRefreshToken()
+    // {
+    //     $akerun_token = AkerunToken::latest()->first();
+    //     $url = 'https://api.akerun.com/oauth/token';
+    //     $data = array(
+    //         'grant_type' => 'refresh_token',
+    //         'client_id' => config('akerun.client_id'),
+    //         'client_secret' => config('akerun.client_secret'),
+    //         'refresh_token' => $akerun_token->refresh_token,
+    //     );
+
+    //     $response_return = self::sendPostApi($url, null, $data);
+
+    //     AkerunToken::create([
+    //         'access_token' => $response_return["access_token"],
+    //         'refresh_token' => $response_return["refresh_token"],
+    //     ]);
+    // }
+
+    public function sendPostApi($url, $header = null, $data = null, $xform = false)
+    {
+        Log::info('【Start Post Api】url:'.$url);
+        Log::info($data);
+
+        $curl = curl_init($url);
+        //POSTで送信
+        curl_setopt($curl, CURLOPT_POST, true);
+
+        if ($header) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+        }
+
+        if ($data) {
+            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+        }
+
+        if ($xform) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
+        }
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+
+        // $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        // curl_close($curl);
+        // echo 'HTTP code: '.$httpcode;
+
+        $response_edit = strstr($response, '{');
+        $response_return = json_decode($response_edit, true);
+
+        Log::info($response_return);
+        Log::info('【Finish Post Api】url:'.$url);
+
+        return $response_return;
+    }
+
+    public static function sendDeleteApi($url, $header = null, $data = null)
+    {
+        Log::info('【Start Delete Api】url:'.$url);
+        Log::info($data);
+
+        $curl = curl_init($url);
+        //POSTで送信
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'DELETE');
+
+        if ($header) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+        }
+
+        if ($data) {
+            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        }
+
+        $response = curl_exec($curl);
+        $response_edit = strstr($response, '{');
+        $response_return = json_decode($response_edit, true);
+
+        Log::info($response_return);
+        Log::info('【Finish Delete Api】url:'.$url);
+
+        return $response_return;
+    }
+
+    public static function sendGetApi($url, $header)
+    {
+        Log::info('【Start Get Api】url:'.$url);
+        Log::info($header);
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        $response_edit = strstr($response, '{');
+        $response_return = json_decode($response_edit, true);
+
+        Log::info($response_return);
+        Log::info('【Finish Get Api】url:'.$url);
+
+        return $response_return;
+    }
+
+    public static function convertISO8601ForKeysURL($carbon)
+    {
+        return $carbon->format('Y-m-d').'T'.$carbon->format('H:i').'+0900';
+    }
+
+    public static function convertISO8601ForAccessesURL($carbon)
+    {
+        return $carbon->format('Y-m-d').'T'.$carbon->format('H:i:s').'+09:00';
     }
 }

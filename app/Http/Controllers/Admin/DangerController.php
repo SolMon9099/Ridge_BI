@@ -9,8 +9,8 @@ use App\Service\LocationService;
 use App\Service\SafieApiService;
 use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
+
+// use Illuminate\Support\Facades\Redirect;
 
 class DangerController extends AdminController
 {
@@ -39,21 +39,12 @@ class DangerController extends AdminController
 
     public function create_rule(DangerRequest $request)
     {
-        $safie_code = Session::get('safie_code', '');
-        $access_token = Session::get('access_token', '');
-        $refresh_token = Session::get('refresh_token', '');
-
         $safie_service = new SafieApiService();
-        if ($safie_code == '') {
-            $auth_url = $safie_service->getAuthUrl();
-
-            return Redirect::to($auth_url);
-        }
-        $camera_image_data = null;
-        if ($access_token != '') {
-            $camera_image_data = $safie_service->getDeviceImage($access_token);
+        $camera_image_data = $safie_service->getDeviceImage();
+        if ($camera_image_data != null) {
             $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
         }
+
         $danger_rules = DangerService::getRulesByCameraID($request['selected_camera']);
 
         return view('admin.danger.create_rule')->with([
@@ -65,12 +56,19 @@ class DangerController extends AdminController
 
     public function edit(Request $request, DangerAreaDetectionRule $danger)
     {
+        $safie_service = new SafieApiService();
+        $camera_image_data = $safie_service->getDeviceImage();
+        if ($camera_image_data != null) {
+            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+        }
+
         $danger_rules = DangerService::getRulesByCameraID($danger->camera_id);
 
         return view('admin.danger.edit')->with([
             'danger' => $danger,
             'camera_id' => $danger->camera_id,
             'rules' => $danger_rules,
+            'camera_image_data' => $camera_image_data,
         ]);
     }
 

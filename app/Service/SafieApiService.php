@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use Illuminate\Support\Facades\Log;
+use KubAT\PhpSimple\HtmlDomParser;
+use App\Models\Token;
 
 class SafieApiService
 {
@@ -10,61 +12,164 @@ class SafieApiService
     private $secret = 'd25100e130499d0fb257df19cd5b0279';
 
     private $api_url = 'https://openapi.safie.link/v1/';
-    private $redirect_uri = 'http://54.95.92.211/';     //http://120.143.15.36/
+    private $redirect_uri = 'http://54.95.92.211/';
+    // private $redirect_uri = 'http://120.143.15.36/';
     private $device_id = 'FvY6rnGWP12obPgFUj0a';
     private $auth_authorize = 'auth/authorize';
     private $auth_token = 'auth/token';
 
-    private $session_id = null;
-    private $auth_id = null;
-    private $pin = null;
-    private $status = null;
+    private $refresh_url = 'auth/refresh-token';
+
+    private $safie_user_name = 'soumu@ridge-i.com';
+    private $safie_password = 'ridge-i438';
+
+    private $access_token = '';
+    private $refresh_token = '';
 
     public function __construct()
     {
+        $token_data = Token::all();
+        if (count($token_data) > 0) {
+            $this->access_token = $token_data[0]->access_token;
+            $this->refresh_token = $token_data[0]->refresh_token;
+        } else {
+            $this->generateToken();
+        }
     }
 
-    public function set_content($content)
+    public function generateRefreshToken()
     {
-        $this->sms_content = $content;
-        Log::debug("--- {$this->sms_content} 送信内容準備 ---");
+        if (isset($this->refresh_token) && $this->refresh_token != '') {
+            $this->refreshToken($this->refresh_token);
+        } else {
+            $this->generateToken();
+        }
+    }
+
+    public function generateToken()
+    {
+        $auth_code = $this->getAuthCode();
+        $this->getAccessToken($auth_code);
+    }
+
+    public function updateTokenDB($data)
+    {
+        if (isset($data['token_type']) && $data['token_type'] == 'Bearer') {
+            $token_data = Token::all();
+            if (count($token_data) > 0) {
+                $token_record = $token_data[0];
+            } else {
+                $token_record = new Token();
+            }
+
+            if (isset($data['access_token'])) {
+                $token_record->access_token = $data['access_token'];
+                $this->access_token = $data['access_token'];
+            }
+            if (isset($data['refresh_token'])) {
+                $token_record->refresh_token = $data['refresh_token'];
+                $this->refresh_token = $data['refresh_token'];
+            }
+            $token_record->save();
+        }
     }
 
     public function getAccessToken($code)
     {
         $url = sprintf('%s%s', $this->api_url, $this->auth_token);  //https://openapi.safie.link/v1/auth/token
         $params = [];
-        $params['client_id'] = $this->client_id;   //'dc2537ffb887'
-        $params['client_secret'] = $this->secret;   //'d25100e130499d0fb257df19cd5b0279'
+        $params['client_id'] = env('CLIENT_ID', $this->client_id);   //'dc2537ffb887'
+        $params['client_secret'] = env('SECRET', $this->secret);   //'d25100e130499d0fb257df19cd5b0279'
         $params['grant_type'] = 'authorization_code';
-        $params['redirect_uri'] = $this->redirect_uri;
+        $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', $this->redirect_uri);
         $params['code'] = $code;    //認可コード
         $response = $this->sendPostApi($url, null, $params, false);
+        $this->updateTokenDB($response);
+    }
 
-        return $response;
+    public function refreshToken($refresh_token)
+    {
+        $url = sprintf('%s%s', $this->api_url, $this->refresh_url);
+        $params['client_id'] = env('CLIENT_ID', $this->client_id);   //'dc2537ffb887'
+        $params['client_secret'] = env('SECRET', $this->secret);   //'d25100e130499d0fb257df19cd5b0279'
+        $params['grant_type'] = 'refresh_token';
+        $params['refresh_token'] = $refresh_token;
+        $params['scope'] = 'safie-api';
+        $response = $this->sendPostApi($url, null, $params, false);
+        $this->updateTokenDB($response);
     }
 
     public function getAuthUrl()
     {
         $url = sprintf('%s%s', $this->api_url, $this->auth_authorize);
+
         $params = [];
-        $params['client_id'] = $this->client_id;
+        $params['client_id'] = env('CLIENT_ID', $this->client_id);
         $params['response_type'] = 'code';
         $params['scope'] = 'safie-api';
-        $params['redirect_uri'] = $this->redirect_uri;
+        $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', $this->redirect_uri);
         $params['state'] = '';
+
         $url = sprintf('%s?%s', $url, http_build_query($params));
 
         return $url;
     }
 
-    public function getDeviceImage($access_token)
+    public function getAuthCode()
+    {
+        $auth_url = $this->getAuthUrl();
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $auth_url);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $dom = HtmlDomParser::str_get_html($response);
+        $code = '';
+        $access_confirm = $dom->find('input[name="access_confirm"]');
+        if (count($access_confirm) > 0) {
+            $access_confirm = $access_confirm[0]->value;
+
+            $authorize_url = 'https://app.safie.link/auth/authorize';
+
+            $params = [];
+            $params['username'] = env('SAFIE_USER_NAME', $this->safie_user_name);
+            $params['password'] = env('SAFIE_PASSWORD', $this->safie_password);
+            $params['client_id'] = env('CLIENT_ID', $this->client_id);
+            $params['response_type'] = 'code';
+            $params['scope'] = 'safie-api';
+            $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', $this->redirect_uri);
+            $params['state'] = '';
+            $params['access_confirm'] = $access_confirm;
+            $params['authorize'] = '許可する';
+
+            $curl = curl_init($authorize_url);
+            //POSTで送信
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_HEADER, true);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
+            $response = curl_exec($curl);
+            $split_data = explode('code=', $response);
+            if (count($split_data) > 1) {
+                $code = explode('&', $split_data[1])[0];
+            }
+        }
+
+        return $code;
+    }
+
+    public function getDeviceImage()
     {
         $device_id = $this->device_id;
         $url = sprintf('https://openapi.safie.link/v1/devices/%s/image', $device_id);
 
         $header = [
-            'Authorization: Bearer '.$access_token,
+            'Authorization: Bearer '.$this->access_token,
             'Content-Type: application/json',
         ];
         $curl = curl_init($url);
@@ -107,124 +212,6 @@ class SafieApiService
         return $ret;
     }
 
-    /**
-     * Step 1 認証リクエスト(session.login).
-     */
-    public function session_login()
-    {
-        $url = sprintf('%s?method=%s&api_key=%s&format=json', $this->api_url, 'session.login', $this->api_key);
-        $result = $this->callApi($url);
-        Log::debug('-- session_login ---');
-        $ret = true;
-        if (empty($result)) {
-            $ret = false;
-        }
-        if (isset($result->error)) {
-            $ret = false;
-        }
-//        var_dump($result->{'@attributes'}->success);
-        if ($ret) {
-            $this->session_id = $result->session_id;
-        } else {
-            $error = var_export($result, true);
-            Log::debug($error);
-        }
-
-        return $ret;
-    }
-
-    /**
-     * Step 2 本人認証状態の問合せ(auth.check).
-     */
-    public function auth_check()
-    {
-        $url = sprintf('%s?method=%s&session_id=%s&tel=%s&format=json', $this->api_url, 'auth.check', $this->session_id, $this->tel);
-        $result = $this->callApi($url);
-        Log::debug('-- auth_check ---');
-        if (empty($result)) {
-            return false;
-        }
-        if (isset($result->error)) {
-            return false;
-        }
-        $this->status = $result->status;
-        $this->auth_id = $result->auth_id;
-        $this->pin = isset($result->pin) ? $result->pin : null;
-
-        //1: 未認証 2: 本人認証済み
-        if ($this->status == 2) {
-            return true;
-        }
-
-        return $this->auth_complete();
-    }
-
-    /**
-     * Step 3 本人確認完了を通知(auth.complete).
-     */
-    public function auth_complete()
-    {
-        Log::debug('-- auth_complete ---');
-        $url = sprintf('%s?method=%s&auth_id=%s&session_id=%s&format=json', $this->api_url, 'auth.complete', $this->auth_id, $this->session_id, $this->pin);
-        $result = $this->callApi($url);
-        if (empty($result)) {
-            return false;
-        }
-        if (isset($result->error)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Step 4 SMS を送信(sms.send).
-     */
-    public function sms_send()
-    {
-        $sms_title = '24esthe';
-        $url = sprintf('%s?method=%s&auth_id=%s&session_id=%s&sms_title=%s&sms_text=%s&format=json', $this->api_url, 'sms.send', $this->auth_id, $this->session_id, $sms_title, $this->sms_content);
-
-        $len = strlen($this->sms_content);
-        Log::debug("--- sms_send  {$this->sms_content} {$len}---　送信");
-
-        $result = $this->callApi($url);
-        $ret = true;
-        if (empty($result)) {
-            $ret = false;
-        } elseif (isset($result->error)) {
-            $ret = false;
-        }
-        $res = $ret ? '成功' : '失敗';
-        if (!$ret) {
-            $res .= ' '.(isset($result->note) ? $result->note : '');
-        }
-
-        Log::debug("---  {$this->sms_content} ---　{$res}");
-
-        return $ret;
-    }
-
-    // リフレッシュトークンの再発行
-    // public static function regenerateRefreshToken()
-    // {
-    //     $akerun_token = AkerunToken::latest()->first();
-    //     $url = 'https://api.akerun.com/oauth/token';
-    //     $data = array(
-    //         'grant_type' => 'refresh_token',
-    //         'client_id' => config('akerun.client_id'),
-    //         'client_secret' => config('akerun.client_secret'),
-    //         'refresh_token' => $akerun_token->refresh_token,
-    //     );
-
-    //     $response_return = self::sendPostApi($url, null, $data);
-
-    //     AkerunToken::create([
-    //         'access_token' => $response_return["access_token"],
-    //         'refresh_token' => $response_return["refresh_token"],
-    //     ]);
-    // }
-
     public function sendPostApi($url, $header = null, $data = null, $xform = false)
     {
         Log::info('【Start Post Api】url:'.$url);
@@ -233,6 +220,7 @@ class SafieApiService
         $curl = curl_init($url);
         //POSTで送信
         curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_HEADER, true);
 
         if ($header) {
             curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
@@ -248,9 +236,8 @@ class SafieApiService
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
         $response = curl_exec($curl);
-
         // $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        // curl_close($curl);
+        curl_close($curl);
         // echo 'HTTP code: '.$httpcode;
 
         $response_edit = strstr($response, '{');

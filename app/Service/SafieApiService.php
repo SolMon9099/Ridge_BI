@@ -14,7 +14,7 @@ class SafieApiService
     private $api_url = 'https://openapi.safie.link/v1/';
     private $redirect_uri = 'http://54.95.92.211/';
     // private $redirect_uri = 'http://120.143.15.36/';
-    private $device_id = 'FvY6rnGWP12obPgFUj0a';
+    public $device_id = 'FvY6rnGWP12obPgFUj0a';
     private $auth_authorize = 'auth/authorize';
     private $auth_token = 'auth/token';
 
@@ -23,8 +23,8 @@ class SafieApiService
     private $safie_user_name = 'soumu@ridge-i.com';
     private $safie_password = 'ridge-i438';
 
-    private $access_token = '';
-    private $refresh_token = '';
+    public $access_token = '';
+    public $refresh_token = '';
 
     public function __construct()
     {
@@ -163,10 +163,36 @@ class SafieApiService
         return $code;
     }
 
-    public function getDeviceImage()
+    public function getDeviceImage($device_id = null)
     {
-        $device_id = $this->device_id;
+        $device_id = $device_id != null ? $device_id : $this->device_id;
         $url = sprintf('https://openapi.safie.link/v1/devices/%s/image', $device_id);
+
+        $header = [
+            'Authorization: Bearer '.$this->access_token,
+            'Content-Type: application/json',
+        ];
+        $curl = curl_init($url);
+        Log::debug("--- {$url} ---");
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_POST, false);
+        $ch = curl_exec($curl);
+        if (curl_errno($curl)) {
+            Log::debug('--- Curl エラー ---');
+            echo curl_error($curl);
+
+            return null;
+        }
+        $response = curl_multi_getcontent($curl);
+
+        return $response;
+    }
+
+    public function getDeviceLiveStreamingList($device_id = null)
+    {
+        $device_id = $device_id != null ? $device_id : $this->device_id;
+        $url = sprintf('https://openapi.safie.link/v1/devices/%s/live/playlist.m3u8', $device_id);
 
         $header = [
             'Authorization: Bearer '.$this->access_token,

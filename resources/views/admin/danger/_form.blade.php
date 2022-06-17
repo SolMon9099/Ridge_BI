@@ -55,6 +55,11 @@ $action_options = config('const.action');
             </tbody>
         </table>
     </div>
+    {{-- <div class="streaming-video" style="height:500px;">
+        <safie-streaming-player></safie-streaming-player>
+        <input type="button" value='Play' onClick="play()">
+        <input type="button" value='Pause' onClick="pause()">
+    </div> --}}
     <div class="video-area">
         <div id="image-container" style="background: url('{{$camera_image_data}}') no-repeat;">
         </div>
@@ -87,6 +92,31 @@ $action_options = config('const.action');
     }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
+<script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
+
+<script>
+    let safieStreamingPlayerElement;
+    let safieStreamingPlayer;
+    function load() {
+        safieStreamingPlayerElement = document.querySelector('safie-streaming-player');
+        safieStreamingPlayer = safieStreamingPlayerElement.instance;
+        safieStreamingPlayer.on('error', (error) => {
+            console.error(error);
+        });
+        // 初期化
+        safieStreamingPlayer.defaultProperties = {
+            defaultAccessToken: '<?php echo $access_token;?>',
+            defaultDeviceId: '<?php echo $device_id;?>',
+        };
+    }
+    function play() {
+        safieStreamingPlayer.play();
+    }
+    function pause() {
+        safieStreamingPlayer.pause();
+    }
+</script>
+
 <script>
     var stage = null;
     var layer = null;

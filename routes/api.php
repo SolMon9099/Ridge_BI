@@ -17,3 +17,11 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::group(['prefix' => 'camera'], function () {
+    Route::get('/getImage', 'SafieController@getImage')->name('api.camera.getImage');
+    Route::get('/getLiveStreaming', 'SafieController@getLiveStreaming')->name('api.camera.getLiveStreaming');
+});
+
+Route::middleware('auth:api')->group(function () {
+});

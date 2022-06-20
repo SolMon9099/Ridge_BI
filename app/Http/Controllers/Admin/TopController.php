@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use App\Models\Authority;
-use App\Models\PageGroup;
 use App\Models\AuthorityGroup;
 
 class TopController extends AdminController
@@ -17,63 +15,42 @@ class TopController extends AdminController
     public function permission_group()
     {
         $authority_groups = [];
-        $authorities = Authority::all();
-        $page_groups = PageGroup::all();
 
-        foreach ($authorities as $authority) {
-            foreach ($page_groups as $page_group) {
-                $value = AuthorityGroup::where([
-                    'authority_id' => $authority->id,
-                    'group_id' => $page_group->id,
-                ])->first();
-                if ($value && $value->access_flag) {
-                    $authority_groups[$authority->id][$page_group->id] = 1;
-                } else {
-                    $authority_groups[$authority->id][$page_group->id] = 0;
-                }
-            }
+        $data = AuthorityGroup::all();
+        foreach ($data as $item) {
+            $authority_groups[$item->authority_id][$item->group_id] = $item->access_flag ? 1 : 0;
         }
 
         return view('admin.top.permission_group')->with([
-            'authorities' => $authorities,
-            'page_groups' => $page_groups,
             'authority_groups' => $authority_groups,
         ]);
     }
 
     public function permission_store(Request $request)
     {
-        $authorities = Authority::all();
-        $page_groups = PageGroup::all();
-        foreach ($authorities as $authority) {
-            foreach ($page_groups as $page_group) {
-                $value = $request['checkbox'.$authority->id.'_'.$page_group->id];
-                $authority_group = AuthorityGroup::where([
-                    'authority_id' => $authority->id,
-                    'group_id' => $page_group->id,
-                ])->first();
-                if ($authority->id == 1) {
-                    $value = 1;
-                }
-                if ($authority_group) {
-                    if ($value) {
-                        $authority_group->access_flag = 1;
+        foreach (config('const.authorities') as $authority_id => $authority) {
+            foreach (config('const.pages') as $details) {
+                foreach ($details as $detail) {
+                    $authority_group = AuthorityGroup::where([
+                        'authority_id' => $authority_id,
+                        'group_id' => $detail['id'],
+                    ])->first();
+                    if (isset($request['checkbox'.$authority_id.'_'.$detail['id']])) {
+                        $value = 1;
                     } else {
-                        $authority_group->access_flag = 0;
+                        $value = 0;
+                        if ($authority_id == 1) {
+                            $value = 1;
+                        }
                     }
-                    $authority_group->save();
-                } else {
-                    if ($value) {
-                        AuthorityGroup::create([
-                            'authority_id' => $authority->id,
-                            'group_id' => $page_group->id,
-                            'access_flag' => 1,
-                        ]);
+                    if ($authority_group) {
+                        $authority_group->access_flag = $value;
+                        $authority_group->save();
                     } else {
                         AuthorityGroup::create([
-                            'authority_id' => $authority->id,
-                            'group_id' => $page_group->id,
-                            'access_flag' => 0,
+                            'authority_id' => $authority_id,
+                            'group_id' => $detail['id'],
+                            'access_flag' => $value,
                         ]);
                     }
                 }

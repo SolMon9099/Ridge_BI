@@ -33,7 +33,7 @@ $(function () {
 
 $(function () {
   $("a#btn").click(function () {
-    $("#leftside").fadeToggle('fast'); /*ふわっと表示*/
+    $("header").fadeToggle('fast'); /*ふわっと表示*/
     $("#btn span").toggleClass("change");
   });
 });
@@ -43,7 +43,12 @@ $(function () {
     $(this).addClass("active");
   });
 });
-
+$(function () {
+  $(".cog").click(function () {
+			$(this).toggleClass("on");
+    $(".hidden-box").fadeToggle('fast'); /*ふわっと表示*/
+  });
+});
 
 $(function () {
   const formInputs = document.getElementsByClassName("file");
@@ -148,3 +153,17 @@ $(function () {
    //video.play();
  });
 });
+$(function () {
+$('.video-pit').hover( function() {
+ 
+      $('.video-pit p').fadeOut();
+ 
+    },
+    function() {
+ 
+        //マウスカーソルが離れた時の処理
+ 
+    }
+);
+	 });
+

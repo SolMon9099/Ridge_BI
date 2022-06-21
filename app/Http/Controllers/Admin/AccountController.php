@@ -12,7 +12,7 @@ class AccountController extends AdminController
 {
     public function index()
     {
-        $admins = Admin::with('authority')->paginate($this->per_page);
+        $admins = Admin::paginate($this->per_page);
 
         return view('admin.account.index')->with([
             'admins' => $admins,
@@ -21,31 +21,27 @@ class AccountController extends AdminController
 
     public function create()
     {
-        $authorities = Authority::all();
-
-        return view('admin.account.create')->with([
-            'authorities' => $authorities,
-        ]);
+        return view('admin.account.create');
     }
 
     public function store(AccountRequest $request)
     {
         if (AccountService::doCreate($request)) {
             $request->session()->flash('success', '登録しました。');
+
             return redirect()->route('admin.account');
         } else {
             $request->session()->flash('error', '登録に失敗しました。');
+
             return redirect()->route('admin.account');
         }
     }
 
     public function edit(Request $request, Admin $admin)
     {
-        $authorities = Authority::all();
 
         return view('admin.account.edit')->with([
             'admin' => $admin,
-            'authorities' => $authorities,
         ]);
     }
 
@@ -53,9 +49,11 @@ class AccountController extends AdminController
     {
         if (AccountService::doUpdate($request, $admin)) {
             $request->session()->flash('success', '変更しました。');
+
             return redirect()->route('admin.account');
         } else {
             $request->session()->flash('error', '変更に失敗しました。');
+
             return redirect()->route('admin.account');
         }
     }
@@ -64,9 +62,11 @@ class AccountController extends AdminController
     {
         if (AccountService::doDelete($admin)) {
             $request->session()->flash('success', 'アカウントを削除しました。');
+
             return redirect()->route('admin.account');
         } else {
             $request->session()->flash('error', 'アカウント削除が失敗しました。');
+
             return redirect()->route('admin.account');
         }
     }

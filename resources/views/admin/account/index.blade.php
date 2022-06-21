@@ -42,7 +42,7 @@
             @foreach($admins as $admin)
                 <tr>
                     <td><button type="button" class="edit" onclick="location.href='{{route('admin.account.edit', ['admin' => $admin->id])}}'">編集</button></td>
-                    <td>{{$admin->authority->name}}</td>
+                    <td>{{isset(config('const.authorities')[$admin->authority_id]) ? config('const.authorities')[$admin->authority_id]: ''}}</td>
                     <td>{{$admin->department}}</td>
                     <td>{{$admin->id}}</td>
                     <td>{{$admin->name}}</td>

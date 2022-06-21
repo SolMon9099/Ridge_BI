@@ -5,11 +5,11 @@
                 <th>権限</th>
                 <td>
                     <select name="authority_id">
-                        @foreach($authorities as $authority)
-                        @if (old('authority_id', isset($admin->authority_id)?$admin->authority_id:1) == $authority->id)
-                            <option value="{{$authority->id}}" selected>{{$authority->name}}</option>
+                        @foreach(config('const.authorities') as $authority_id => $authority)
+                        @if (old('authority_id', isset($admin->authority_id)?$admin->authority_id:1) == $authority_id)
+                            <option value="{{$authority_id}}" selected>{{$authority}}</option>
                         @else
-                            <option value="{{$authority->id}}">{{$authority->name}}</option>
+                            <option value="{{$authority_id}}">{{$authority}}</option>
                         @endif
                         @endforeach
                     </select>

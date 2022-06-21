@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Models\DangerAreaDetectionRule;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class DangerService
 {
@@ -27,26 +27,7 @@ class DangerService
             $cur_danger = DangerAreaDetectionRule::find($params['id']);
             $cur_danger->action_id = $params['action_id'];
             $cur_danger->color = $params['color'];
-            foreach ($params['points'] as $key => $point) {
-                switch ($key) {
-                    case 0:
-                        $cur_danger->first_x = $point->x;
-                        $cur_danger->first_y = $point->y;
-                        break;
-                    case 1:
-                        $cur_danger->second_x = $point->x;
-                        $cur_danger->second_y = $point->y;
-                        break;
-                    case 2:
-                        $cur_danger->third_x = $point->x;
-                        $cur_danger->third_y = $point->y;
-                        break;
-                    case 3:
-                        $cur_danger->fourth_x = $point->x;
-                        $cur_danger->fourth_y = $point->y;
-                        break;
-                }
-            }
+            $cur_danger->points = isset($params['points']) && $params['points'] != '' ? json_encode($params['points']) : '';
 
             return $cur_danger->save();
         } else {
@@ -54,26 +35,7 @@ class DangerService
             $new_Danger->action_id = $params['action_id'];
             $new_Danger->color = $params['color'];
             $new_Danger->camera_id = $params['camera_id'];
-            foreach ($params['points'] as $key => $point) {
-                switch ($key) {
-                    case 0:
-                        $new_Danger->first_x = $point->x;
-                        $new_Danger->first_y = $point->y;
-                        break;
-                    case 1:
-                        $new_Danger->second_x = $point->x;
-                        $new_Danger->second_y = $point->y;
-                        break;
-                    case 2:
-                        $new_Danger->third_x = $point->x;
-                        $new_Danger->third_y = $point->y;
-                        break;
-                    case 3:
-                        $new_Danger->fourth_x = $point->x;
-                        $new_Danger->fourth_y = $point->y;
-                        break;
-                }
-            }
+            $new_Danger->points = isset($params['points']) && $params['points'] != '' ? json_encode($params['points']) : '';
 
             $new_Danger->created_by = Auth::guard('admin')->user()->id;
             $new_Danger->updated_by = Auth::guard('admin')->user()->id;

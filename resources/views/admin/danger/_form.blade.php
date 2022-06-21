@@ -3,7 +3,7 @@ $action_options = config('const.action');
 ?>
 <div class="no-scroll">
     <div class="title-wrap sp-m">
-        <button type="button" class="edit left create-rull">＋ ルール追加</button>
+        <button type="button" class="edit left create-rule">＋ ルール追加</button>
     </div>
     @include('admin.layouts.flash-message')
     <div class="scroll">
@@ -32,6 +32,9 @@ $action_options = config('const.action');
                     </td>
                 </tr>
                 @foreach ($rules as $index => $rule)
+                <?php
+                    if ($rule->points != null && $rule->points != '') $rule->points = json_decode($rule->points);
+                ?>
                 <tr data-index = {{$index}} id = {{$rule->id}}>
                     <td>
                         <select class="select-box">
@@ -71,12 +74,9 @@ $action_options = config('const.action');
         </div>
     </div>
     <input type="hidden" value="" name="rule_data" id = 'rule_data'/>
+    {{-- <img src = '{{$camera_image_data}}'/> --}}
 </div>
 <style>
-    #image-container{
-        background-size:100%;
-        /* min-height: 200px; */
-    }
     .clear-btn{
         margin:0;
         margin-right:15px;
@@ -89,6 +89,13 @@ $action_options = config('const.action');
     }
     .video-area{
         /* display: block; */
+    }
+    #image-container{
+        /* background-size:100%; */
+        width:1280px;
+        height:720px;
+        margin-left: auto;
+        margin-right: auto;
     }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
@@ -180,7 +187,7 @@ $action_options = config('const.action');
         stage = new Konva.Stage({
             container: 'image-container',
             width: container.clientWidth,
-            height: window.innerHeight,
+            height: container.clientHeight,
         })
         layer = new Konva.Layer();
         stage.add(layer);
@@ -260,20 +267,26 @@ $action_options = config('const.action');
         selected_rule_index = index;
         let rules = <?php echo $rules;?>;
         var selected_rule = rules[index];
-        points = [
-            {x:selected_rule.first_x, y:selected_rule.first_y, id:0},
-            {x:selected_rule.second_x, y:selected_rule.second_y, id:1},
-            {x:selected_rule.third_x, y:selected_rule.third_y, id:2},
-            {x:selected_rule.fourth_x, y:selected_rule.fourth_y, id:3},
-        ];
+        // points = [
+        //     {x:selected_rule.first_x, y:selected_rule.first_y, id:0},
+        //     {x:selected_rule.second_x, y:selected_rule.second_y, id:1},
+        //     {x:selected_rule.third_x, y:selected_rule.third_y, id:2},
+        //     {x:selected_rule.fourth_x, y:selected_rule.fourth_y, id:3},
+        // ];
+        if (selected_rule.points != null && selected_rule.points != ''){
+            points =  selected_rule.points;
+        }
         var selected_rule_tr = $('tr[data-index="'+ selected_rule_index +'"]');
         selected_color = $('.color', selected_rule_tr).val();
+
+        buttonSetting();
+        if (points.length < 4) return;
+
         points.map((center_point, point_index) => {
             drawCircle(center_point, point_index);
         })
         point_numbers = 4;
         drawRect(points);
-        buttonSetting();
     }
 
     function buttonSetting(){
@@ -369,7 +382,7 @@ $action_options = config('const.action');
             $("#rull-list").append(tr_record);
             buttonSetting();
         }
-        $(".create-rull").click(function(e) {
+        $(".create-rule").click(function(e) {
             addRule();
         });
     });

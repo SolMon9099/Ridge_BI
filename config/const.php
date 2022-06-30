@@ -111,4 +111,8 @@ return [
             ['id' => 18, 'name' => '分析済みリスト'],
         ],
     ],
+
+    'camera_start_time' => '08:00:00',
+    'camera_end_time' => '21:00:00',
+    'request_interval' => 5,        //分
 ];

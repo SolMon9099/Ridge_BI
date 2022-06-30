@@ -45,7 +45,7 @@
                     }
                 @endphp
                 <div class="file-wrap">
-                    <img id="preview" src="{{ $file_url ? $file_url : '#' }}">
+                    <img id="preview" src="{{ $file_url ? $file_url : '#' }}" class="{{ $file_url ? '' : 'hide' }}">
                     <label id="file_upload" class="image">ファイルを選択してください</label>
                     <span id="ufilename" style="margin-left: 10px;">{{ old('drawing_file_name', isset($drawing->drawing_file_name) ? $drawing->drawing_file_name:'') }}</span>
                     <input type="hidden" name="drawing_file_path" id="drawing_file_path" value="{{ old('drawing_file_path', isset($drawing->drawing_file_path) ? $drawing->drawing_file_path:'') }}"/>
@@ -71,16 +71,20 @@
     <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
     <style>
         label#file_upload {
-        padding: 12px 24px;
-        margin: 0 0;
-        background: #3682fa;
-        color: #fff;
-        display: inline-block;
-        cursor: pointer;
-        border-radius: 7px;
-        font-size: 13px;
-        font-weight: bold;
-    }
+            padding: 12px 24px;
+            margin: 0 0;
+            background: #3682fa;
+            color: #fff;
+            display: inline-block;
+            cursor: pointer;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .hide {
+            display: none !important;
+        }
 
     </style>
 @endsection
@@ -135,6 +139,7 @@
                     $("#drawing_file_path").val(file_path);
                     $("#drawing_file_name").val(g_filename);
                     $("#ufilename").text(g_filename);
+                    $('#preview').removeClass('hide');
                     $("#preview").attr('src', '/storage/temp/' + file_path);
                     $("input[type=submit]").prop('disabled', false);
                 },

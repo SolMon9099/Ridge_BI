@@ -83,7 +83,7 @@ class SafieApiService
         $params['grant_type'] = 'authorization_code';
         $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', $this->redirect_uri);
         $params['code'] = $code;    //認可コード
-        $response = $this->sendPostApi($url, null, $params, false);
+        $response = $this->sendPostApi($url, null, $params);
         $this->updateTokenDB($response);
     }
 
@@ -95,7 +95,7 @@ class SafieApiService
         $params['grant_type'] = 'refresh_token';
         $params['refresh_token'] = $refresh_token;
         $params['scope'] = 'safie-api';
-        $response = $this->sendPostApi($url, null, $params, false);
+        $response = $this->sendPostApi($url, null, $params);
         $this->updateTokenDB($response);
     }
 
@@ -163,6 +163,7 @@ class SafieApiService
         return $code;
     }
 
+    //画像取得
     public function getDeviceImage($device_id = null)
     {
         $device_id = $device_id != null ? $device_id : $this->device_id;
@@ -189,6 +190,7 @@ class SafieApiService
         return $response;
     }
 
+    // HTTP Live Streamingプレイリスト取得
     public function getDeviceLiveStreamingList($device_id = null)
     {
         $device_id = $device_id != null ? $device_id : $this->device_id;
@@ -215,30 +217,95 @@ class SafieApiService
         return $response;
     }
 
-    /**
-     * Api 送信関数.
-     */
-    public function callApi($url)
+    //メディアファイル 作成要求一覧取得
+    public function getMediaFileList($device_id = null)
     {
-        $curl = curl_init($url);
-        Log::debug("--- {$url} ---");
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_POST, false);
-        $ch = curl_exec($curl);
-        if (curl_errno($curl)) {
-            Log::debug('--- Curl エラー ---');
-            echo curl_error($curl);
+        $device_id = $device_id != null ? $device_id : $this->device_id;
+        $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests', $device_id);
+        $header = [
+            'Authorization: Bearer '.$this->access_token,
+            'Content-Type: application/json',
+        ];
+        $response = $this->sendGetApi($url, $header);
+
+        return $response;
+    }
+
+    //メディアファイル 作成要求
+    public function makeMediaFile($device_id = null, $start = null, $end = null)
+    {
+        $device_id = $device_id != null ? $device_id : $this->device_id;
+        $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests', $device_id);
+        $header = [
+            'Authorization: Bearer '.$this->access_token,
+            'Content-Type: application/json',
+        ];
+        // $start = '2022-06-22T16:15:00+09:00';
+        // $end = '2022-06-22T16:18:00+09:00';
+        $params['start'] = $start;
+        $params['end'] = $end;
+        $response = $this->sendPostApi($url, $header, $params, 'json');
+        if ($response != null) {
+            if (isset($response['request_id'])) {
+                return $response['request_id'];
+            }
 
             return null;
         }
-        $response = curl_multi_getcontent($curl);
-        curl_close($curl);
-        $ret = json_decode($ch);
 
-        return $ret;
+        return $response;
     }
 
-    public function sendPostApi($url, $header = null, $data = null, $xform = false)
+    //メディアファイル 作成要求取得
+    public function getMediaFileStatus($device_id = null, $request_id = null)
+    {
+        $device_id = $device_id != null ? $device_id : $this->device_id;
+        $request_id = '3115192';
+        $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests/%s', $device_id, $request_id);
+        $header = [
+            'Authorization: Bearer '.$this->access_token,
+            'Content-Type: application/json',
+        ];
+
+        $response = $this->sendGetApi($url, $header);
+
+        return $response;
+    }
+
+    // メディアファイル 作成要求削除
+    public function deleteMediaFile($device_id = null, $request_id = null)
+    {
+        $device_id = $device_id != null ? $device_id : $this->device_id;
+        $request_id = '3111785';
+        $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests/%s', $device_id, $request_id);
+        $header = [
+            'Authorization: Bearer '.$this->access_token,
+            'Content-Type: application/json',
+        ];
+        $response = $this->sendDeleteApi($url, $header);
+
+        return $response;
+    }
+
+    // メディアファイル ダウンロード
+    public function downloadMediaFile($url)
+    {
+        ini_set('memory_limit', '1024M');
+        // $device_id = $device_id != null ? $device_id : $this->device_id;
+        // $request_id = '3112844';
+        // $file_name = '2022-06-22_07:15:00.mp4';
+        // $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests/%s/%s', $device_id, $request_id, $file_name);
+        $header = [
+            'Authorization: Bearer '.$this->access_token,
+            'Content-Type: application/json',
+        ];
+
+        $response = $this->sendGetApi($url, $header, false);
+
+        return $response;
+    }
+
+    public function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
     {
         Log::info('【Start Post Api】url:'.$url);
         Log::info($data);
@@ -253,26 +320,42 @@ class SafieApiService
         }
 
         if ($data) {
-            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+            switch ($request_type) {
+                case 'query':
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+                    break;
+                case 'json':
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                    break;
+            }
         }
 
-        if ($xform) {
-            curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
-        }
+        // if ($xform) {
+        //     curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
+        // }
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
         $response = curl_exec($curl);
-        // $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
-        // echo 'HTTP code: '.$httpcode;
+        if ($httpcode == 200) {
+            $response_edit = strstr($response, '{');
+            $response_return = json_decode($response_edit, true);
 
-        $response_edit = strstr($response, '{');
-        $response_return = json_decode($response_edit, true);
+            Log::info($response_return);
+            Log::info('【Finish Post Api】url:'.$url);
 
-        Log::info($response_return);
-        Log::info('【Finish Post Api】url:'.$url);
+            return $response_return;
+        } else {
+            echo 'HTTP code: '.$httpcode;
+            if ($httpcode == 401) {
+                if (isset($this->refresh_token) && $this->refresh_token != '') {
+                    $this->refreshToken($this->refresh_token);
+                }
+            }
 
-        return $response_return;
+            return null;
+        }
     }
 
     public static function sendDeleteApi($url, $header = null, $data = null)
@@ -303,7 +386,7 @@ class SafieApiService
         return $response_return;
     }
 
-    public static function sendGetApi($url, $header)
+    public function sendGetApi($url, $header, $json_type = true)
     {
         Log::info('【Start Get Api】url:'.$url);
         Log::info($header);
@@ -317,13 +400,27 @@ class SafieApiService
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
         $response = curl_exec($curl);
-        $response_edit = strstr($response, '{');
-        $response_return = json_decode($response_edit, true);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-        Log::info($response_return);
-        Log::info('【Finish Get Api】url:'.$url);
+        if ($httpcode == 200) {
+            if ($json_type == true) {
+                $response_edit = strstr($response, '{');
+                $response_return = json_decode($response_edit, true);
 
-        return $response_return;
+                return $response_return;
+            } else {
+                return $response;
+            }
+        } else {
+            echo 'HTTP code: '.$httpcode;
+            if ($httpcode == 401) {
+                if (isset($this->refresh_token) && $this->refresh_token != '') {
+                    $this->refreshToken($this->refresh_token);
+                }
+            }
+
+            return null;
+        }
     }
 
     public static function convertISO8601ForKeysURL($carbon)

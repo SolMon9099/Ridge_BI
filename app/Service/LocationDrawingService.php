@@ -3,8 +3,8 @@
 namespace App\Service;
 
 use App\Models\LocationDrawing;
-use Auth;
-use Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class LocationDrawingService
 {

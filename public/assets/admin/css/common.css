@@ -12,6 +12,9 @@
     -webkit-text-size-adjust: 100%;
   }
 }
+.w50{
+	width:50%;
+}
 p.set{
 	margin: 20px 0;
 	font-size:14px;
@@ -1975,6 +1978,48 @@ ul.coil-list li label:before, .check label:before {
 input[type=checkbox]:checked + label:before, input[type=radio]:checked + label:before {
   opacity: 1; /* 要素を表示する */
 }
+.custom-style{
+  position:relative;
+  padding:5px 30px;
+  cursor:pointer;
+}
+.custom-style:before{
+   width:16px !important; /* チェックボックスの幅 */
+  height:16px !important; /* チェックボックスの高さ */
+  left:5px; 
+  border:1px solid #ccc !important; /* チェックボックスの枠 */
+  border-radius:3px !important; 
+  margin-top:6px !important;
+	background: none !important;
+	opacity: 1 !important;
+	left:50% !important;
+	transform: translateX(-50%) !important;
+}
+.custom-style:after,
+.custom-style:before{
+  position:absolute;
+  content:"";
+  top:50%
+}
+.custom-style::after {
+  position: absolute;
+  width: 5px !important;
+  height: 9px !important;
+  top: 50%;
+  left: 10px;
+	border: none !important;
+  border-right: 2px solid tomato !important;
+  border-bottom: 3px solid tomato !important;
+  content: '';
+  margin-top:6px !important;
+  opacity: 0;
+	border-radius:0 !important;
+		left:50% !important;
+	transform: translateX(-50%)  rotate(45deg) !important;
+}
+input[type=checkbox]:checked + .custom-style::after {
+  opacity: 1 !important;
+}
 @media only screen and (max-width:768px) {
   ul.coil-list li label {
     font-size: 14px;
@@ -2483,7 +2528,9 @@ ul.table-list2 li input[type=date] {
 .text-left {
   text-align: left !important;
 }
-
+.text-centre td.text-left {
+  text-align: left !important;
+}
 input[type=search].text {
   border: none;
   background: #FFF;
@@ -4447,6 +4494,13 @@ ul.date-list li:last-child{
   display: flex;
   justify-content: center;
 }
+@media screen and (max-width: 768px) {
+	.btns {
+		display: block;
+		margin: 0 15px;
+	}
+}
+	
 button.ok {
   background: linear-gradient(-135deg, #2ebf43, #00db4f);
   font-size: 16px;
@@ -4456,6 +4510,24 @@ button.ok {
   border-radius: 50px;
   letter-spacing: 5px;
   box-shadow: 0px 10px 10px -5px rgba(46, 191, 67, 0.2);
+}
+button.delete2 {
+  background: #999;
+  font-size: 16px;
+  color: #FFF;
+  border: none;
+  padding: 15px 75px;
+  border-radius: 50px;
+  letter-spacing: 5px;
+  box-shadow: 0px 10px 10px -5px rgba(0,0,0, 0.1);
+	margin-left: 30px;
+}
+@media screen and (max-width: 768px) {
+	button.delete2 {
+		margin-left: 0;
+		margin-top: 15px;
+		display: block;
+	}
 }
 .tab {
   list-style: none;
@@ -4576,7 +4648,6 @@ button.ok {
 }
 .video-area{
 	margin: 20px 0 0 0;
-	display: none;
 }
 .video-area video{
 	width:100%;
@@ -4805,4 +4876,228 @@ ul.three-btns li button.active{
 .f-blue{
 	color:#076baf;
 		font-weight:bold;
+}
+.two-table{
+	display: flex;
+	justify-content: space-between;
+}
+.two-table > div{
+	width:48%;
+}
+		.two-table > div .custom-style::before {
+		margin-top: 17px !important;
+	}
+		.two-table > div .custom-style::after {
+		margin-top: 17px !important;
+	}
+@media only screen and (max-width:768px) {
+	.two-table{
+		display: block;
+	}
+	.two-table > div{
+	width:auto;
+}
+	.two-table > div.right-table thead{
+		display: none;
+	}
+}
+table.table3{
+	width:100%;	margin-bottom: 10px;
+}
+table.table3 th,
+table.table3 td{
+	padding: 10px;
+	font-size:14px;
+	vertical-align: middle;
+}
+table.table3 th{
+	padding-left: 0;
+	width:15%;
+}
+table.table3 td{
+	padding-right:0;
+	position: relative;
+
+}
+table.table3 td input[type=text].search{
+	background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAUJJREFUSEu9le0xBEEURc9GQAhEgAzIgAjIABmQARmQgQwQARnYEIiAOlWv1avR3TO7NWOq9sdOd9/z+r6PWbHws1pYnx5gD7gEjoHDCOQdeAHugfWU4FqAuxDvabjnegxSAxjlQRx8BBTynY83uQLO042OepAhoET+FdYU4aGGIK3aCbuEVp8M0POP2GVULfEiJOQt/uy3cpIBJXoT2IxoEOZD2NU8kwHF+ynRD2/h2WouMuA7Tm3aG91zcwEsit1aluey6DWq7g/jX5O8bZlqjyVbHR2tRvsETjq9oOBz+H4L3ExptLInjwrr3BrPo8IBeJEEXTMYg+rmIC+ODTttcc9pzK0mZGxc29GOa4efogr5U1zPLU1nkutVyKZNVXOhC5kDIDRDzoCnEslcgALRzl9xX84JGP0e9D5MW68tfoMfCXxMGRHr0pcAAAAASUVORK5CYII=) 10px 50% no-repeat;
+	background-size:15px;
+	padding: 10px 10px 10px 30px;
+	border: 1px solid #CCC;
+}
+table.table3 td input[type=reset]{
+	position: absolute;
+	right:20px;
+	top:20px;
+	background: none;
+	border: none;
+	z-index: 999;
+}
+.all{
+	font-size: 13px;
+	margin-bottom: 20px;
+	text-align: right;
+}
+.custom-style.left:before{
+	left: 0 !important;
+	transform: translateX(0) !important;
+}
+.custom-style.left:after{
+	left: 5px !important;
+	transform: translateX(0) rotate(45deg) !important;
+}
+ul.camera-list{
+	display:flex;
+	flex-wrap:wrap;
+}
+ul.camera-list li{
+	width:19%;
+	margin-right: 1.25%;
+		margin-bottom: 1.25%;
+}
+ul.camera-list li:nth-child(5n){
+	margin-right: 0;
+}
+ul.camera-list li .pic{
+	line-height: 0;
+}
+ul.camera-list li .text{
+	background: #FFF;
+	padding: 15px;
+	position: relative;
+}
+ul.camera-list li .text .edit2{
+	position: absolute;
+	right:10px;
+	top:10px;
+	cursor: pointer;
+	transition: all .3s ease-in-out;
+}
+ul.camera-list li .text .edit2:hover{
+	opacity: .7;
+}
+ul.camera-list li table th{
+	width:30%;	padding:5px 0 0 0;
+	border: none;
+	color: #999;
+	font-weight: normal;
+	font-size:80%;
+	vertical-align: top;
+}
+
+ul.camera-list li table td{
+	padding:5px 0 0 0;
+	border: none;
+}
+ul.kenchi-list li{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;	background: #FFF;
+	margin-bottom: 15px;
+}
+ul.kenchi-list li .movie{
+	width:20%;
+	line-height: 0;
+}
+ul.kenchi-list li .text{
+	width:80%;
+	padding: 20px;
+	box-sizing: border-box;
+}
+@media only screen and (max-width:768px) {
+	ul.kenchi-list {
+		margin: 0 15px;
+	}
+	ul.kenchi-list li{
+		display: block;
+	}
+	ul.kenchi-list li .movie,
+	ul.kenchi-list li .text{
+		width:auto;
+	}
+}
+ul.kenchi-list li .text time{
+	margin-bottom: 10px;
+	color: #999;
+	display: block;
+}
+ul.kenchi-list li .text table{
+	width:100%;
+}
+ul.kenchi-list li .text table td:nth-child(1){
+	width:40%;
+}
+ul.kenchi-list li .text table td:nth-child(2){
+	width:10%;
+}
+ul.kenchi-list li .text table td:nth-child(3){
+	width:30%;
+}
+ul.kenchi-list li .text table td:nth-child(4){
+	width:20%;
+}
+@media only screen and (max-width:768px) {
+
+		ul.kenchi-list li .text table th,
+	ul.kenchi-list li .text table td{
+		display: block;
+	}
+	ul.kenchi-list li .text time,
+	ul.kenchi-list li .text table td:nth-child(1),
+	ul.kenchi-list li .text table td:nth-child(2),
+	ul.kenchi-list li .text table td:nth-child(3),
+	ul.kenchi-list li .text table td:nth-child(4){
+		width:auto;
+		font-size:13px;
+	}
+}
+.n-area{
+	display: flex;
+	justify-content: space-between;
+}
+	.n-area > div{
+	width:10%;
+	}
+.n-area > .video-area{
+	width:75%;
+}
+@media only screen and (max-width:768px) {
+	.n-area{
+	display: block;
+		margin: 0 15px;
+}
+.n-area > .video-area{
+	width:auto;
+}
+	.n-area > div{
+		margin-bottom: 20px;
+	}
+}
+.n-area h3{
+	margin-bottom: 15px;
+	color: #666;
+	font-size:14px;
+	border-bottom: 1px solid #CCC;
+	padding-bottom: 15px;
+}
+
+.n-area input[type=radio] + label:after{
+	margin-top:7px !important;
+}
+.n-area input[type=radio] + label:before{
+	margin-top: 12px !important;
+}
+.n-area input[type=radio] + label{
+	padding-left: 15px;
+	color: #333;
+	font-size:14px;
+}
+button.reset{
+	margin: 0px auto 0 0;
+	font-size:14px;
+}
+@media only screen and (max-width:768px) {
+button.reset{
+	margin-bottom: 20px;
+	}
 }

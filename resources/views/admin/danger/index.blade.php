@@ -46,11 +46,13 @@
                             <td>{{$danger->installation_position}}</td>
                             <td>{{config('const.action')[$danger->action_id]}}</td>
                             <td><input disabled type="color" value = "{{$danger->color}}"/></td>
-                            <td><button type="button" class="delete_danger_rules history" delete_index="{{ $danger->id }}">削除</button>
-                            <form id="frm_delete_{{ $danger->id }}" action="{{ route('admin.danger.delete', ['danger'=> $danger->id]) }}" method="POST" style="display: none;">
-                                @csrf
-                                @method('delete')
-                            </form>
+                            <td>
+                                <button type="button" class="history">履歴表示</button>
+                                {{-- <button type="button" class="delete_danger_rules history" delete_index="{{ $danger->id }}">削除</button>
+                                <form id="frm_delete_{{ $danger->id }}" action="{{ route('admin.danger.delete', ['danger'=> $danger->id]) }}" method="POST" style="display: none;">
+                                    @csrf
+                                    @method('delete')
+                                </form> --}}
                             </td>
                         </tr>
                     @endforeach

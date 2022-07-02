@@ -4,11 +4,11 @@
 
 <div id="wrapper">
     <div class="breadcrumb">
-      <ul>
-        <li><a href="{{route('admin.danger')}}">危険エリア侵入検知</a></li>
-        <li><a href="{{route('admin.danger')}}">ルール一覧</a></li>
-        <li>ルール新規作成</li>
-      </ul>
+        <ul>
+            <li><a href="{{route('admin.shelf')}}">棚乱れ検知</a></li>
+            <li><a href="{{route('admin.shelf')}}">ルール一覧</a></li>
+            <li>ルール新規作成</li>
+        </ul>
     </div>
     <div id="r-content">
         <div class="title-wrap">
@@ -17,13 +17,13 @@
         <div class="flow">
             <ul>
             <li><span>Step.1</span>カメラを選択</li>
-            <li class="active"><span>Step.2</span>アクションとエリアを選択</li>
+            <li class="active"><span>Step.2</span>エリアを選択</li>
             </ul>
         </div>
-        <form action="{{route('admin.danger.store')}}" method="post" name="form1" id="form_danger_rule">
+        <form action="{{route('admin.shelf.store')}}" method="post" name="form1" id="form_shelf_rule">
             @csrf
             <input type="hidden" name="camera_id" value="{{$camera_id}}" id = "camera_id" />
-            @include('admin.danger._form')
+            @include('admin.shelf._form')
         </form>
     </div>
   </div>

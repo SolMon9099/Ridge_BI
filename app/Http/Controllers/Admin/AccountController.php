@@ -3,16 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use App\Models\Authority;
 use App\Models\Admin;
 use App\Http\Requests\Admin\AccountRequest;
 use App\Service\AccountService;
+use Illuminate\Support\Facades\Auth;
 
 class AccountController extends AdminController
 {
     public function index()
     {
-        $admins = Admin::paginate($this->per_page);
+        $login_user = Auth::guard('admin')->user();
+        if ($login_user->authority_id == config('const.super_admin_code') || !($login_user->contract_no > 0)) {
+            $admins = Admin::paginate($this->per_page);
+        } else {
+            $admins = Admin::query()->where('contract_no', $login_user->contract_no)->paginate($this->per_page);
+        }
 
         return view('admin.account.index')->with([
             'admins' => $admins,
@@ -39,7 +44,6 @@ class AccountController extends AdminController
 
     public function edit(Request $request, Admin $admin)
     {
-
         return view('admin.account.edit')->with([
             'admin' => $admin,
         ]);

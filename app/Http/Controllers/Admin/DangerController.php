@@ -64,12 +64,12 @@ class DangerController extends AdminController
             $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
         }
 
-        $danger_rules = DangerService::getRulesByCameraID($danger->camera_id);
+        $rules = DangerService::getDangerInfoById($danger->id);
 
         return view('admin.danger.edit')->with([
             'danger' => $danger,
+            'rules' => $rules,
             'camera_id' => $danger->camera_id,
-            'rules' => $danger_rules,
             'camera_image_data' => $camera_image_data,
             'device_id' => $safie_service->device_id,
             'access_token' => $safie_service->access_token,
@@ -81,25 +81,13 @@ class DangerController extends AdminController
         $rule_data = json_decode($request['rule_data']);
         $rule_data = (array) $rule_data;
         if (DangerService::saveData($rule_data)) {
-            if (isset($rule_data['id']) && $rule_data['id'] > 0) {
-                $request->session()->flash('success', '変更しました。');
+            $request->session()->flash('success', 'ルールを変更しました。');
 
-                return redirect()->route('admin.danger.edit', $rule_data['id']);
-            } else {
-                $request->session()->flash('success', '登録しました。');
-
-                return redirect()->route('admin.danger.create_rule', ['selected_camera' => $rule_data['camera_id']]);
-            }
+            return redirect()->route('admin.danger');
         } else {
-            if (isset($rule_data['id']) && $rule_data['id'] > 0) {
-                $request->session()->flash('success', '変更に失敗しました。');
+            $request->session()->flash('error', 'ルール変更に失敗しました。');
 
-                return redirect()->route('admin.danger.edit', $rule_data['id']);
-            } else {
-                $request->session()->flash('success', '登録に失敗しました。', ['selected_camera' => $rule_data['camera_id']]);
-
-                return redirect()->route('admin.danger.create_rule');
-            }
+            return redirect()->route('admin.danger');
         }
     }
 

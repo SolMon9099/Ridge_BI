@@ -3,8 +3,8 @@
 namespace App\Service;
 
 use App\Models\Admin;
-use Hash;
-use Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AccountService
 {
@@ -18,7 +18,10 @@ class AccountService
         $new_user->authority_id = $params['authority_id'];
         $new_user->password = Hash::make($params['password']);
         $new_user->is_enabled = isset($params['is_enabled']) ? $params['is_enabled'] : 1;
-
+        $new_user->contract_no = $params['contract_no'];
+        if (isset($params['headers']) && count($params['headers']) > 0) {
+            $new_user->header_menu_ids = implode(',', $params['headers']);
+        }
         $new_user->created_by = Auth::guard('admin')->user()->id;
         $new_user->updated_by = Auth::guard('admin')->user()->id;
 
@@ -32,7 +35,15 @@ class AccountService
             $cur_Account->name = $params['name'];
             $cur_Account->department = $params['department'];
             $cur_Account->is_enabled = isset($params['is_enabled']) ? $params['is_enabled'] : 1;
-            $cur_Account->authority_id = $params['authority_id'];
+            if (isset($params['authority_id'])) {
+                $cur_Account->authority_id = $params['authority_id'];
+            }
+            if (isset($params['contract_no'])) {
+                $cur_Account->contract_no = $params['contract_no'];
+            }
+            if (isset($params['headers']) && count($params['headers']) > 0) {
+                $cur_Account->header_menu_ids = implode(',', $params['headers']);
+            }
             $cur_Account->updated_by = Auth::guard('admin')->user()->id;
             if (isset($params['password']) && $params['password']) {
                 $cur_Account->password = Hash::make($params['password']);

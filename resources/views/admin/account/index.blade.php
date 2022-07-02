@@ -40,9 +40,14 @@
             </thead>
             <tbody>
             @foreach($admins as $admin)
+            <?php
+                $authority_name = '';
+                if (isset(config('const.authorities')[$admin->authority_id])) $authority_name = config('const.authorities')[$admin->authority_id];
+                if (isset(config('const.super_admin')[$admin->authority_id])) $authority_name = config('const.super_admin')[$admin->authority_id];
+            ?>
                 <tr>
                     <td><button type="button" class="edit" onclick="location.href='{{route('admin.account.edit', ['admin' => $admin->id])}}'">編集</button></td>
-                    <td>{{isset(config('const.authorities')[$admin->authority_id]) ? config('const.authorities')[$admin->authority_id]: ''}}</td>
+                    <td>{{$authority_name}}</td>
                     <td>{{$admin->department}}</td>
                     <td>{{$admin->id}}</td>
                     <td>{{$admin->name}}</td>

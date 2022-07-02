@@ -16,15 +16,9 @@
 		</div>
         <form action="{{route('admin.account.update', ['admin'=> $admin->id])}}" method="post" name="form1" id="form1">
             @csrf
-            @method('PUT')
+            @method('put')
             <input type="hidden" name="id" value="{{$admin->id}}"/>
-
             @include('admin.account._form')
-		    <!--
-                <div class="tour-content mt25">
-                <div class="float-l pager"><a href="">＜</a><span class="current">1</span><a href="">2</a><a href="">3</a><a href="">4</a><a href="">5</a><a href="">＞</a></div>
-                </div>
-            -->
             <div class="btns">
                 <button type="submit" class="ok">更新</button>
             </div>

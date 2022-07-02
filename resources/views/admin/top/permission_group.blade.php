@@ -1,7 +1,29 @@
 @extends('admin.layouts.app')
 
 @section('content')
+<?php
+    $login_user = Auth::guard('admin')->user();
+    $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
+    $headers = isset($login_user->header_menu_ids)?explode(",", $login_user->header_menu_ids):[];
 
+    $display_pages = array();
+    $all_pages = config('const.pages');
+    if ($super_admin_flag){
+        $display_pages = $all_pages;
+    } else {
+        foreach ($all_pages as $group_name => $sub_pages) {
+            if (in_array($group_name, config('const.admin_pages'))){
+                $display_pages[$group_name] = $sub_pages;
+            } else {
+                $id = array_search($group_name, config('const.header_menus'));
+                if (in_array($id, $headers)){
+                    $display_pages[$group_name] = $sub_pages;
+                }
+            }
+        }
+    }
+
+?>
 <div id="wrapper">
     <div class="breadcrumb">
       <ul>
@@ -28,24 +50,28 @@
                 </tr>
             </thead>
             <tbody>
-            @foreach(config('const.pages') as $group_name => $details)
+            @foreach($display_pages as $group_name => $details)
                 @foreach ($details as $index => $detail)
                 <tr>
                     <td><p>{{$index == 0 ? $group_name : ''}}</p></td>
                     <td><p>{{$detail['name']}}</p></td>
                     @foreach(config('const.authorities') as $authority_id => $authority)
-                    <td class="text-centre">
-                        <div class="checkbtn-wrap">
-                            @if ($authority_id == 1)
-                                <input name="checkbox{{$authority_id}}_{{$detail['id']}}" type="checkbox" id="{{$authority_id}}-{{$detail['id']}}" class="opa" checked disabled>
-                            @elseif (isset($authority_groups[$authority_id]) && isset($authority_groups[$authority_id][$detail['id']]) &&  $authority_groups[$authority_id][$detail['id']] == 1)
-                                <input name="checkbox{{$authority_id}}_{{$detail['id']}}" type="checkbox" id="{{$authority_id}}-{{$detail['id']}}" checked>
-                            @else
-                                <input name="checkbox{{$authority_id}}_{{$detail['id']}}" type="checkbox" id="{{$authority_id}}-{{$detail['id']}}" >
-                            @endif
-                        <label for="{{$authority_id}}-{{$detail['id']}}"></label>
-                        </div>
-                    </td>
+                    @if ($authority_id ==1 || !in_array($group_name, config('const.admin_pages')))
+                        <td class="text-centre">
+                            <div class="checkbtn-wrap">
+                                @if ($authority_id == 1)
+                                    <input name="checkbox{{$authority_id}}_{{$detail['id']}}" type="checkbox" id="{{$authority_id}}-{{$detail['id']}}" class="opa" checked disabled>
+                                @elseif (isset($authority_groups[$authority_id]) && isset($authority_groups[$authority_id][$detail['id']]) &&  $authority_groups[$authority_id][$detail['id']] == 1)
+                                    <input name="checkbox{{$authority_id}}_{{$detail['id']}}" type="checkbox" id="{{$authority_id}}-{{$detail['id']}}" checked>
+                                @else
+                                    <input name="checkbox{{$authority_id}}_{{$detail['id']}}" type="checkbox" id="{{$authority_id}}-{{$detail['id']}}" >
+                                @endif
+                            <label class="custom-style" for="{{$authority_id}}-{{$detail['id']}}"></label>
+                            </div>
+                        </td>
+                    @else
+                        <td></td>
+                    @endif
                     @endforeach
                 </tr>
                 @endforeach

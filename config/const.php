@@ -66,16 +66,38 @@ return [
         'outside' => 2,
     ],
 
+    'super_admin' => [99999 => 'スーパー管理者'],
+
+    'super_admin_code' => 99999,
+
     'authorities' => [
         1 => '管理者',
-        2 => '現場責任者',
+        // 2 => '現場責任者',
         3 => '現場担当者',
     ],
     'authorities_codes' => [
-        'super_admin' => 1,
-        'owner' => 2,
+        'admin' => 1,
+        // 'owner' => 2,
         'manager' => 3,
     ],
+
+    'header_menus' => [
+        1 => 'ピット入退場検知',
+        2 => '危険エリア侵入検知',
+        3 => '棚乱れ検知',
+        4 => '検針メーター検知',
+        5 => '過去分析',
+    ],
+
+    'header_menu_codes' => [
+        'pit' => 1,
+        'danger_area' => 2,
+        'shelf' => 3,
+        'meter' => 4,
+        'past_analysis' => 5,
+    ],
+
+    'admin_pages' => ['全般', '現場設定', 'カメラ設定'],
 
     'pages' => [
         '全般' => [

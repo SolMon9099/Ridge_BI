@@ -1,8 +1,5 @@
-<?php
-$action_options = config('const.action');
-?>
 <div class="no-scroll">
-    @if (!isset($danger))
+    @if (!isset($shelf))
     <div class="title-wrap sp-m">
         <button type="button" class="edit left create-rule">＋ ルール追加</button>
     </div>
@@ -12,7 +9,6 @@ $action_options = config('const.action');
         <table class="table2 text-centre">
             <thead>
                 <tr>
-                    <th>アクション</th>
                     <th>カラー</th>
                     <th>エリア選択</th>
 					<th>削除</th>
@@ -20,45 +16,23 @@ $action_options = config('const.action');
             </thead>
             <tbody id="rull-list">
                 <tr id="rule-template" style="display: none">
-                    <td>
-                        <select class="select-box">
-                            <option value='0'>ルールを選択</option>
-                            @foreach($action_options as $id => $action)
-                                <option value={{$id}}>{{$action}}</option>
-                            @endforeach
-                        </select>
-                        <p class="error-message rule-select" style="display: none">ルールを選択してください。</p>
-                    </td>
                     <td><input type="color" class="color"/></td>
                     <td>
                         <button type="button" class="edit show_camera_image">エリア選択</button>
                         <p class="error-message area" style="display: none">エリアを選択してください。</p>
                     </td>
-                    <td><button type="button" class="delete_danger_rules history">削除</button></td>
+                    <td><button type="button" class="delete_shelf_rules history">削除</button></td>
                 </tr>
                 @foreach ($rules as $index => $rule)
                 <?php if ($rule->points != null && $rule->points != '') $rule->points = json_decode($rule->points);?>
                 <tr data-index = {{$index}} id = {{$rule->id}} class="tr_line">
-                    <td>
-                        <select class="select-box">
-                            <option value='0'>ルールを選択</option>
-                            @foreach($action_options as $id => $action)
-                                @if ($id == $rule->action_id)
-                                    <option value={{$id}} selected>{{$action}}</option>
-                                @else
-                                    <option value={{$id}}>{{$action}}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                        <p class="error-message rule-select" style="display: none">ルールを選択してください。</p>
-                    </td>
                     <td><input type="color" class="color" value="{{$rule->color}}" onchange="changeColor(this, {{$index}})"/></td>
                     <td>
                         <button type="button" class="edit show_camera_image" onclick="showCameraImage({{$index}})">エリア選択</button>
                         <p class="error-message area" style="display: none">エリアを選択してください。</p>
                     </td>
                     <td>
-                        <button type="button" class="delete_danger_rules history" onclick="deleteRule({{$index}})" >削除</button>
+                        <button type="button" class="delete_shelf_rules history" onclick="deleteRule({{$index}})" >削除</button>
                     </td>
                 </tr>
                 @endforeach
@@ -329,13 +303,8 @@ $action_options = config('const.action');
     function checkValidation(){
         var res = true;
         $('.tr_line').each(function(index){
-            var action = $('.select-box', $(this)).val();
             var color = $('.color', $(this)).val();
             if ($(this).css('display') != 'none'){
-                if (!(action > 0)) {
-                    res = false;
-                    $('.error-message.rule-select', $(this)).show();
-                }
                 if (all_rules[index].points == null || all_rules[index].points == ''){
                     $('.error-message.area', $(this)).show();
                     res = false;
@@ -345,7 +314,6 @@ $action_options = config('const.action');
             }
 
             all_rules[index].color = color;
-            all_rules[index].action_id = action;
         })
         $('#rule_data').val(JSON.stringify(all_rules));
         return res;
@@ -354,7 +322,7 @@ $action_options = config('const.action');
     function saveRule(){
         $('.error-message').hide();
         if (!checkValidation()) return;
-        $('#form_danger_rule').submit();
+        $('#form_shelf_rule').submit();
     }
 
     function changeColor(e, index){
@@ -378,7 +346,7 @@ $action_options = config('const.action');
         tr_record.attr('id', '');
         tr_record.attr('data-index', rule_numbers-1);
         tr_record.addClass('tr_line');
-        all_rules.push({id:0, camera_id:$('#camera_id').val(), color:'black', action_id:0, points:null})
+        all_rules.push({id:0, camera_id:$('#camera_id').val(), color:'black', points:null})
         $(".show_camera_image", tr_record).click(function() {
             selected_rule_index = tr_record.attr('data-index');
             var selected_rule = all_rules[selected_rule_index];
@@ -409,7 +377,7 @@ $action_options = config('const.action');
                 all_rules[selected_rule_index].color = selected_color;
             });
         });
-        $(".delete_danger_rules", tr_record).click(function() {
+        $(".delete_shelf_rules", tr_record).click(function() {
             tr_record.hide();
         })
 

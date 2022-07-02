@@ -64,6 +64,35 @@ li.active .modal-open.blue{
 .modal-open.setting:before{
 	display: none;
 }
+.modal-open.setting.white{
+	background: #FFF !important;
+	border: none !important;
+}
+.modal-open.setting2{
+	background: transparent;
+	color: #555;
+	width:100%;
+	border-radius:5px;
+	padding: 0;
+		box-sizing: border-box;
+	position: relative;
+}
+.modal-open.setting2:before{
+	position: absolute;
+	top:50%;
+	left:50%;
+	transform: translate(-50%,-50%) rotate(90deg);
+	font-size:20px;
+	background: #FFF;
+	width:50px;
+	height:50px;
+	line-height: 50px;
+	text-align: center;
+	vertical-align: middle;
+	border-radius: 50%;
+	display: block;
+ box-shadow: 0px -1px 10px 0px rgba(0, 0, 0,.5);
+}
 /*
 .modal-open.setting:before{
 	content:"✓";

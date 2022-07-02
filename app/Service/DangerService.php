@@ -23,46 +23,44 @@ class DangerService
     public static function saveData($params)
     {
         $params = (array) $params;
-        if (isset($params['id']) && $params['id'] > 0) {
-            $cur_danger = DangerAreaDetectionRule::find($params['id']);
-            $cur_danger->action_id = $params['action_id'];
-            $cur_danger->color = $params['color'];
-            $cur_danger->points = isset($params['points']) && $params['points'] != '' ? json_encode($params['points']) : '';
+        foreach ($params as $param) {
+            $param = (array) $param;
+            if (isset($param['id']) && $param['id'] > 0) {
+                $cur_danger = DangerAreaDetectionRule::find($param['id']);
+                if (isset($param['is_deleted']) && $param['is_deleted'] == true) {
+                    $res = $cur_danger->delete();
+                } else {
+                    $cur_danger->action_id = $param['action_id'];
+                    $cur_danger->color = $param['color'];
+                    $cur_danger->points = isset($param['points']) && $param['points'] != '' ? json_encode($param['points']) : '';
+                    $cur_danger->updated_by = Auth::guard('admin')->user()->id;
 
-            return $cur_danger->save();
-        } else {
-            $new_Danger = new DangerAreaDetectionRule();
-            $new_Danger->action_id = $params['action_id'];
-            $new_Danger->color = $params['color'];
-            $new_Danger->camera_id = $params['camera_id'];
-            $new_Danger->points = isset($params['points']) && $params['points'] != '' ? json_encode($params['points']) : '';
-
-            $new_Danger->created_by = Auth::guard('admin')->user()->id;
-            $new_Danger->updated_by = Auth::guard('admin')->user()->id;
-
-            return $new_Danger->save();
-        }
-    }
-
-    public static function doUpdate($params, $cur_Danger)
-    {
-        if (is_object($cur_Danger)) {
-            $cur_Danger->camera_id = $params['camera_id'];
-            if ($params['location_id'] == 0) {
-                $cur_Danger->location_id = null;
+                    $res = $cur_danger->save();
+                }
+                if (!$res) {
+                    return false;
+                }
             } else {
-                $cur_Danger->location_id = $params['location_id'];
-            }
-            $cur_Danger->installation_floor = $params['installation_floor'];
-            $cur_Danger->installation_position = $params['installation_position'];
-            $cur_Danger->remarks = $params['remarks'];
-            $cur_Danger->is_enabled = isset($params['is_enabled']) ? $params['is_enabled'] : 1;
-            $cur_Danger->updated_by = Auth::guard('admin')->user()->id;
+                if (isset($param['is_deleted']) && $param['is_deleted'] == true) {
+                    continue;
+                }
+                $new_Danger = new DangerAreaDetectionRule();
+                $new_Danger->action_id = $param['action_id'];
+                $new_Danger->color = $param['color'];
+                $new_Danger->camera_id = $param['camera_id'];
+                $new_Danger->points = isset($param['points']) && $param['points'] != '' ? json_encode($param['points']) : '';
 
-            return $cur_Danger->save();
-        } else {
-            abort(403);
+                $new_Danger->created_by = Auth::guard('admin')->user()->id;
+                $new_Danger->updated_by = Auth::guard('admin')->user()->id;
+
+                $res = $new_Danger->save();
+                if (!$res) {
+                    return false;
+                }
+            }
         }
+
+        return true;
     }
 
     public static function doDelete($cur_Danger)
@@ -76,7 +74,7 @@ class DangerService
 
     public static function getDangerInfoById($id)
     {
-        return DangerAreaDetectionRule::find($id);
+        return DangerAreaDetectionRule::query()->where('id', $id)->get();
     }
 
     public static function getRulesByCameraID($camera_id)

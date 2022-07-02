@@ -88,10 +88,11 @@ Route::group(['middleware' => 'auth:admin'], function () {
 
     Route::group(['prefix' => 'shelf'], function () {
         Route::get('/', 'ShelfController@index')->name('admin.shelf');
-        Route::get('/edit', 'ShelfController@edit')->name('admin.shelf.edit');
+        Route::get('/edit/{shelf}', 'ShelfController@edit')->name('admin.shelf.edit');
         Route::post('/edit2', 'ShelfController@edit2')->name('admin.shelf.edit2');
-        Route::get('/create', 'ShelfController@create')->name('admin.shelf.create');
+        Route::get('/cameras_for_rule', 'ShelfController@cameras_for_rule')->name('admin.shelf.cameras_for_rule');
         Route::post('/create_rule', 'ShelfController@create_rule')->name('admin.shelf.create_rule');
+        Route::post('/store', 'ShelfController@store')->name('admin.shelf.store');
         Route::get('/list', 'ShelfController@list')->name('admin.shelf.list');
         Route::get('/list2', 'ShelfController@list2')->name('admin.shelf.list2');
     });

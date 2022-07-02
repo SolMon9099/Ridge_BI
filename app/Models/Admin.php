@@ -20,16 +20,14 @@ class Admin extends Authenticatable
         'department',
         'is_enabled',
         'authority_id',
+        'contract_no',
+        'header_menu_ids',
         'created_by',
         'updated_by',
-        'deleted_by'
+        'deleted_by',
     ];
 
     /*public function routeNotificationForMail() {
         return $this->email;
     }*/
-
-    public function authority() {
-        return $this->belongsTo('App\Models\Authority', 'authority_id');
-    }
 }

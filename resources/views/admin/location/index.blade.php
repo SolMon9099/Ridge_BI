@@ -20,7 +20,7 @@
           新規登録</a> </div>
       </div>
       @include('admin.layouts.flash-message')
-      {{ $locations->appends([])->links('vendor.pagination.admin-pagination') }}      
+      {{ $locations->appends([])->links('vendor.pagination.admin-pagination') }}
         <div class="scroll">
           <table class="table2 text-centre">
             <thead>
@@ -28,7 +28,7 @@
                 <th>編集</th>
                 <th>現場コード</th>
                 <th>現場名</th>
-                <th>現場責任者</th>
+                {{-- <th>現場責任者</th> --}}
                 <th>現場担当者</th>
                 <th>有効設定</th>
                 <th>削除</th>
@@ -40,13 +40,13 @@
                 <td><button type="button" class="edit" onclick="location.href='{{route('admin.location.edit', ['location' => $location->id])}}'">編集</button></td>
                 <td>{{$location->code}}</td>
                 <td>{{$location->name}}</td>
-                <td>
+                {{-- <td>
                   @foreach(explode(",",$location->owner) as $owner)
                     @if(isset($admins[$owner]))
                     {{$admins[$owner]}}<br/>
                     @endif
                   @endforeach
-                </td>
+                </td> --}}
                 <td>
                   @foreach(explode(",",$location->manager) as $manager)
                     @if(isset($admins[$manager]))
@@ -94,6 +94,6 @@
       });
 
   });
-</script>  
+</script>
 
 @endsection

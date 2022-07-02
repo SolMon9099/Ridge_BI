@@ -18,7 +18,7 @@
                 @enderror
                 </td>
             </tr>
-            <tr>
+            {{-- <tr>
                 <th>現場責任者<br>
                 <button type="button" class="edit left mt5 create_owner">追加</button></th>
                 <td>
@@ -63,7 +63,7 @@
                     @endif
                 </ul>
                 </td>
-            </tr>
+            </tr> --}}
             <tr>
                 <th>現場担当者<br>
                 <button type="button" class="edit left mt5 create_manager">追加</button></th>

@@ -109,9 +109,9 @@ class DangerController extends AdminController
         return view('admin.danger.list');
     }
 
-    public function list2()
+    public function detail()
     {
-        return view('admin.danger.list2');
+        return view('admin.danger.detail');
     }
 
     public function ajaxUploadFile(Request $request)

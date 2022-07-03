@@ -80,7 +80,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::get('/cameras_for_rule', 'DangerController@cameras_for_rule')->name('admin.danger.cameras_for_rule');
         Route::get('/create_rule', 'DangerController@create_rule')->name('admin.danger.create_rule');
         Route::get('/list', 'DangerController@list')->name('admin.danger.list');
-        Route::get('/list2', 'DangerController@list2')->name('admin.danger.list2');
+        Route::get('/detail', 'DangerController@detail')->name('admin.danger.detail');
         Route::post('/store', 'DangerController@store')->name('admin.danger.store');
         Route::put('/update/{danger}', 'DangerController@update')->name('admin.danger.update');
         Route::delete('/delete/{danger}', 'DangerController@delete')->name('admin.danger.delete');
@@ -94,7 +94,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::post('/create_rule', 'ShelfController@create_rule')->name('admin.shelf.create_rule');
         Route::post('/store', 'ShelfController@store')->name('admin.shelf.store');
         Route::get('/list', 'ShelfController@list')->name('admin.shelf.list');
-        Route::get('/list2', 'ShelfController@list2')->name('admin.shelf.list2');
+        Route::get('/detail', 'ShelfController@detail')->name('admin.shelf.detail');
     });
 
     Route::group(['prefix' => 'meter'], function () {
@@ -104,7 +104,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::get('/edit', 'MeterController@edit')->name('admin.meter.edit');
         Route::post('/edit2', 'MeterController@edit2')->name('admin.meter.edit2');
         Route::get('/list', 'MeterController@list')->name('admin.meter.list');
-        Route::get('/list2', 'MeterController@list2')->name('admin.meter.list2');
+        Route::get('/detail', 'MeterController@detail')->name('admin.meter.detail');
     });
 
     Route::group(['prefix' => 'analyze'], function () {

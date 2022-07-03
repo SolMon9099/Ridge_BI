@@ -34,8 +34,8 @@ class MeterController extends AdminController
         return view('admin.meter.list');
     }
 
-    public function list2()
+    public function detail()
     {
-        return view('admin.meter.list2');
+        return view('admin.meter.detail');
     }
 }

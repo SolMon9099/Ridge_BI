@@ -93,8 +93,8 @@ class ShelfController extends AdminController
         return view('admin.shelf.list');
     }
 
-    public function list2()
+    public function detail()
     {
-        return view('admin.shelf.list2');
+        return view('admin.shelf.detail');
     }
 }

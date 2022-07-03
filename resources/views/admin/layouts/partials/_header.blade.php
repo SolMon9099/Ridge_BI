@@ -75,8 +75,8 @@
                 @if (!$general_user_flag || in_array('admin.danger.list', $manager_allowed_pages))
                     <li><a href="{{route('admin.danger.list')}}">検知リスト</a></li>
                 @endif
-                @if (!$general_user_flag || in_array('admin.danger.list2', $manager_allowed_pages))
-                    <li><a href="{{route('admin.danger.list2')}}">詳細分析</a></li>
+                @if (!$general_user_flag || in_array('admin.danger.detail', $manager_allowed_pages))
+                    <li><a href="{{route('admin.danger.detail')}}">詳細分析</a></li>
                 @endif
             </ul>
         </li>
@@ -90,8 +90,8 @@
                 @if (!$general_user_flag || in_array('admin.danger.list', $manager_allowed_pages))
                     <li><a href="{{route('admin.danger.list')}}">検知リスト</a></li>
                 @endif
-                @if (!$general_user_flag || in_array('admin.danger.list2', $manager_allowed_pages))
-                    <li><a href="{{route('admin.danger.list2')}}">詳細分析</a></li>
+                @if (!$general_user_flag || in_array('admin.danger.detail', $manager_allowed_pages))
+                    <li><a href="{{route('admin.danger.detail')}}">詳細分析</a></li>
                 @endif
             </ul>
         </li>
@@ -105,8 +105,8 @@
                 @if (!$general_user_flag || in_array('admin.shelf.list', $manager_allowed_pages))
                     <li><a href="{{route('admin.shelf.list')}}">検知リスト</a></li>
                 @endif
-                @if (!$general_user_flag || in_array('admin.shelf.list2', $manager_allowed_pages))
-                    <li><a href="{{route('admin.shelf.list2')}}">詳細分析</a></li>
+                @if (!$general_user_flag || in_array('admin.shelf.detail', $manager_allowed_pages))
+                    <li><a href="{{route('admin.shelf.detail')}}">詳細分析</a></li>
                 @endif
             </ul>
         </li>
@@ -120,8 +120,8 @@
                 @if (!$general_user_flag || in_array('admin.meter.list', $manager_allowed_pages))
                     <li><a href="{{route('admin.meter.list')}}">検知リスト</a></li>
                 @endif
-                @if (!$general_user_flag || in_array('admin.meter.list2', $manager_allowed_pages))
-                    <li><a href="{{route('admin.meter.list2')}}">詳細分析</a></li>
+                @if (!$general_user_flag || in_array('admin.meter.detail', $manager_allowed_pages))
+                    <li><a href="{{route('admin.meter.detail')}}">詳細分析</a></li>
                 @endif
             </ul>
         </li>

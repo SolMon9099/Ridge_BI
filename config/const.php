@@ -81,6 +81,14 @@ return [
         'manager' => 3,
     ],
 
+    'header_menus_routes' => [
+        1 => 'admin.pit',
+        2 => 'admin.danger',
+        3 => 'admin.shelf',
+        4 => 'admin.meter',
+        5 => 'admin.analyze',
+    ],
+
     'header_menus' => [
         1 => 'ピット入退場検知',
         2 => '危険エリア侵入検知',
@@ -127,11 +135,40 @@ return [
             ['id' => 14, 'name' => '検知リスト'],
             ['id' => 15, 'name' => '詳細分析'],
         ],
+        '検針メーター検知' => [
+            ['id' => 19, 'name' => 'ルール一覧'],
+            ['id' => 20, 'name' => '検知リスト'],
+            ['id' => 21, 'name' => '詳細分析'],
+        ],
         '過去分析' => [
             ['id' => 16, 'name' => '新規分析依頼'],
             ['id' => 17, 'name' => '新規分析依頼中リスト'],
             ['id' => 18, 'name' => '分析済みリスト'],
         ],
+    ],
+
+    'page_route_names' => [
+        1 => 'admin.top.permission_group',
+        2 => 'admin.account',
+        3 => 'admin.notification',
+        4 => 'admin.location',
+        5 => 'admin.camera',
+        6 => 'admin.camera.mapping',
+        7 => 'admin.pit',
+        8 => 'admin.pit.list',
+        9 => 'admin.pit.list2',
+        10 => 'admin.danger',
+        11 => 'admin.danger.list',
+        12 => 'admin.danger.list2',
+        13 => 'admin.shelf',
+        14 => 'admin.shelf.list',
+        15 => 'admin.shelf.list2',
+        16 => 'admin.analyze',
+        17 => 'admin.analyze.now_list',
+        18 => 'admin.analyze.finish_list',
+        19 => 'admin.meter',
+        20 => 'admin.meter.list',
+        21 => 'admin.meter.list2',
     ],
 
     'camera_start_time' => '08:00:00',

@@ -23,6 +23,15 @@
                     </td>
                     <td><button type="button" class="delete_shelf_rules history">削除</button></td>
                 </tr>
+                <tr class="" id = "image-record-template" style="display: none">
+                    <td colspan="3">
+                        <div id="" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
+                        <div class="btns" id="direction">
+                            <button type="button" class="cancel-btn history">閉じる</button>
+                            <button type="button" class="clear-btn history">クリア</button>
+                        </div>
+                    </td>
+                </tr>
                 @foreach ($rules as $index => $rule)
                 <?php if ($rule->points != null && $rule->points != '') $rule->points = json_decode($rule->points);?>
                 <tr data-index = {{$index}} id = {{$rule->id}} class="tr_line">
@@ -35,6 +44,16 @@
                         <button type="button" class="delete_shelf_rules history" onclick="deleteRule({{$index}})" >削除</button>
                     </td>
                 </tr>
+                <tr image-index = {{$index}} class="image-record">
+                    <td colspan="3">
+                        <div id="" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;">
+                        </div>
+                        <div class="btns" id="direction">
+                            <button type="button" class="cancel-btn history">閉じる</button>
+                            <button type="button" class="clear-btn history">クリア</button>
+                        </div>
+                    </td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
@@ -44,14 +63,6 @@
         <input type="button" value='Play' onClick="play()">
         <input type="button" value='Pause' onClick="pause()">
     </div> --}}
-    <div class="video-area">
-        <div id="image-container" style="background: url('{{$camera_image_data}}') no-repeat;">
-        </div>
-        <div class="btns" id="direction">
-            <button type="button" class="cancel-btn history">閉じる</button>
-            <button type="button" class="clear-btn history">クリア</button>
-        </div>
-    </div>
     <input type="hidden" value="" name="rule_data" id = 'rule_data'/>
     <div class="footer-area">
         <button type="button" class="ok save-btn">決定</button>
@@ -69,7 +80,7 @@
         margin-right:15px;
         padding: 15px 75px;
     }
-    .video-area{
+    .image-record{
         display: none;
     }
     #image-container{
@@ -118,7 +129,6 @@
     var layer = null;
     var radius = "<?php echo config('const.camera_mark_radius');?>";
     radius = parseInt(radius);
-    var container = document.getElementById('image-container');
     var points = [];
     var point_numbers = 0;
     var rule_numbers = "<?php echo count($rules);?>";
@@ -205,6 +215,7 @@
     }
 
     function drawing(){
+        var container = document.getElementById('image-container');
         stage = new Konva.Stage({
             container: 'image-container',
             width: container.clientWidth,
@@ -253,17 +264,20 @@
     function showCameraImage(index){
         point_numbers = 0;
         points = [];
-        $(".video-area").show();
-        drawing();
         selected_rule_index = index;
         var selected_rule = all_rules[index];
+        var selected_image_tr = $('tr[image-index="'+ selected_rule_index +'"]');
+        resetImageContainers();
+        selected_image_tr.show();
+        $('.camera-image', selected_image_tr).attr('id', 'image-container');
+        drawing();
         if (selected_rule.points != null && selected_rule.points != ''){
             points =  selected_rule.points;
         }
         var selected_rule_tr = $('tr[data-index="'+ selected_rule_index +'"]');
         selected_color = $('.color', selected_rule_tr).val();
 
-        buttonSetting();
+        buttonSetting(selected_image_tr);
         if (points.length < 4) return;
 
         points.map((center_point, point_index) => {
@@ -273,8 +287,8 @@
         drawRect(points);
     }
 
-    function buttonSetting(){
-        $('.clear-btn').click(function(){
+    function buttonSetting(selected_image_tr){
+        $('.clear-btn', selected_image_tr).click(function(){
             points = [];
             point_numbers = 0;
             layer.find('Circle').map(circle_item => {
@@ -286,7 +300,7 @@
             layer.draw();
             all_rules[selected_rule_index].points = null;
         });
-        $('.cancel-btn').click(function(){
+        $('.cancel-btn', selected_image_tr).click(function(){
             points = [];
             point_numbers = 0;
             layer.find('Circle').map(circle_item => {
@@ -296,7 +310,7 @@
                 line_item.destroy();
             })
             layer.draw();
-            $(".video-area").hide();
+            resetImageContainers();
         });
     }
 
@@ -339,6 +353,13 @@
     }
     function deleteRule(index){
         $('tr[data-index="'+ index +'"]').hide();
+        $('tr[image-index="'+ index +'"]').hide();
+    }
+    function resetImageContainers(){
+        $('.image-record').each(function(){
+            $('.camera-image', $(this)).attr('id', '');
+            $(this).hide();
+        })
     }
     function addRule() {
         rule_numbers++;
@@ -346,14 +367,24 @@
         tr_record.attr('id', '');
         tr_record.attr('data-index', rule_numbers-1);
         tr_record.addClass('tr_line');
-        all_rules.push({id:0, camera_id:$('#camera_id').val(), color:'black', points:null})
+        all_rules.push({id:0, camera_id:$('#camera_id').val(), color:'black', points:null});
+        var image_record = $('#image-record-template').clone().show();
+        image_record.attr('id', '');
+        image_record.attr('image-index', rule_numbers-1);
+        image_record.addClass('image-record');
+
         $(".show_camera_image", tr_record).click(function() {
             selected_rule_index = tr_record.attr('data-index');
             var selected_rule = all_rules[selected_rule_index];
             points = [];
             point_numbers = 0;
-            $(".video-area").show();
             selected_color = $('.color', tr_record).val();
+
+            var selected_image_tr = $('tr[image-index="'+ selected_rule_index +'"]');
+            resetImageContainers();
+            selected_image_tr.show();
+            $('.camera-image', selected_image_tr).attr('id', 'image-container');
+
             drawing();
             if (selected_rule.points != null && selected_rule.points != ''){
                 points =  selected_rule.points;
@@ -376,13 +407,16 @@
                 })
                 all_rules[selected_rule_index].color = selected_color;
             });
+            buttonSetting(selected_image_tr);
         });
         $(".delete_shelf_rules", tr_record).click(function() {
             tr_record.hide();
+            image_record.hide();
         })
 
         $("#rull-list").append(tr_record);
-        buttonSetting();
+        $("#rull-list").append(image_record);
+        image_record.hide();
     }
 
     $(document).ready(function() {

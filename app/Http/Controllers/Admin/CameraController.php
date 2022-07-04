@@ -10,6 +10,7 @@ use App\Service\LocationService;
 use App\Service\LocationDrawingService;
 use App\Models\Camera;
 use App\Models\LocationDrawing;
+use App\Service\SafieApiService;
 
 class CameraController extends AdminController
 {
@@ -17,6 +18,14 @@ class CameraController extends AdminController
     {
         $cameras = CameraService::doSearch($request)->paginate($this->per_page);
         $locations = LocationService::getAllLocationNames();
+        $safie_service = new SafieApiService();
+        $camera_image_data = $safie_service->getDeviceImage();
+        if ($camera_image_data != null) {
+            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+        }
+        foreach ($cameras as $camera) {
+            $camera->img = $camera_image_data;
+        }
 
         return view('admin.camera.index')->with([
             'cameras' => $cameras,
@@ -37,6 +46,12 @@ class CameraController extends AdminController
     public function edit(Request $request, Camera $camera)
     {
         $locations = LocationService::getAllLocationNames();
+        $safie_service = new SafieApiService();
+        $camera_image_data = $safie_service->getDeviceImage();
+        if ($camera_image_data != null) {
+            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+        }
+        $camera->img = $camera_image_data;
 
         return view('admin.camera.edit')->with([
             'camera' => $camera,

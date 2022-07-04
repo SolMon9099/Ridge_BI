@@ -260,7 +260,9 @@ class SafieApiService
     public function getMediaFileStatus($device_id = null, $request_id = null)
     {
         $device_id = $device_id != null ? $device_id : $this->device_id;
-        $request_id = '3115192';
+        if ($request_id == null) {
+            return null;
+        }
         $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests/%s', $device_id, $request_id);
         $header = [
             'Authorization: Bearer '.$this->access_token,
@@ -276,7 +278,9 @@ class SafieApiService
     public function deleteMediaFile($device_id = null, $request_id = null)
     {
         $device_id = $device_id != null ? $device_id : $this->device_id;
-        $request_id = '3111785';
+        if ($request_id == null) {
+            return null;
+        }
         $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests/%s', $device_id, $request_id);
         $header = [
             'Authorization: Bearer '.$this->access_token,

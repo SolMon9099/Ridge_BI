@@ -2,6 +2,10 @@
     <table class="table">
         <thead>
             <tr>
+                <th></th>
+                <td><img src="{{ isset($camera) && isset($camera->img)? $camera->img :asset('assets/admin/img/samplepic.svg') }}" class="w50"></td>
+            </tr>
+            <tr>
                 <th>カメラNo</th>
                 <td><input type="text" placeholder="カメラNoを入力してください" name="camera_id" value="{{ old('camera_id', isset($camera->camera_id)?$camera->camera_id:'')}}">
                 @error('camera_id')

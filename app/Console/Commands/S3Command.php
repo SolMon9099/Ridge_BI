@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Service\SafieApiService;
 use App\Models\S3VideoHistory;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class S3Command extends Command
 {
@@ -66,11 +67,11 @@ class S3Command extends Command
         $data = S3VideoHistory::query()->where('device_id', $device_id)
             ->where('status', '!=', 2)
             ->orderByDesc('updated_at')->limit(10)->get();
-
         $safie_service = new SafieApiService();
         foreach ($data as $item) {
             $media_status = $safie_service->getMediaFileStatus($device_id, $item->request_id);
             if ($media_status != null) {
+                Log::info($media_status);
                 if ($media_status['state'] == 'AVAILABLE') {
                     if ($item->status == 0) {
                         $item->status = 1;
@@ -79,6 +80,7 @@ class S3Command extends Command
                     $video_data = $safie_service->downloadMediaFile($media_status['url']);
 
                     if ($video_data != null) {
+                        Log::info('video-------');
                         $start_time = $item->start_time;
                         $end_time = $item->end_time;
                         $start_date = date('Ymd', strtotime($start_time));

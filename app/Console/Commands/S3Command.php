@@ -36,12 +36,17 @@ class S3Command extends Command
             $record_end_time_object->sub(new \DateInterval('PT'.(string) $request_interval.'M'));
             $record_end_time = $record_end_time_object->format('c');
 
+            //メディアファイル 作成要求削除(s3に保存されたもの)
+            Log::info('Delete request****************');
+            $this->deleteOldRequests();
             //メディアファイル作成要求一覧取得・S3に保存--------------------------------
+            Log::info('saveMedia start****************');
             $this->saveMedia();
             //----------------------------------------------------------------------
 
             //メディアファイル作成要求--------------------------------
             $request_id = $safie_service->makeMediaFile(null, $record_start_time, $record_end_time);
+            Log::info('request_id = '.$request_id);
             if ($request_id > 0) {
                 $this->createS3History($request_id, $record_start_time_object, $record_end_time_object);
             }
@@ -49,6 +54,25 @@ class S3Command extends Command
         }
 
         return 0;
+    }
+
+    public function deleteOldRequests($device_id = null)
+    {
+        $query = S3VideoHistory::query()->where('status', '=', 2);
+        if ($device_id != null) {
+            $query->where('device_id', $device_id);
+        }
+        $data = $query->orderBy('updated_at')->get();
+        if (count($data) > 0) {
+            $safie_service = new SafieApiService();
+            foreach ($data as $item) {
+                $res = $safie_service->deleteMediaFile($item->device_id, $item->request_id);
+                if ($res != null) {
+                    $item->status = 3;
+                    $item->save();
+                }
+            }
+        }
     }
 
     public function createS3History($request_id, $record_start_time_object, $record_end_time_object, $device_id = null)
@@ -66,6 +90,7 @@ class S3Command extends Command
         $device_id = $device_id == null ? 'FvY6rnGWP12obPgFUj0a' : $device_id;
         $data = S3VideoHistory::query()->where('device_id', $device_id)
             ->where('status', '!=', 2)
+            ->where('status', '!=', 3)
             ->orderByDesc('updated_at')->limit(10)->get();
         $safie_service = new SafieApiService();
         foreach ($data as $item) {

@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Models\Camera;
 use App\Models\CameraMappingDetail;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class CameraService
 {
@@ -12,13 +12,18 @@ class CameraService
     {
         $cameras = Camera::query();
         if ($params->has('location') && $params->location > 0) {
-            $cameras = $cameras->where('location_id', $params->location);
+            $cameras = $cameras->where('cameras.location_id', $params->location);
         }
-        if ($params->has('installation_floor') && $params->installation_floor != '') {
-            $cameras = $cameras->where('installation_floor', 'LIKE', '%'.$params->installation_floor.'%');
+        if ($params->has('floor_number') && $params->floor_number != '') {
+            $cameras->select('cameras.*', 'drawing.floor_number')->leftJoin('camera_mapping_details as map', 'cameras.id', 'map.camera_id')->whereNull('map.deleted_at')
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'map.drawing_id')->whereNull('drawing.deleted_at')
+                ->where('drawing.floor_number', 'LIKE', '%'.$params->floor_number.'%');
         }
         if ($params->has('is_enabled')) {
             $cameras = $cameras->where('is_enabled', $params->is_enabled ? 1 : 0);
+        }
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $cameras = $cameras->where('contract_no', Auth::guard('admin')->user()->contract_no);
         }
 
         return $cameras;
@@ -33,7 +38,9 @@ class CameraService
         } else {
             $new_Camera->location_id = $params['location_id'];
         }
-        $new_Camera->installation_floor = $params['installation_floor'];
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $new_Camera->contract_no = Auth::guard('admin')->user()->contract_no;
+        }
         $new_Camera->installation_position = $params['installation_position'];
         $new_Camera->remarks = $params['remarks'];
         $new_Camera->is_enabled = isset($params['is_enabled']) ? $params['is_enabled'] : 1;
@@ -53,7 +60,6 @@ class CameraService
             } else {
                 $cur_Camera->location_id = $params['location_id'];
             }
-            $cur_Camera->installation_floor = $params['installation_floor'];
             $cur_Camera->installation_position = $params['installation_position'];
             $cur_Camera->remarks = $params['remarks'];
             $cur_Camera->is_enabled = isset($params['is_enabled']) ? $params['is_enabled'] : 1;
@@ -81,7 +87,12 @@ class CameraService
 
     public static function getCameraByLocation($location_id)
     {
-        return Camera::query()->where('location_id', $location_id)->get();
+        $camera_query = Camera::query()->where('location_id', $location_id);
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $camera_query->where('contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+
+        return $camera_query->get();
     }
 
     public static function storeMapping($camera_mapping_info)

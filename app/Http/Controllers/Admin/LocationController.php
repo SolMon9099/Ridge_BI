@@ -8,12 +8,17 @@ use App\Models\Location;
 use App\Http\Requests\Admin\LocationRequest;
 use App\Service\LocationService;
 use App\Service\AccountService;
+use Illuminate\Support\Facades\Auth;
 
 class LocationController extends AdminController
 {
     public function index()
     {
-        $locations = Location::paginate($this->per_page);
+        $location_query = Location::query();
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $location_query = $location_query->where('contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        $locations = $location_query->paginate($this->per_page);
         $admins = AccountService::getAllAccountNames();
 
         return view('admin.location.index')->with([
@@ -24,8 +29,13 @@ class LocationController extends AdminController
 
     public function edit(Request $request, Location $location)
     {
+        $login_user = Auth::guard('admin')->user();
         $owners = Admin::where('authority_id', 2)->get();
-        $managers = Admin::where('authority_id', 3)->get();
+        $query = Admin::where('authority_id', config('const.authorities_codes.manager'));
+        if ($login_user->contract_no != null) {
+            $query->where('contract_no', $login_user->contract_no);
+        }
+        $managers = $query->get();
 
         return view('admin.location.edit')->with([
             'location' => $location,
@@ -36,8 +46,13 @@ class LocationController extends AdminController
 
     public function create()
     {
+        $login_user = Auth::guard('admin')->user();
         $owners = Admin::where('authority_id', 2)->get();
-        $managers = Admin::where('authority_id', 3)->get();
+        $query = Admin::where('authority_id', config('const.authorities_codes.manager'));
+        if ($login_user->contract_no != null) {
+            $query->where('contract_no', $login_user->contract_no);
+        }
+        $managers = $query->get();
 
         return view('admin.location.create')->with([
             'owners' => $owners,

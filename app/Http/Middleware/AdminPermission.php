@@ -30,7 +30,8 @@ class AdminPermission
                     }
                 }
             } else {
-                $allowed_pages = AuthorityGroup::query()->where('authority_id', $login_user->authority_id)->where('access_flag', 1)->get()->all();
+                $allowed_pages = AuthorityGroup::query()->where('authority_id', $login_user->authority_id)->where('access_flag', 1)
+                    ->where('contract_no', $login_user->contract_no)->get()->all();
                 if (count($allowed_pages) == 0) {
                     abort(403);
                 }

@@ -56,17 +56,17 @@
                     <td><p>{{$index == 0 ? $group_name : ''}}</p></td>
                     <td><p>{{$detail['name']}}</p></td>
                     @foreach(config('const.authorities') as $authority_id => $authority)
-                    @if ($authority_id ==1 || !in_array($group_name, config('const.admin_pages')))
+                    @if ($authority_id ==config('const.authorities_codes.admin') || !in_array($group_name, config('const.admin_pages')))
                         <td class="text-centre">
                             <div class="checkbtn-wrap">
-                                @if ($authority_id == 1)
-                                    <input name="checkbox{{$authority_id}}_{{$detail['id']}}" type="checkbox" id="{{$authority_id}}-{{$detail['id']}}" class="opa" checked disabled>
+                                @if ($authority_id == config('const.authorities_codes.admin'))
+                                    <input type="checkbox" class="opa" checked disabled>
                                 @elseif (isset($authority_groups[$authority_id]) && isset($authority_groups[$authority_id][$detail['id']]) &&  $authority_groups[$authority_id][$detail['id']] == 1)
                                     <input name="checkbox{{$authority_id}}_{{$detail['id']}}" type="checkbox" id="{{$authority_id}}-{{$detail['id']}}" checked>
                                 @else
                                     <input name="checkbox{{$authority_id}}_{{$detail['id']}}" type="checkbox" id="{{$authority_id}}-{{$detail['id']}}" >
                                 @endif
-                            <label class="custom-style" for="{{$authority_id}}-{{$detail['id']}}"></label>
+                                <label class="custom-style" for="{{$authority_id}}-{{$detail['id']}}"></label>
                             </div>
                         </td>
                     @else

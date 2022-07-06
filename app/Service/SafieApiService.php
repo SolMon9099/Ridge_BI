@@ -89,6 +89,7 @@ class SafieApiService
 
     public function refreshToken($refresh_token)
     {
+        Log::info('Refresh = '.$refresh_token);
         $url = sprintf('%s%s', $this->api_url, $this->refresh_url);
         $params['client_id'] = env('CLIENT_ID', $this->client_id);   //'dc2537ffb887'
         $params['client_secret'] = env('SECRET', $this->secret);   //'d25100e130499d0fb257df19cd5b0279'
@@ -96,7 +97,9 @@ class SafieApiService
         $params['refresh_token'] = $refresh_token;
         $params['scope'] = 'safie-api';
         $response = $this->sendPostApi($url, null, $params);
+        Log::info($response);
         $this->updateTokenDB($response);
+        Log::info('Finish Refresh Token');
     }
 
     public function getAuthUrl()
@@ -309,6 +312,19 @@ class SafieApiService
         return $response;
     }
 
+    //デバイス一覧取得
+    public function getAllDevices()
+    {
+        $url = sprintf('https://openapi.safie.link/v1/devices');
+        $header = [
+            'Authorization: Bearer '.$this->access_token,
+            'Content-Type: application/json',
+        ];
+        $response = $this->sendGetApi($url, $header);
+
+        return $response;
+    }
+
     public function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
     {
         Log::info('【Start Post Api】url:'.$url);
@@ -341,6 +357,7 @@ class SafieApiService
 
         $response = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('httpcode = '.$httpcode);
         curl_close($curl);
         if ($httpcode == 200) {
             $response_edit = strstr($response, '{');
@@ -381,13 +398,20 @@ class SafieApiService
         }
 
         $response = curl_exec($curl);
-        $response_edit = strstr($response, '{');
-        $response_return = json_decode($response_edit, true);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('httpcode = '.$httpcode);
+        if ($httpcode == 200) {
+            // $response_edit = strstr($response, '{');
+            // $response_return = json_decode($response_edit, true);
+            // Log::info($response_return);
+            Log::info('【Finish Delete Api】url:'.$url);
 
-        Log::info($response_return);
-        Log::info('【Finish Delete Api】url:'.$url);
+            return true;
+        } else {
+            Log::info('【Finish Delete Api】url:'.$url);
 
-        return $response_return;
+            return null;
+        }
     }
 
     public function sendGetApi($url, $header, $json_type = true)
@@ -405,7 +429,7 @@ class SafieApiService
 
         $response = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
+        Log::info('httpcode = '.$httpcode);
         if ($httpcode == 200) {
             if ($json_type == true) {
                 $response_edit = strstr($response, '{');

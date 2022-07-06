@@ -16,7 +16,6 @@ class NotificationController extends AdminController
     {
         $groups = NotificationGroup::paginate($this->per_page);
         $msgs = NotificationMsg::paginate($this->per_page);
-        var_dump($request->active_tab);
 
         return view('admin.notification.index')->with([
             'groups' => $groups,

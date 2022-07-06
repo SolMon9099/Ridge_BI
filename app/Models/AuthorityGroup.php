@@ -12,11 +12,12 @@ class AuthorityGroup extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'contract_no',
         'authority_id',
         'group_id',
         'access_flag',
         'created_by',
         'updated_by',
-        'deleted_by'
+        'deleted_by',
     ];
 }

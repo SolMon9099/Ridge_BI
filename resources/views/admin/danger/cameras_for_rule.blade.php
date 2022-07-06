@@ -42,7 +42,7 @@
                                 </td>
                                 <td>{{$camera->camera_id}}</td>
                                 <td>{{isset($locations[$camera->location_id])?$locations[$camera->location_id]:''}}</td>
-                                <td>{{$camera->installation_floor}}</td>
+                                <td>{{$camera->floor_number}}</td>
                                 <td>{{$camera->installation_position}}</td>
                                 <td>{{$camera->remarks}}</td>
                                 <td>{{config('const.camera_status')[$camera->is_enabled]}}</td>

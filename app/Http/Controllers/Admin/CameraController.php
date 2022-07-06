@@ -9,6 +9,7 @@ use App\Service\CameraService;
 use App\Service\LocationService;
 use App\Service\LocationDrawingService;
 use App\Models\Camera;
+use App\Models\CameraMappingDetail;
 use App\Models\LocationDrawing;
 use App\Service\SafieApiService;
 
@@ -24,6 +25,15 @@ class CameraController extends AdminController
             $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
         }
         foreach ($cameras as $camera) {
+            if (!($request->has('floor_number') && $request->floor_number != '')) {
+                $map_data = CameraMappingDetail::select()
+                    ->where('camera_id', $camera->id)
+                    ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                    ->get()->first();
+                if ($map_data != null) {
+                    $camera->floor_number = $map_data->floor_number;
+                }
+            }
             $camera->img = $camera_image_data;
         }
 
@@ -37,9 +47,12 @@ class CameraController extends AdminController
     public function create()
     {
         $locations = LocationService::getAllLocationNames();
+        $safie_service = new SafieApiService();
+        $devices = $safie_service->getAllDevices();
 
         return view('admin.camera.create')->with([
             'locations' => $locations,
+            'devices' => $devices,
         ]);
     }
 
@@ -89,6 +102,15 @@ class CameraController extends AdminController
     {
         $drawings = LocationDrawingService::getDataByLocation($drawing->location_id);
         $cameras = CameraService::getCameraByLocation($drawing->location_id);
+        foreach ($cameras as $camera) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $camera->floor_number = $map_data->floor_number;
+            }
+        }
         $camera_mapping_info = [];
         foreach ($drawings as $drawing_item) {
             $camera_mapping_info[$drawing_item->id] = $drawing_item->obj_camera_mappings;

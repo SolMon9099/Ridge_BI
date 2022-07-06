@@ -115,8 +115,11 @@
                 <td>
                 <ul class="radio-list">
                     @foreach (config('const.enable_status') as $key => $status )
-                    <li><input name="is_enabled" type="radio" id="is_enabled_{{ $key }}" value="{{ $key }}" {{ old('is_enabled', isset($admin->is_enabled) ? $admin->is_enabled : config('const.enable_status_code.enable')) == $key ? 'checked' : ''  }}>
-                    <label for="is_enabled_{{ $key }}">{{  $status }}</label></li>
+                    <li>
+                        <input name="is_enabled" type="radio" id="is_enabled_{{ $key }}" value="{{ $key }}"
+                            {{ old('is_enabled', isset($location->is_enabled) ? $location->is_enabled : config('const.enable_status_code.enable')) == $key ? 'checked' : ''  }}>
+                        <label for="is_enabled_{{ $key }}">{{  $status }}</label>
+                    </li>
                     @endforeach
                 </ul>
                 </td>

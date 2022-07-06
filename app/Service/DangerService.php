@@ -11,11 +11,13 @@ class DangerService
     {
         $danger_rules = DangerAreaDetectionRule::select(
             'danger_area_detection_rules.*',
-            'cameras.installation_floor',
             'cameras.installation_position',
             'cameras.location_id',
-            'cameras.camera_id as camera_no'
+            'cameras.camera_id as camera_no',
         )->leftJoin('cameras', 'cameras.id', '=', 'danger_area_detection_rules.camera_id');
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $danger_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
+        }
 
         return $danger_rules;
     }

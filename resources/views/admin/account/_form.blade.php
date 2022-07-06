@@ -2,7 +2,6 @@
     $login_user = Auth::guard('admin')->user();
     $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
     $edit_user_authority = old('authority_id', isset($admin->authority_id)?$admin->authority_id:1);
-    // dd($errors);
 ?>
 <div class="no-scroll">
     <table class="table">
@@ -10,8 +9,14 @@
             <tr>
                 <th>権限</th>
                 <td>
-                    @if ($edit_user_authority == config('const.super_admin_code'))
-                        {{config('const.super_admin')[config('const.super_admin_code')]}}
+                    @if ($super_admin_flag)
+                        @if ($edit_user_authority == config('const.super_admin_code'))
+                            {{config('const.super_admin')[config('const.super_admin_code')]}}
+                        @else
+                            <select name="authority_id" readonly>
+                                <option value="{{config('const.authorities_codes.admin')}}" selected>{{config('const.authorities')[config('const.authorities_codes.admin')]}}</option>
+                            </select>
+                        @endif
                     @else
                         <select name="authority_id">
                             @foreach(config('const.authorities') as $authority_id => $authority)
@@ -44,6 +49,42 @@
                     <td>
                         <input style="background:white" name = 'contract_no' type="number" value="{{ old('contract_no', isset($admin->contract_no)?$admin->contract_no:'')}}"/>
                         @error('contract_no')
+                        <p class="error-message">{{ $message }}</p>
+                        @enderror
+                    </td>
+                </tr>
+                <tr>
+                    <th>セーフィーID</th>
+                    <td>
+                        <input type='text' name = 'safie_user_name' value="{{ old('safie_user_name', isset($admin->safie_user_name)?$admin->safie_user_name:'')}}"/>
+                        @error('safie_user_name')
+                        <p class="error-message">{{ $message }}</p>
+                        @enderror
+                    </td>
+                </tr>
+                <tr>
+                    <th>セーフィーパス</th>
+                    <td>
+                        <input type='text' name = 'safie_password' value="{{ old('safie_password', isset($admin->safie_password)?$admin->safie_password:'')}}"/>
+                        @error('safie_password')
+                        <p class="error-message">{{ $message }}</p>
+                        @enderror
+                    </td>
+                </tr>
+                <tr>
+                    <th>client_id</th>
+                    <td>
+                        <input type='text' name = 'safie_client_id' value="{{ old('safie_client_id', isset($admin->safie_client_id)?$admin->safie_client_id:'')}}"/>
+                        @error('safie_client_id')
+                        <p class="error-message">{{ $message }}</p>
+                        @enderror
+                    </td>
+                </tr>
+                <tr>
+                    <th>client_secret</th>
+                    <td>
+                        <input type='text' name = 'safie_client_secret' value="{{ old('safie_client_secret', isset($admin->safie_client_secret)?$admin->safie_client_secret:'')}}"/>
+                        @error('safie_client_secret')
                         <p class="error-message">{{ $message }}</p>
                         @enderror
                     </td>

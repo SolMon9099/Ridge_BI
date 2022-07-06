@@ -9,8 +9,9 @@ use App\Service\LocationService;
 use App\Service\SafieApiService;
 use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
-
+use App\Models\CameraMappingDetail;
 // use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Auth;
 
 class DangerController extends AdminController
 {
@@ -18,6 +19,15 @@ class DangerController extends AdminController
     {
         $dangers = DangerService::doSearch($request)->paginate($this->per_page);
         $locations = LocationService::getAllLocationNames();
+        foreach ($dangers as $daner) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $daner->camera_id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $daner->floor_number = $map_data->floor_number;
+            }
+        }
 
         return view('admin.danger.index')->with([
             'dangers' => $dangers,
@@ -29,7 +39,20 @@ class DangerController extends AdminController
     public function cameras_for_rule(Request $request)
     {
         $locations = LocationService::getAllLocationNames();
-        $cameras = Camera::orderBy('id', 'asc')->paginate($this->per_page);
+        $camera_query = Camera::query();
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $camera_query->where('contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        $cameras = $camera_query->orderBy('id', 'asc')->paginate($this->per_page);
+        foreach ($cameras as $camera) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $camera->floor_number = $map_data->floor_number;
+            }
+        }
 
         return view('admin.danger.cameras_for_rule')->with([
             'locations' => $locations,

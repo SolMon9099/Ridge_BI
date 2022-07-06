@@ -42,7 +42,7 @@
                             <td><button type="button" class="edit" onclick="location.href='{{route('admin.danger.edit', ['danger' => $danger->id])}}'">編集</button></td>
                             <td>{{$danger->camera_no}}</td>
                             <td>{{isset($locations[$danger->location_id])?$locations[$danger->location_id]:''}}</td>
-                            <td>{{$danger->installation_floor}}</td>
+                            <td>{{$danger->floor_number}}</td>
                             <td>{{$danger->installation_position}}</td>
                             <td>{{config('const.action')[$danger->action_id]}}</td>
                             <td><input disabled type="color" value = "{{$danger->color}}"/></td>

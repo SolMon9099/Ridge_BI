@@ -47,7 +47,7 @@
                         <li><h4>設置フロア</h4></li>
                         <li>
                             <div>
-                                <input type="text" name="installation_floor" value="{{ old('installation_floor', (isset($input) && $input->has('installation_floor'))?$input->installation_floor:'')}}"/>
+                                <input type="text" name="floor_number" value="{{ old('floor_number', (isset($input) && $input->has('floor_number'))?$input->floor_number:'')}}"/>
                             </div>
                         </li>
                     </ul>
@@ -90,7 +90,7 @@
                     </tr>
                     <tr>
                         <th>設置フロア</th>
-                        <td>{{$camera->installation_floor}}</td>
+                        <td>{{$camera->floor_number}}</td>
                     </tr>
                     <tr>
                         <th>設置場所</th>
@@ -101,69 +101,8 @@
             </li>
         @endforeach
         </ul>
-        {{-- <div class="scroll active">
-            <table class="table2 text-centre">
-            <thead>
-                <tr>
-                <th>編集</th>
-                <th>カメラNo</th>
-                <th>現場名</th>
-                <th>設置フロア</th>
-                <th>設置場所</th>
-                <th>備考</th>
-                <th>稼働状況</th>
-                <th>削除</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($cameras as $camera)
-                <tr>
-                    <td><button type="button" class="edit" onclick="location.href='{{route('admin.camera.edit', ['camera' => $camera->id])}}'">編集</button></td>
-                    <td>{{$camera->camera_id}}</td>
-                    <td>{{isset($locations[$camera->location_id])?$locations[$camera->location_id]:''}}</td>
-                    <td>{{$camera->installation_floor}}</td>
-                    <td>{{$camera->installation_position}}</td>
-                    <td>{{$camera->remarks}}</td>
-                    <td>{{config('const.camera_status')[$camera->is_enabled]}}</td>
-                    <td><button type="button" class="delete_cameras history" delete_index="{{ $camera->id }}">削除</button>
-                        <form id="frm_delete_{{ $camera->id }}" action="{{ route('admin.camera.delete', ['camera'=> $camera->id]) }}" method="POST" style="display: none;">
-                        @csrf
-                        @method('delete')
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-            </table>
-        </div> --}}
         {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
     </div>
-  </div>
-
-
-<div id="dialog-confirm" title="test" style="display:none">
-    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
-        <span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
 </div>
-
-<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
-
-<script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
-<script src="{{ asset('assets/admin/js/helper.js?2') }}"></script>
-
-<script>
-  var delete_id = "";
-  $(document).ready(function () {
-      $(".delete_cameras").click(function(e){
-          e.preventDefault();
-          delete_id = $(this).attr('delete_index');
-          helper_confirm("dialog-confirm", "削除", "カメラを削除します。<br />よろしいですか？", 300, "確認", "閉じる", function(){
-              var frm_id = "#frm_delete_" + delete_id;
-              $(frm_id).submit();
-          });
-      });
-
-  });
-</script>
 
 @endsection

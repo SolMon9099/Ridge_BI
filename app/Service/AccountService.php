@@ -19,6 +19,21 @@ class AccountService
         $new_user->password = Hash::make($params['password']);
         $new_user->is_enabled = isset($params['is_enabled']) ? $params['is_enabled'] : 1;
         $new_user->contract_no = $params['contract_no'];
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            $new_user->is_main_admin = 1;
+            if (isset($params['safie_user_name'])) {
+                $new_user->safie_user_name = $params['safie_user_name'];
+            }
+            if (isset($params['safie_password'])) {
+                $new_user->safie_password = $params['safie_password'];
+            }
+            if (isset($params['safie_client_id'])) {
+                $new_user->safie_client_id = $params['safie_client_id'];
+            }
+            if (isset($params['safie_client_secret'])) {
+                $new_user->safie_client_secret = $params['safie_client_secret'];
+            }
+        }
         if (isset($params['headers']) && count($params['headers']) > 0) {
             $new_user->header_menu_ids = implode(',', $params['headers']);
         }
@@ -40,6 +55,18 @@ class AccountService
             }
             if (isset($params['contract_no'])) {
                 $cur_Account->contract_no = $params['contract_no'];
+            }
+            if (isset($params['safie_user_name'])) {
+                $cur_Account->safie_user_name = $params['safie_user_name'];
+            }
+            if (isset($params['safie_password'])) {
+                $cur_Account->safie_password = $params['safie_password'];
+            }
+            if (isset($params['safie_client_id'])) {
+                $cur_Account->safie_client_id = $params['safie_client_id'];
+            }
+            if (isset($params['safie_client_secret'])) {
+                $cur_Account->safie_client_secret = $params['safie_client_secret'];
             }
             if (isset($params['headers']) && count($params['headers']) > 0) {
                 $cur_Account->header_menu_ids = implode(',', $params['headers']);

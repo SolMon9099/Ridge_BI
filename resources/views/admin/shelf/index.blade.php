@@ -43,7 +43,7 @@
                             <td><button type="button" class="edit" onclick="location.href='{{route('admin.shelf.edit', ['shelf' => $shelf->id])}}'">編集</button></td>
                             <td>{{$shelf->camera_no}}</td>
                             <td>{{isset($locations[$shelf->location_id])?$locations[$shelf->location_id]:''}}</td>
-                            <td>{{$shelf->installation_floor}}</td>
+                            <td>{{$shelf->floor_number}}</td>
                             <td>{{$shelf->installation_position}}</td>
                             <td><input disabled type="color" value = "{{$shelf->color}}"/></td>
                             <td>

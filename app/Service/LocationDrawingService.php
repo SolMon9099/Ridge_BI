@@ -74,6 +74,11 @@ class LocationDrawingService
         if ($params->has('location') && $params->location > 0) {
             $drawings = $drawings->where('location_id', $params->location);
         }
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $drawings->select('location_drawings.*')->leftJoin('locations', 'location_id', 'locations.id')
+                ->where('locations.contract_no', Auth::guard('admin')->user()->contract_no)
+                ->whereNull('locations.deleted_at');
+        }
 
         return $drawings->with('location');
     }

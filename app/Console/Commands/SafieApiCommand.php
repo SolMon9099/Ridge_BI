@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Service\SafieApiService;
+use Illuminate\Support\Facades\Log;
 
 class SafieApiCommand extends Command
 {
@@ -18,6 +19,7 @@ class SafieApiCommand extends Command
 
     public function handle()
     {
+        Log::info('Refresh Token****************');
         $safie_service = new SafieApiService();
         $safie_service->generateRefreshToken();
 

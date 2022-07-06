@@ -9,7 +9,6 @@
         $floors[$drawing->id] = $drawing->floor_number;
         $drawing_files[$drawing->id] = $drawing->drawing_file_path;
     }
-
 ?>
 <div id="wrapper">
     <div class="breadcrumb">
@@ -88,7 +87,7 @@
                             </td>
                             <td>{{$camera->id}}</td>
                             <td>{{$camera->camera_id}}</td>
-                            <td>{{$camera->installation_floor}}</td>
+                            <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
                             <td>{{$camera->remarks}}</td>
                         </tr>
@@ -121,6 +120,10 @@
 
 <style>
     #container-canvas{
+        margin-left: auto;
+        margin-right: auto;
+        width:1280px;
+        /* height:720px; */
         background-repeat: no-repeat!important;
         background-size:contain!important;
     }

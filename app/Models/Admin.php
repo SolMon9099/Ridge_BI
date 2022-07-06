@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class Admin extends Authenticatable
 {
@@ -33,8 +34,13 @@ class Admin extends Authenticatable
 
     public function getManagerAllowedPagesAttribute()
     {
+        $login_user = Auth::guard('admin')->user();
         $res = [];
-        $allowed_pages = AuthorityGroup::query()->where('authority_id', config('const.authorities_codes.manager'))->where('access_flag', 1)->get()->all();
+        $query = AuthorityGroup::query()->where('authority_id', config('const.authorities_codes.manager'))->where('access_flag', 1);
+        if ($login_user->contract_no != null) {
+            $query->where('contract_no', $login_user->contract_no);
+        }
+        $allowed_pages = $query->get()->all();
         foreach ($allowed_pages as $item) {
             $res[] = config('const.page_route_names')[$item->group_id];
         }

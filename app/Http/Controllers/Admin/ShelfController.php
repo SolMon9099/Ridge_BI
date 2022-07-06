@@ -9,6 +9,8 @@ use App\Service\SafieApiService;
 use App\Http\Requests\Admin\ShelfRequest;
 use App\Models\ShelfDetectionRule;
 use Illuminate\Http\Request;
+use App\Models\CameraMappingDetail;
+use Illuminate\Support\Facades\Auth;
 
 class ShelfController extends AdminController
 {
@@ -16,6 +18,15 @@ class ShelfController extends AdminController
     {
         $shelfs = ShelfService::doSearch()->paginate($this->per_page);
         $locations = LocationService::getAllLocationNames();
+        foreach ($shelfs as $shelf) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $shelf->camera_id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $shelf->floor_number = $map_data->floor_number;
+            }
+        }
 
         return view('admin.shelf.index')->with([
             'shelfs' => $shelfs,
@@ -61,7 +72,20 @@ class ShelfController extends AdminController
     public function cameras_for_rule()
     {
         $locations = LocationService::getAllLocationNames();
-        $cameras = Camera::orderBy('id', 'asc')->paginate($this->per_page);
+        $camera_query = Camera::query();
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $camera_query->where('contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        $cameras = $camera_query->orderBy('id', 'asc')->paginate($this->per_page);
+        foreach ($cameras as $camera) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $camera->floor_number = $map_data->floor_number;
+            }
+        }
 
         return view('admin.shelf.cameras_for_rule')->with([
             'locations' => $locations,

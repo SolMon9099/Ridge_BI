@@ -13,8 +13,13 @@ class AccountController extends AdminController
     public function index()
     {
         $login_user = Auth::guard('admin')->user();
-        if ($login_user->authority_id == config('const.super_admin_code') || !($login_user->contract_no > 0)) {
-            $admins = Admin::paginate($this->per_page);
+        if ($login_user->authority_id == config('const.super_admin_code')) {
+            $admins = Admin::query()
+                ->where(function ($q) {
+                    $q->orWhere('is_main_admin', 1);
+                    $q->orWhere('authority_id', config('const.super_admin_code'));
+                })
+                ->paginate($this->per_page);
         } else {
             $admins = Admin::query()->where('contract_no', $login_user->contract_no)->paginate($this->per_page);
         }

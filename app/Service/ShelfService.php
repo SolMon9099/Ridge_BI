@@ -11,11 +11,13 @@ class ShelfService
     {
         $rules = ShelfDetectionRule::select(
             'shelf_detection_rules.*',
-            'cameras.installation_floor',
             'cameras.installation_position',
             'cameras.location_id',
             'cameras.camera_id as camera_no'
         )->leftJoin('cameras', 'cameras.id', '=', 'shelf_detection_rules.camera_id');
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
+        }
 
         return $rules;
     }

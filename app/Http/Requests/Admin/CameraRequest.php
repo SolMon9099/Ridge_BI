@@ -37,7 +37,6 @@ class CameraRequest extends FormRequest
         $rules = [];
         if (!empty($this->action)) {
             $rules['location_id'] = ['required'];
-            $rules['installation_floor'] = ['required', 'max:150'];
             $rules['installation_position'] = ['required', 'max:150'];
             if ($this->action == 'admin.camera.store') {
                 $rules['camera_id'] = ['required', 'max:150', 'unique:cameras,camera_id,NULL,id,deleted_at,NULL'];
@@ -54,7 +53,6 @@ class CameraRequest extends FormRequest
         $attributes = parent::attributes();
         $attributes['camera_id'] = 'カメラNo';
         $attributes['location_id'] = '現場名';
-        $attributes['installation_floor'] = '設置フロア';
         $attributes['installation_position'] = '設置場所';
 
         return $attributes;
@@ -66,8 +64,7 @@ class CameraRequest extends FormRequest
         $messages['camera_id.required'] = 'カメラNoを入力してください。';
         $messages['camera_id.unique'] = 'すでに登録されたカメラNoです。';
         $messages['location_id.required'] = '現場名を入力してください。';
-        $messages['installation_floor.required'] = '設置フロアを入力してください。';
-        $messages['installation_position.required'] = '設置フロアを入力してください。';
+        $messages['installation_position.required'] = '設置場所を入力してください。';
 
         return $messages;
     }

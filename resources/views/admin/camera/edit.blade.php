@@ -1,3 +1,7 @@
+<?php
+    $login_user = Auth::guard('admin')->user();
+    $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
+?>
 @extends('admin.layouts.app')
 
 @section('content')
@@ -20,7 +24,9 @@
             <input type="hidden" name="id" value="{{$camera->id}}"/>
             @include('admin.camera._form')
             <div class="btns">
+                @if(!$super_admin_flag)
                 <button type="submit" class="ok">更新</button>
+                @endif
                 <button type="button" class="delete2" onclick="deleteCamera()">削除</button>
             </div>
         </form>

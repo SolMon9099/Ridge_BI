@@ -10,6 +10,7 @@ use App\Service\SafieApiService;
 use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
 use App\Models\CameraMappingDetail;
+use App\Service\CameraService;
 // use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,7 +19,6 @@ class DangerController extends AdminController
     public function index(Request $request)
     {
         $dangers = DangerService::doSearch($request)->paginate($this->per_page);
-        $locations = LocationService::getAllLocationNames();
         foreach ($dangers as $daner) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $daner->camera_id)
@@ -31,13 +31,15 @@ class DangerController extends AdminController
 
         return view('admin.danger.index')->with([
             'dangers' => $dangers,
-            'locations' => $locations,
             'input' => $request,
         ]);
     }
 
     public function cameras_for_rule(Request $request)
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         $locations = LocationService::getAllLocationNames();
         $camera_query = Camera::query();
         if (Auth::guard('admin')->user()->contract_no != null) {
@@ -62,13 +64,17 @@ class DangerController extends AdminController
 
     public function create_rule(DangerRequest $request)
     {
-        $safie_service = new SafieApiService();
-        $camera_image_data = $safie_service->getDeviceImage();
-        if ($camera_image_data != null) {
-            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
         }
 
         $danger_rules = DangerService::getRulesByCameraID($request['selected_camera']);
+        $camera_data = CameraService::getCameraInfoById($request['selected_camera']);
+        $safie_service = new SafieApiService($camera_data->contract_no);
+        $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
+        if ($camera_image_data != null) {
+            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+        }
 
         return view('admin.danger.create_rule')->with([
             'camera_id' => $request['selected_camera'],
@@ -81,8 +87,12 @@ class DangerController extends AdminController
 
     public function edit(Request $request, DangerAreaDetectionRule $danger)
     {
-        $safie_service = new SafieApiService();
-        $camera_image_data = $safie_service->getDeviceImage();
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
+        $camera_data = CameraService::getCameraInfoById($danger->camera_id);
+        $safie_service = new SafieApiService($camera_data->contract_no);
+        $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
         if ($camera_image_data != null) {
             $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
         }
@@ -101,6 +111,9 @@ class DangerController extends AdminController
 
     public function store(DangerRequest $request)
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         $rule_data = json_decode($request['rule_data']);
         $rule_data = (array) $rule_data;
         if (DangerService::saveData($rule_data)) {
@@ -127,14 +140,85 @@ class DangerController extends AdminController
         }
     }
 
-    public function list()
+    public function list(Request $request)
     {
-        return view('admin.danger.list');
+        $danger_detections = DangerService::searchDetections($request)->paginate($this->per_page);
+        foreach ($danger_detections as $item) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $item->camera_id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $item->floor_number = $map_data->floor_number;
+            }
+        }
+        $rules = DangerService::doSearch($request)->get()->all();
+        foreach ($rules as $rule) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $rule->camera_id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $rule->floor_number = $map_data->floor_number;
+            }
+        }
+
+        return view('admin.danger.list')->with([
+            'danger_detections' => $danger_detections,
+            'request' => $request,
+            'rules' => $rules,
+        ]);
     }
 
-    public function detail()
+    public function detail(Request $request)
     {
-        return view('admin.danger.detail');
+        switch ($request['selected_search_option']) {
+            case 1:
+                $request['selected_cameras'] = [];
+                $request['selected_actions'] = [];
+                break;
+            case 2:
+                $request['selected_rules'] = [];
+                $request['selected_actions'] = [];
+                break;
+            case 3:
+                $request['selected_rules'] = [];
+                $request['selected_cameras'] = [];
+                break;
+        }
+        $danger_detections = DangerService::searchDetections($request)->get()->all();
+        $all_data = [];
+        foreach ($danger_detections as $item) {
+            $all_data[date('Y-m-d', strtotime($item->starttime))][$item->action_id][] = $item;
+        }
+        $rules = DangerService::doSearch($request)->get()->all();
+        $cameras = DangerService::getAllCameras();
+
+        foreach ($rules as $rule) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $rule->camera_id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $rule->floor_number = $map_data->floor_number;
+            }
+        }
+        foreach ($cameras as $camera) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $camera->floor_number = $map_data->floor_number;
+            }
+        }
+
+        return view('admin.danger.detail')->with([
+            'all_data' => json_encode($all_data),
+            'request' => $request,
+            'rules' => $rules,
+            'cameras' => $cameras,
+        ]);
     }
 
     public function ajaxUploadFile(Request $request)

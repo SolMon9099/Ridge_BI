@@ -8,33 +8,56 @@ use App\Models\Token;
 
 class SafieApiService
 {
-    private $client_id = 'dc2537ffb887';
-    private $secret = 'd25100e130499d0fb257df19cd5b0279';
-
     private $api_url = 'https://openapi.safie.link/v1/';
     private $redirect_uri = 'http://54.95.92.211/';
-    // private $redirect_uri = 'http://120.143.15.36/';
+    private $client_id = 'dc2537ffb887';
+    private $secret = 'd25100e130499d0fb257df19cd5b0279';
     public $device_id = 'FvY6rnGWP12obPgFUj0a';
-    private $auth_authorize = 'auth/authorize';
-    private $auth_token = 'auth/token';
-
-    private $refresh_url = 'auth/refresh-token';
-
     private $safie_user_name = 'soumu@ridge-i.com';
     private $safie_password = 'ridge-i438';
-
     public $access_token = '';
     public $refresh_token = '';
+    private $contract_no = null;
+    private static $_instance = null;
 
-    public function __construct()
+    public function __construct($contract_no = null)
     {
-        $token_data = Token::all();
-        if (count($token_data) > 0) {
-            $this->access_token = $token_data[0]->access_token;
-            $this->refresh_token = $token_data[0]->refresh_token;
+        $main_user = AccountService::getAdminUserByContract($contract_no);
+        if ($main_user != null) {
+            if (isset($main_user->safie_user_name)) {
+                $this->safie_user_name = $main_user->safie_user_name;
+            }
+            if (isset($main_user->safie_password)) {
+                $this->safie_password = $main_user->safie_password;
+            }
+            if (isset($main_user->safie_client_id)) {
+                $this->client_id = $main_user->safie_client_id;
+            }
+            if (isset($main_user->safie_client_secret)) {
+                $this->secret = $main_user->safie_client_secret;
+            }
+            $this->contract_no = $main_user->contract_no;
+        } else {
+            $this->contract_no = 'super_admin';
+        }
+        $token_data = Token::query()->where('contract_no', $this->contract_no)->get()->first();
+
+        if ($token_data != null) {
+            $this->access_token = $token_data->access_token;
+            $this->refresh_token = $token_data->refresh_token;
+            $this->contract_no = $token_data->contract_no;
         } else {
             $this->generateToken();
         }
+    }
+
+    public static function getInstance($options = null)
+    {
+        if (SafieApiService::$_instance === null) {
+            SafieApiService::$_instance = new SafieApiService($options);
+        }
+
+        return SafieApiService::$_instance;
     }
 
     public function generateRefreshToken()
@@ -55,10 +78,8 @@ class SafieApiService
     public function updateTokenDB($data)
     {
         if (isset($data['token_type']) && $data['token_type'] == 'Bearer') {
-            $token_data = Token::all();
-            if (count($token_data) > 0) {
-                $token_record = $token_data[0];
-            } else {
+            $token_record = Token::query()->where('contract_no', $this->contract_no)->get()->first();
+            if ($token_record == null) {
                 $token_record = new Token();
             }
 
@@ -70,16 +91,17 @@ class SafieApiService
                 $token_record->refresh_token = $data['refresh_token'];
                 $this->refresh_token = $data['refresh_token'];
             }
+            $token_record->contract_no = $this->contract_no;
             $token_record->save();
         }
     }
 
     public function getAccessToken($code)
     {
-        $url = sprintf('%s%s', $this->api_url, $this->auth_token);  //https://openapi.safie.link/v1/auth/token
+        $url = sprintf('%s%s', $this->api_url, 'auth/token');
         $params = [];
-        $params['client_id'] = env('CLIENT_ID', $this->client_id);   //'dc2537ffb887'
-        $params['client_secret'] = env('SECRET', $this->secret);   //'d25100e130499d0fb257df19cd5b0279'
+        $params['client_id'] = $this->client_id;
+        $params['client_secret'] = $this->secret;
         $params['grant_type'] = 'authorization_code';
         $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', $this->redirect_uri);
         $params['code'] = $code;    //認可コード
@@ -90,9 +112,9 @@ class SafieApiService
     public function refreshToken($refresh_token)
     {
         Log::info('Refresh = '.$refresh_token);
-        $url = sprintf('%s%s', $this->api_url, $this->refresh_url);
-        $params['client_id'] = env('CLIENT_ID', $this->client_id);   //'dc2537ffb887'
-        $params['client_secret'] = env('SECRET', $this->secret);   //'d25100e130499d0fb257df19cd5b0279'
+        $url = sprintf('%s%s', $this->api_url, 'auth/refresh-token');
+        $params['client_id'] = $this->client_id;
+        $params['client_secret'] = $this->secret;
         $params['grant_type'] = 'refresh_token';
         $params['refresh_token'] = $refresh_token;
         $params['scope'] = 'safie-api';
@@ -104,10 +126,10 @@ class SafieApiService
 
     public function getAuthUrl()
     {
-        $url = sprintf('%s%s', $this->api_url, $this->auth_authorize);
+        $url = sprintf('%s%s', $this->api_url, 'auth/authorize');
 
         $params = [];
-        $params['client_id'] = env('CLIENT_ID', $this->client_id);
+        $params['client_id'] = $this->client_id;
         $params['response_type'] = 'code';
         $params['scope'] = 'safie-api';
         $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', $this->redirect_uri);
@@ -139,9 +161,9 @@ class SafieApiService
             $authorize_url = 'https://app.safie.link/auth/authorize';
 
             $params = [];
-            $params['username'] = env('SAFIE_USER_NAME', $this->safie_user_name);
-            $params['password'] = env('SAFIE_PASSWORD', $this->safie_password);
-            $params['client_id'] = env('CLIENT_ID', $this->client_id);
+            $params['username'] = $this->safie_user_name;
+            $params['password'] = $this->safie_password;
+            $params['client_id'] = $this->client_id;
             $params['response_type'] = 'code';
             $params['scope'] = 'safie-api';
             $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', $this->redirect_uri);
@@ -167,7 +189,7 @@ class SafieApiService
     }
 
     //画像取得
-    public function getDeviceImage($device_id = null)
+    public function getDeviceImage($device_id = null, $timestamp = null)
     {
         $device_id = $device_id != null ? $device_id : $this->device_id;
         $url = sprintf('https://openapi.safie.link/v1/devices/%s/image', $device_id);
@@ -176,12 +198,18 @@ class SafieApiService
             'Authorization: Bearer '.$this->access_token,
             'Content-Type: application/json',
         ];
+        if ($timestamp != null) {
+            $param['timestamp'] = $timestamp;
+            $url .= '?'.http_build_query($param);
+        }
         $curl = curl_init($url);
         Log::debug("--- {$url} ---");
         curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_POST, false);
         $ch = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('httpcode='.$httpcode);
         if (curl_errno($curl)) {
             Log::debug('--- Curl エラー ---');
             echo curl_error($curl);
@@ -243,8 +271,6 @@ class SafieApiService
             'Authorization: Bearer '.$this->access_token,
             'Content-Type: application/json',
         ];
-        // $start = '2022-06-22T16:15:00+09:00';
-        // $end = '2022-06-22T16:18:00+09:00';
         $params['start'] = $start;
         $params['end'] = $end;
         $response = $this->sendPostApi($url, $header, $params, 'json');

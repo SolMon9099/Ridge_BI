@@ -9,6 +9,8 @@
         $floors[$drawing->id] = $drawing->floor_number;
         $drawing_files[$drawing->id] = $drawing->drawing_file_path;
     }
+    $login_user = Auth::guard('admin')->user();
+    $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
 ?>
 <div id="wrapper">
     <div class="breadcrumb">
@@ -52,10 +54,11 @@
         ?>
         <div id = "container-canvas" style="background: url({{$file_url}})">
         </div>
+        @if(!$super_admin_flag)
         <div class="btns">
             <button type="submit" class="ok">更新</button>
         </div>
-
+        @endif
         <input type = "hidden" name="camera_mapping_info" id = "camera_mapping_info" value="" />
         </form>
     </div>

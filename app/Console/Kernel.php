@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\SafieApiCommand;
 use App\Console\Commands\S3Command;
+use App\Console\Commands\AICommand;
 
 class Kernel extends ConsoleKernel
 {
@@ -19,12 +20,14 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         SafieApiCommand::class,
         S3Command::class,
+        AICommand::class,
     ];
 
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('safie:refresh_access_token')->daily();
         $schedule->command('s3:video_get_save')->everyFiveMinutes();
+        $schedule->command('ai:check_request_download')->everyMinute();
     }
 
     /**

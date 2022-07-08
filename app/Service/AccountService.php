@@ -116,4 +116,9 @@ class AccountService
             return '';
         }
     }
+
+    public static function getAdminUserByContract($contract_no)
+    {
+        return Admin::query()->where('contract_no', $contract_no)->where('is_main_admin', 1)->get()->first();
+    }
 }

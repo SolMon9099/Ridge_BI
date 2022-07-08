@@ -12,6 +12,7 @@ use App\Models\Camera;
 use App\Models\CameraMappingDetail;
 use App\Models\LocationDrawing;
 use App\Service\SafieApiService;
+use Illuminate\Support\Facades\Auth;
 
 class CameraController extends AdminController
 {
@@ -19,10 +20,9 @@ class CameraController extends AdminController
     {
         $cameras = CameraService::doSearch($request)->paginate($this->per_page);
         $locations = LocationService::getAllLocationNames();
-        $safie_service = new SafieApiService();
-        $camera_image_data = $safie_service->getDeviceImage();
-        if ($camera_image_data != null) {
-            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+        $user_contract_no = Auth::guard('admin')->user()->contract_no;
+        if ($user_contract_no != null) {
+            $safie_service = new SafieApiService($user_contract_no);
         }
         foreach ($cameras as $camera) {
             if (!($request->has('floor_number') && $request->floor_number != '')) {
@@ -33,6 +33,16 @@ class CameraController extends AdminController
                 if ($map_data != null) {
                     $camera->floor_number = $map_data->floor_number;
                 }
+            }
+            if ($camera->contract_no == null) {
+                continue;
+            }
+            if ($user_contract_no == null) {
+                $safie_service = new SafieApiService($camera->contract_no);
+            }
+            $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+            if ($camera_image_data != null) {
+                $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
             }
             $camera->img = $camera_image_data;
         }
@@ -46,8 +56,11 @@ class CameraController extends AdminController
 
     public function create()
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         $locations = LocationService::getAllLocationNames();
-        $safie_service = new SafieApiService();
+        $safie_service = new SafieApiService(Auth::guard('admin')->user()->contract_no);
         $devices = $safie_service->getAllDevices();
 
         return view('admin.camera.create')->with([
@@ -58,13 +71,18 @@ class CameraController extends AdminController
 
     public function edit(Request $request, Camera $camera)
     {
-        $locations = LocationService::getAllLocationNames();
-        $safie_service = new SafieApiService();
-        $camera_image_data = $safie_service->getDeviceImage();
-        if ($camera_image_data != null) {
-            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
         }
-        $camera->img = $camera_image_data;
+        $locations = LocationService::getAllLocationNames();
+        if ($camera->contract_no != null) {
+            $safie_service = new SafieApiService($camera->contract_no);
+            $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+            if ($camera_image_data != null) {
+                $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            }
+            $camera->img = $camera_image_data;
+        }
 
         return view('admin.camera.edit')->with([
             'camera' => $camera,
@@ -86,6 +104,9 @@ class CameraController extends AdminController
 
     public function store_mapping(Request $request)
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         $camera_mapping_info = json_decode($request['camera_mapping_info']);
         if (CameraService::storeMapping($camera_mapping_info)) {
             $request->session()->flash('success', '登録しました。');
@@ -136,6 +157,9 @@ class CameraController extends AdminController
 
     public function create_drawing()
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         $locations = LocationService::getAllLocationNames();
 
         return view('admin.camera.create_drawing')->with([
@@ -145,6 +169,9 @@ class CameraController extends AdminController
 
     public function store(CameraRequest $request)
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         if (CameraService::doCreate($request)) {
             $request->session()->flash('success', '登録しました。');
 
@@ -158,6 +185,9 @@ class CameraController extends AdminController
 
     public function update(CameraRequest $request, Camera $camera)
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         if (CameraService::doUpdate($request, $camera)) {
             $request->session()->flash('success', '変更しました。');
 
@@ -184,6 +214,9 @@ class CameraController extends AdminController
 
     public function store_drawing(LocationDrawingRequest $request)
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         if (LocationDrawingService::doCreate($request)) {
             $request->session()->flash('success', '登録しました。');
 
@@ -197,6 +230,9 @@ class CameraController extends AdminController
 
     public function update_drawing(LocationDrawingRequest $request, LocationDrawing $drawing)
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         if (LocationDrawingService::doUpdate($request, $drawing)) {
             $request->session()->flash('success', '変更しました。');
 

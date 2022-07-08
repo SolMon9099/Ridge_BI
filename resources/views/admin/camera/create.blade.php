@@ -1,3 +1,7 @@
+<?php
+    $login_user = Auth::guard('admin')->user();
+    $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
+?>
 @extends('admin.layouts.app')
 
 @section('content')
@@ -18,7 +22,9 @@
             @csrf
             @include('admin.camera._form')
             <div class="btns">
+                @if (!$super_admin_flag)
                 <button type="submit" class="ok">登録</button>
+                @endif
             </div>
         </form>
     </div>

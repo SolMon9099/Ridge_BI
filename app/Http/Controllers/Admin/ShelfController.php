@@ -11,6 +11,7 @@ use App\Models\ShelfDetectionRule;
 use Illuminate\Http\Request;
 use App\Models\CameraMappingDetail;
 use Illuminate\Support\Facades\Auth;
+use App\Service\CameraService;
 
 class ShelfController extends AdminController
 {
@@ -36,8 +37,12 @@ class ShelfController extends AdminController
 
     public function edit(Request $request, ShelfDetectionRule $shelf)
     {
-        $safie_service = new SafieApiService();
-        $camera_image_data = $safie_service->getDeviceImage();
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
+        $camera_data = CameraService::getCameraInfoById($shelf->camera_id);
+        $safie_service = new SafieApiService($camera_data->contract_no);
+        $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
         if ($camera_image_data != null) {
             $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
         }
@@ -56,6 +61,9 @@ class ShelfController extends AdminController
 
     public function store(ShelfRequest $request)
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         $rule_data = json_decode($request['rule_data']);
         $rule_data = (array) $rule_data;
         if (ShelfService::saveData($rule_data)) {
@@ -71,6 +79,9 @@ class ShelfController extends AdminController
 
     public function cameras_for_rule()
     {
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
         $locations = LocationService::getAllLocationNames();
         $camera_query = Camera::query();
         if (Auth::guard('admin')->user()->contract_no != null) {
@@ -95,8 +106,12 @@ class ShelfController extends AdminController
 
     public function create_rule(ShelfRequest $request)
     {
-        $safie_service = new SafieApiService();
-        $camera_image_data = $safie_service->getDeviceImage();
+        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+            abort(403);
+        }
+        $camera_data = CameraService::getCameraInfoById($request['selected_camera']);
+        $safie_service = new SafieApiService($camera_data->contract_no);
+        $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
         if ($camera_image_data != null) {
             $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
         }

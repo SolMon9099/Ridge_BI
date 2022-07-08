@@ -23,5 +23,9 @@ Route::group(['prefix' => 'camera'], function () {
     Route::get('/getLiveStreaming', 'SafieController@getLiveStreaming')->name('api.camera.getLiveStreaming');
 });
 
+Route::group(['prefix' => 'detection'], function () {
+    Route::post('/danger', 'DetectionController@saveDangerDetection')->name('api.detection.danger');
+});
+
 Route::middleware('auth:api')->group(function () {
 });

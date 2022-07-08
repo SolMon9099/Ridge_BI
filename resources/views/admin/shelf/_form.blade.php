@@ -1,3 +1,7 @@
+<?php
+    $login_user = Auth::guard('admin')->user();
+    $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
+?>
 <div class="no-scroll">
     @if (!isset($shelf))
     <div class="title-wrap sp-m">
@@ -64,9 +68,11 @@
         <input type="button" value='Pause' onClick="pause()">
     </div> --}}
     <input type="hidden" value="" name="rule_data" id = 'rule_data'/>
+    @if(!$super_admin_flag)
     <div class="footer-area">
         <button type="button" class="ok save-btn">決定</button>
     </div>
+    @endif
 
 </div>
 <style>

@@ -13,77 +13,62 @@
         <div class="title-wrap">
             <h2 class="title">危険エリア検知リスト(アーカイブ)</h2>
         </div>
-        <form action="danger_list.php" method="post" name="form1" id="form1">
+        <form action="{{route('admin.danger.list')}}" method="get" name="form1" id="form1">
+        @csrf
             <div class="title-wrap ver2 stick">
                 <div class="sp-ma">
-                        <div class="sort">
-                            <ul class="date-list">
-                                <li>
-                                <h4>検出期間</h4>
-                                </li>
-                                <li>
-                                <input type="date" value="<?php echo date('Y-m-d');?>">
-                                </li>
-                                <li>～</li>
-                                <li>
-                                <input type="date" value="<?php echo date('Y-m-d');?>">
-                                </li>
-                            </ul>
+                    <div class="sort">
                         <ul class="date-list">
+                            <li><h4>検出期間</h4></li>
                             <li>
-                            <h4>ルール</h4>
+                                <input type="date" name='starttime' value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-01'))}}">
                             </li>
+                            <li>～</li>
+                            <li>
+                                <input type="date" name='endtime' value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-t'))}}">
+                            </li>
+                        </ul>
+                        <ul class="date-list">
+                            <li><h4>ルール</h4></li>
                             <li><a data-target="rule" class="modal-open setting">選択する</a></li>
                         </ul>
-                    <button type="button" class="apply">絞り込む</button>
+                        <input type= 'hidden' name='rule_ids' id = 'rule_id_input' value="{{ old('rule_ids', (isset($request) && $request->has('rule_ids'))?$request->rule_ids:'')}}"/>
+                        <button type="submit" class="apply">絞り込む</button>
                     </div>
                 </div>
             </div>
-            <ul class="kenchi-list">
-                <li>
-                    <div class="movie"><a data-target="movie0000" class="modal-open  setting2 play"><img src="{{ asset('assets/admin/img/samplepic.svg') }}"></a></div>
-                    <div class="text">
-                        <time>2022/2/10 11:00</time>
-                        <table>
-                        <tr>
-                            <td>（仮称）ＧＳプロジェクト新築工事</td>
-                            <td>3階</td>
-                            <td>トイレ横の資材置き場</td>
-                            <td>侵入する</td>
-                        </tr>
-                        </table>
-                    </div>
-                </li>
-                <li>
-                    <div class="movie"><a data-target="movie0000" class="modal-open  setting2 play"><img src="{{ asset('assets/admin/img/samplepic.svg') }}"></a></div>
-                    <div class="text">
-                        <time>2022/2/10 11:00</time>
-                        <table>
-                        <tr>
-                            <td>（仮称）ＧＳプロジェクト新築工事</td>
-                            <td>3階</td>
-                            <td>トイレ横の資材置き場</td>
-                            <td>侵入する</td>
-                        </tr>
-                        </table>
-                    </div>
-                </li>
-                <li>
-                    <div class="movie"><a data-target="movie0000" class="modal-open  setting2 play"><img src="{{ asset('assets/admin/img/samplepic.svg') }}"></a></div>
-                    <div class="text">
-                        <time>2022/2/10 11:00</time>
-                        <table>
-                        <tr>
-                            <td>（仮称）ＧＳプロジェクト新築工事</td>
-                            <td>3階</td>
-                            <td>トイレ横の資材置き場</td>
-                            <td>侵入する</td>
-                        </tr>
-                        </table>
-                    </div>
-                </li>
-            </ul>
         </form>
+        {{ $danger_detections->appends([])->links('vendor.pagination.admin-pagination') }}
+        <ul class="kenchi-list">
+            @foreach ($danger_detections as $item)
+            <?php
+                $video_path = '';
+                $video_path .= asset('storage/video/').'/';
+                $video_path .= $item->video_file_path;
+
+                $thumb_path = asset('storage/thumb/').'/'.$item->thumb_img_path;
+            ?>
+            <li>
+                <div class="movie" video-path = '{{$video_path}}'>
+                    <a data-target="movie0000" onclick="videoPlay('{{$video_path}}')" class="modal-open setting2 play">
+                        <img src="{{$thumb_path}}"/>
+                    </a>
+                </div>
+                <div class="text">
+                    <time>{{date('Y/m/d H:i', strtotime($item->starttime))}}</time>
+                    <table>
+                    <tr>
+                        <td>{{$item->location_name}}</td>
+                        <td>{{$item->floor_number}}</td>
+                        <td>{{$item->installation_position}}</td>
+                        <td>{{config('const.action')[$item->action_id]}}</td>
+                    </tr>
+                    </table>
+                </div>
+            </li>
+            @endforeach
+        </ul>
+        {{ $danger_detections->appends([])->links('vendor.pagination.admin-pagination') }}
     </div>
 </div>
 <!--MODAL -->
@@ -105,46 +90,38 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td class="stick-t"><div class="checkbtn-wrap">
-                        <input name="checkbox" type="checkbox" id="1">
-                        <label for="1"></label>
-                    </div></td>
-                    <td> 12345</td>
-                    <td>（仮称）ＧＳプロジェクト新築工事</td>
-                    <td>3階</td>
-                    <td>トイレ横の資材置き場</td>
-                    <td>かがむ</td>
-                    <td><input type="color" id="color1" name="color1" value="#C00000"></td>
-                </tr>
-                <tr>
-                    <td class="stick-t"><div class="checkbtn-wrap">
-                        <input name="checkbox" type="checkbox" id="2">
-                        <label for="2"></label>
-                    </div></td>
-                    <td> 12345</td>
-                    <td>（仮称）ＧＳプロジェクト新築工事</td>
-                    <td>3階</td>
-                    <td>トイレ横の資材置き場</td>
-                    <td>手を挙げる</td>
-                    <td><input type="color" id="color2" name="color2" value="#2CC30E"></td>
-                </tr>
-                <tr>
-                    <td class="stick-t"><div class="checkbtn-wrap">
-                        <input name="checkbox" type="checkbox" id="3">
-                        <label for="3"></label>
-                    </div></td>
-                    <td> 12345</td>
-                    <td>（仮称）ＧＳプロジェクト新築工事</td>
-                    <td>3階</td>
-                    <td>トイレ横の資材置き場</td>
-                    <td>かがむ</td>
-                    <td><input type="color" id="color3" name="color3" value="#FFE100"></td>
-                </tr>
+                    <?php
+                        $selected_rule_ids = old('rule_ids', (isset($request) && $request->has('rule_ids'))?$request->rule_ids:'');
+                        if ($selected_rule_ids != ''){
+                            $selected_rule_ids = json_decode($selected_rule_ids);
+                        } else {
+                            $selected_rule_ids = [];
+                        }
+                    ?>
+                    @foreach ($rules as $rule)
+                    <tr>
+                        <td class="stick-t">
+                            <div class="checkbtn-wrap">
+                                @if (in_array($rule->id, $selected_rule_ids))
+                                    <input value = '{{$rule->id}}' class='rule_checkbox' type="checkbox" id="{{'rule-'.$rule->id}}" checked>
+                                @else
+                                    <input value = '{{$rule->id}}' class='rule_checkbox' type="checkbox" id="{{'rule-'.$rule->id}}">
+                                @endif
+                                <label for="{{'rule-'.$rule->id}}" class="custom-style"></label>
+                            </div>
+                        </td>
+                        <td> {{$rule->camera_no}}</td>
+                        <td>{{$rule->location_name}}</td>
+                        <td>{{$rule->floor_number}}</td>
+                        <td>{{$rule->installation_position}}</td>
+                        <td>{{config('const.action')[$rule->action_id]}}</td>
+                        <td><input disabled type="color" value = "{{$rule->color}}"></td>
+                    </tr>
+                    @endforeach
                 </tbody>
             </table>
             <div class="modal-set">
-                <button type="submit" class="modal-close">設 定</button>
+                <button onclick="selectRule()" class="modal-close">設 定</button>
             </div>
             </div>
         </div>
@@ -156,25 +133,32 @@
 <div id="movie0000" class="modal-content">
 <div class="textarea">
     <div class="v">
-    <video controls>
-        <source src="{{ asset('assets/admin/video/video1.mp4') }}">
-    </video>
-    </div>
-</div>
-<p class="closemodal"><a class="modal-close">×</a></p>
-</div>
-<!-- -->
-<!--MODAL -->
-<div id="movie0001" class="modal-content">
-<div class="textarea">
-    <div class="v">
-    <video controls>
-        <source src="{{ asset('assets/admin/video/video1.mp4') }}">
-    </video>
+        <video id = 'video-container' src = '' type= 'video/mp4' controls>
+        </video>
     </div>
 </div>
 <p class="closemodal"><a class="modal-close">×</a></p>
 </div>
 <!-- -->
 
+<style>
+</style>
+<script>
+    function selectRule(){
+        var checked_rules = [];
+        $('.rule_checkbox').each(function(){
+            if ($(this).is(":checked")){
+                checked_rules.push($(this).val());
+            }
+        })
+        $('#rule_id_input').val(JSON.stringify(checked_rules));
+    }
+
+    function videoPlay(path){
+        var video = document.getElementById('video-container');
+        video.pause();
+        $('#video-container').attr('src', path);
+        video.play();
+    }
+</script>
 @endsection

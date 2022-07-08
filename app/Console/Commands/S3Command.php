@@ -7,6 +7,7 @@ use App\Service\SafieApiService;
 use App\Models\S3VideoHistory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Models\Camera;
 
 class S3Command extends Command
 {
@@ -28,7 +29,10 @@ class S3Command extends Command
         $cur_time_object->setTimezone(new \DateTimeZone('+0900')); //GMT
         $now = $cur_time_object->format('Y-m-d H:i:s');
         if (strtotime($camera_start_on_time) <= strtotime($now) && strtotime($camera_end_off_time) >= strtotime($now)) {
-            $safie_service = new SafieApiService();
+            $cameras = Camera::all();
+            if (count($cameras) == 0) {
+                return 0;
+            }
             $record_start_time_object = clone $cur_time_object;
             $record_start_time_object->sub(new \DateInterval('PT'.(string) 2 * $request_interval.'M'));
             $record_start_time = $record_start_time_object->format('c');
@@ -36,35 +40,42 @@ class S3Command extends Command
             $record_end_time_object->sub(new \DateInterval('PT'.(string) $request_interval.'M'));
             $record_end_time = $record_end_time_object->format('c');
 
-            //メディアファイル 作成要求削除(s3に保存されたもの)
-            Log::info('Delete request****************');
-            $this->deleteOldRequests();
-            //メディアファイル作成要求一覧取得・S3に保存--------------------------------
-            Log::info('saveMedia start****************');
-            $this->saveMedia();
-            //----------------------------------------------------------------------
+            foreach ($cameras as $camera) {
+                if ($camera->contract_no == null) {
+                    continue;
+                }
+                $safie_service = new SafieApiService($camera->contract_no);
 
-            //メディアファイル作成要求--------------------------------
-            $request_id = $safie_service->makeMediaFile(null, $record_start_time, $record_end_time);
-            Log::info('request_id = '.$request_id);
-            if ($request_id > 0) {
-                $this->createS3History($request_id, $record_start_time_object, $record_end_time_object);
+                //メディアファイル 作成要求削除(s3に保存されたもの)
+                Log::info('Delete request****************');
+                $this->deleteOldRequests($camera->contract_no);
+
+                //メディアファイル作成要求一覧取得・S3に保存--------------------------------
+                Log::info('saveMedia start****************');
+                $this->saveMedia($camera->camera_id, $camera->contract_no);
+                //----------------------------------------------------------------------
+                //メディアファイル作成要求--------------------------------
+                $request_id = $safie_service->makeMediaFile(null, $record_start_time, $record_end_time);
+                Log::info('request_id = '.$request_id);
+                if ($request_id > 0) {
+                    $this->createS3History($request_id, $record_start_time_object, $record_end_time_object, $camera->camera_id, $camera->contract_no);
+                }
+                //--------------------------------------------------------
             }
-            //--------------------------------------------------------
         }
 
         return 0;
     }
 
-    public function deleteOldRequests($device_id = null)
+    public function deleteOldRequests($contract_no = null)
     {
         $query = S3VideoHistory::query()->where('status', '=', 2);
-        if ($device_id != null) {
-            $query->where('device_id', $device_id);
+        if ($contract_no != null) {
+            $query->where('contract_no', $contract_no);
         }
         $data = $query->orderBy('updated_at')->get();
+        $safie_service = new SafieApiService($contract_no);
         if (count($data) > 0) {
-            $safie_service = new SafieApiService();
             foreach ($data as $item) {
                 $res = $safie_service->deleteMediaFile($item->device_id, $item->request_id);
                 if ($res != null) {
@@ -75,24 +86,26 @@ class S3Command extends Command
         }
     }
 
-    public function createS3History($request_id, $record_start_time_object, $record_end_time_object, $device_id = null)
+    public function createS3History($request_id, $record_start_time_object, $record_end_time_object, $device_id = null, $contract_no = null)
     {
         $record = new S3VideoHistory();
         $record->request_id = $request_id;
         $record->device_id = $device_id == null ? 'FvY6rnGWP12obPgFUj0a' : $device_id;
         $record->start_time = $record_start_time_object->format('Y-m-d H:i:s');
         $record->end_time = $record_end_time_object->format('Y-m-d H:i:s');
+        $record->contract_no = $contract_no;
         $record->save();
     }
 
-    public function saveMedia($device_id = null)
+    public function saveMedia($device_id = null, $contract_no = null)
     {
         $device_id = $device_id == null ? 'FvY6rnGWP12obPgFUj0a' : $device_id;
         $data = S3VideoHistory::query()->where('device_id', $device_id)
+            ->where('contract_no', $contract_no)
             ->where('status', '!=', 2)
             ->where('status', '!=', 3)
             ->orderByDesc('updated_at')->limit(10)->get();
-        $safie_service = new SafieApiService();
+        $safie_service = new SafieApiService($contract_no);
         foreach ($data as $item) {
             $media_status = $safie_service->getMediaFileStatus($device_id, $item->request_id);
             if ($media_status != null) {

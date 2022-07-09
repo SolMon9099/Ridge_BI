@@ -17,13 +17,17 @@ class DetectionController extends Controller
 
     public function saveDangerDetection(Request $request)
     {
+        Log::info('Danger Detection Receive Start****************');
         if (!(isset($request['analyze_rule_id']) && $request['analyze_rule_id'] > 0)) {
+            Log::info('解析ルールIDがありません。-------------');
+
             return ['error' => '解析ルールIDがありません。'];
         }
         if (!(isset($request['detect_start_date']) && $request['detect_start_date'] != '')) {
+            Log::info('検知開始日時がありません。-------------');
+
             return ['error' => '検知開始日時がありません。'];
         }
-        Log::info('Danger Detection Receive Start****************');
         $rule_id = $request['analyze_rule_id'];
         Log::info('rule id = '.$rule_id);
         $danger_service = new DangerService();
@@ -67,7 +71,11 @@ class DetectionController extends Controller
                 'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
             ];
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
+            Log::info('Finish Danger Detection****************');
+            return ['success' => '送信成功'];
+        } else {
+            Log::info('Finish Danger Detection****************');
+            return ['success' => '送信失敗'];
         }
-        Log::info('Finish Danger Detection****************');
     }
 }

@@ -37,9 +37,6 @@ class ShelfController extends AdminController
 
     public function edit(Request $request, ShelfDetectionRule $shelf)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
-        }
         $camera_data = CameraService::getCameraInfoById($shelf->camera_id);
         $safie_service = new SafieApiService($camera_data->contract_no);
         $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);

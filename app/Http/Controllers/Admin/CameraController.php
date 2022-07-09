@@ -71,9 +71,6 @@ class CameraController extends AdminController
 
     public function edit(Request $request, Camera $camera)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
-        }
         $locations = LocationService::getAllLocationNames();
         if ($camera->contract_no != null) {
             $safie_service = new SafieApiService($camera->contract_no);

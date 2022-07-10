@@ -69,14 +69,14 @@
         @if ($super_admin_flag || in_array(config('const.header_menu_codes')['pit'], $headers))
         <li><a href="#">ピット入退場検知</a>
             <ul>
-                @if (!$general_user_flag || in_array('admin.danger', $manager_allowed_pages))
-                    <li><a href="{{route('admin.danger')}}">ルール一覧</a></li>
+                @if (!$general_user_flag || in_array('admin.pit', $manager_allowed_pages))
+                    <li><a href="{{route('admin.pit')}}">ルール一覧</a></li>
                 @endif
-                @if (!$general_user_flag || in_array('admin.danger.list', $manager_allowed_pages))
-                    <li><a href="{{route('admin.danger.list')}}">検知リスト</a></li>
+                @if (!$general_user_flag || in_array('admin.pit.list', $manager_allowed_pages))
+                    <li><a href="{{route('admin.pit.list')}}">検知リスト</a></li>
                 @endif
-                @if (!$general_user_flag || in_array('admin.danger.detail', $manager_allowed_pages))
-                    <li><a href="{{route('admin.danger.detail')}}">詳細分析</a></li>
+                @if (!$general_user_flag || in_array('admin.pit.detail', $manager_allowed_pages))
+                    <li><a href="{{route('admin.pit.detail')}}">詳細分析</a></li>
                 @endif
             </ul>
         </li>

@@ -74,6 +74,18 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::post('/ajaxUploadFile', 'CameraController@ajaxUploadFile')->name('admin.camera.ajaxUploadFile');
     });
 
+    Route::group(['prefix' => 'pit'], function () {
+        Route::get('/', 'PitController@index')->name('admin.pit');
+        Route::get('/edit/{pit}', 'PitController@edit')->name('admin.pit.edit');
+        Route::get('/cameras_for_rule', 'PitController@cameras_for_rule')->name('admin.pit.cameras_for_rule');
+        Route::get('/create_rule', 'PitController@create_rule')->name('admin.pit.create_rule');
+        Route::get('/list', 'PitController@list')->name('admin.pit.list');
+        Route::get('/detail', 'PitController@detail')->name('admin.pit.detail');
+        Route::post('/store', 'PitController@store')->name('admin.pit.store');
+        Route::put('/update/{pit}', 'PitController@update')->name('admin.pit.update');
+        Route::delete('/delete/{pit}', 'PitController@delete')->name('admin.pit.delete');
+    });
+
     Route::group(['prefix' => 'danger'], function () {
         Route::get('/', 'DangerController@index')->name('admin.danger');
         Route::get('/edit/{danger}', 'DangerController@edit')->name('admin.danger.edit');

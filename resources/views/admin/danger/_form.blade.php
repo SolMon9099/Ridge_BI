@@ -86,6 +86,7 @@
             </tbody>
         </table>
     </div>
+    <div id="debug"></div>
     {{-- <div class="streaming-video" style="height:500px;">
         <safie-streaming-player></safie-streaming-player>
         <input type="button" value='Play' onClick="play()">
@@ -122,6 +123,9 @@
     .footer-area{
         widows: 100%;
         text-align: center;
+        margin-top: 10px;
+    }
+    #debug{
         margin-top: 10px;
     }
 </style>
@@ -287,6 +291,9 @@
                 drawRect(points);
             }
 
+        })
+        stage.on('mousemove', function(e){
+            document.getElementById("debug").innerHTML = `X座標${e.evt.offsetX}:Y座標${e.evt.offsetY}`;
         })
     }
 

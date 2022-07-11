@@ -11,7 +11,7 @@
     @include('admin.layouts.flash-message')
     <div class="scroll">
         <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
-        <div id="debug"></div>
+        <div class="description">青枠及び赤枠は4点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
         <p class="error-message area" style="display: none">エリアを選択してください。</p>
         @if(!$super_admin_flag)
         <div class="btns" id="direction">
@@ -48,10 +48,14 @@
         text-align: center;
         margin-top: 10px;
     }
-    #debug{
+    .description{
         width: 1280px;
         margin-left: auto;
         margin-right: auto;
+        color: #999;
+        font-size: 13px;
+    }
+    #debug{
     }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>

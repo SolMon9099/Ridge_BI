@@ -28,9 +28,10 @@ class PitService
 
     public static function saveData($params)
     {
-        $params = (array) $params;
-        foreach ($params as $param) {
-            $param = (array) $param;
+        $rule_data = json_decode($params['rule_data']);
+        $rule_data = (array) $rule_data;
+        foreach ($rule_data as $rule) {
+            $param = (array) $rule;
             if (isset($param['id']) && $param['id'] > 0) {
                 $cur_pit = PitDetectionRule::find($param['id']);
                 if (isset($param['is_deleted']) && $param['is_deleted'] == true) {
@@ -38,6 +39,9 @@ class PitService
                 } else {
                     $cur_pit->red_points = isset($param['red_points']) && $param['red_points'] != '' ? json_encode($param['red_points']) : '';
                     $cur_pit->blue_points = isset($param['blue_points']) && $param['blue_points'] != '' ? json_encode($param['blue_points']) : '';
+                    if (isset($params['max_permission_members']) && $params['max_permission_members'] > 0) {
+                        $cur_pit->max_permission_members = $params['max_permission_members'];
+                    }
                     $cur_pit->updated_by = Auth::guard('admin')->user()->id;
                     $res = $cur_pit->save();
                 }
@@ -52,6 +56,9 @@ class PitService
                 $new_pit->camera_id = $param['camera_id'];
                 $new_pit->red_points = isset($param['red_points']) && $param['red_points'] != '' ? json_encode($param['red_points']) : '';
                 $new_pit->blue_points = isset($param['blue_points']) && $param['blue_points'] != '' ? json_encode($param['blue_points']) : '';
+                if (isset($params['max_permission_members']) && $params['max_permission_members'] > 0) {
+                    $new_pit->max_permission_members = $params['max_permission_members'];
+                }
                 $new_pit->created_by = Auth::guard('admin')->user()->id;
                 $new_pit->updated_by = Auth::guard('admin')->user()->id;
 
@@ -104,7 +111,8 @@ class PitService
                 'cameras.installation_position',
                 'cameras.location_id',
                 'cameras.contract_no',
-                'locations.name as location_name'
+                'locations.name as location_name',
+                'pit_detection_rules.max_permission_members'
             )
             ->leftJoin('pit_detection_rules', 'pit_detection_rules.id', 'pit_detections.rule_id')
             ->leftJoin('cameras', 'cameras.id', 'pit_detections.camera_id')
@@ -125,14 +133,8 @@ class PitService
                 $query->whereIn('pit_detections.rule_id', $rule_ids);
             }
         }
-        if (isset($params['selected_rules']) && is_array($params['selected_rules']) && count($params['selected_rules']) > 0) {
-            $query->whereIn('pit_detections.rule_id', $params['selected_rules']);
-        }
         if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
             $query->whereIn('pit_detections.camera_id', $params['selected_cameras']);
-        }
-        if (isset($params['selected_actions']) && is_array($params['selected_actions']) && count($params['selected_actions']) > 0) {
-            $query->whereIn('pit_detection_rules.action_id', $params['selected_actions']);
         }
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);

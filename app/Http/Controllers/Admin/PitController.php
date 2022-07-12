@@ -111,9 +111,7 @@ class PitController extends AdminController
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
             abort(403);
         }
-        $rule_data = json_decode($request['rule_data']);
-        $rule_data = (array) $rule_data;
-        if (PitService::saveData($rule_data)) {
+        if (PitService::saveData($request)) {
             $request->session()->flash('success', 'ルールを変更しました。');
 
             return redirect()->route('admin.pit');
@@ -169,24 +167,10 @@ class PitController extends AdminController
 
     public function detail(Request $request)
     {
-        switch ($request['selected_search_option']) {
-            case 1:
-                $request['selected_cameras'] = [];
-                $request['selected_actions'] = [];
-                break;
-            case 2:
-                $request['selected_rules'] = [];
-                $request['selected_actions'] = [];
-                break;
-            case 3:
-                $request['selected_rules'] = [];
-                $request['selected_cameras'] = [];
-                break;
-        }
         $pit_detections = PitService::searchDetections($request)->get()->all();
         $all_data = [];
         foreach ($pit_detections as $item) {
-            $all_data[date('Y-m-d', strtotime($item->starttime))][$item->action_id][] = $item;
+            $all_data[date('Y-m-d', strtotime($item->starttime))][] = $item;
         }
         $rules = PitService::doSearch($request)->get()->all();
         $cameras = PitService::getAllCameras();

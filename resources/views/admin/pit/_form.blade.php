@@ -5,11 +5,26 @@
     foreach ($rules as $key => $rule) {
         if ($rule->red_points != null && $rule->red_points != '') $rule->red_points = json_decode($rule->red_points);
         if ($rule->blue_points != null && $rule->blue_points != '') $rule->blue_points = json_decode($rule->blue_points);
+        $max_permission_members = $rule->max_permission_members;
     }
 ?>
 <div class="no-scroll">
-    @include('admin.layouts.flash-message')
+    {{-- @include('admin.layouts.flash-message') --}}
     <div class="scroll">
+        <table class="table">
+            <tr>
+                <th style="width:10%;">許容最大人数</th>
+                <td>
+                    <input style="background:white; width:50%;"
+                        name = 'max_permission_members' type="number"
+                        value="{{ old('max_permission_members', isset($max_permission_members)?$max_permission_members:'')}}"
+                    />
+                </td>
+            </tr>
+        </table>
+        @error('max_permission_members')
+            <p class="error-message">{{ $message }}</p>
+        @enderror
         <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
         <div class="description">青枠及び赤枠は4点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
         <p class="error-message area" style="display: none">エリアを選択してください。</p>

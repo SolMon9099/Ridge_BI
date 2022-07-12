@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Models\Admin;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AccountService
 {
@@ -58,18 +59,33 @@ class AccountService
             }
             if (isset($params['safie_user_name'])) {
                 $cur_Account->safie_user_name = $params['safie_user_name'];
+                if (isset($params['contract_no']) && $params['contract_no'] != '') {
+                    DB::table('admins')->where('contract_no', $params['contract_no'])->update(['safie_user_name' => $params['safie_user_name']]);
+                }
             }
             if (isset($params['safie_password'])) {
                 $cur_Account->safie_password = $params['safie_password'];
+                if (isset($params['contract_no']) && $params['contract_no'] != '') {
+                    DB::table('admins')->where('contract_no', $params['contract_no'])->update(['safie_password' => $params['safie_password']]);
+                }
             }
             if (isset($params['safie_client_id'])) {
                 $cur_Account->safie_client_id = $params['safie_client_id'];
+                if (isset($params['contract_no']) && $params['contract_no'] != '') {
+                    DB::table('admins')->where('contract_no', $params['contract_no'])->update(['safie_client_id' => $params['safie_client_id']]);
+                }
             }
             if (isset($params['safie_client_secret'])) {
                 $cur_Account->safie_client_secret = $params['safie_client_secret'];
+                if (isset($params['contract_no']) && $params['contract_no'] != '') {
+                    DB::table('admins')->where('contract_no', $params['contract_no'])->update(['safie_client_secret' => $params['safie_client_secret']]);
+                }
             }
             if (isset($params['headers']) && count($params['headers']) > 0) {
                 $cur_Account->header_menu_ids = implode(',', $params['headers']);
+                if (isset($params['contract_no']) && $params['contract_no'] != '') {
+                    DB::table('admins')->where('contract_no', $params['contract_no'])->update(['header_menu_ids' => implode(',', $params['headers'])]);
+                }
             }
             $cur_Account->updated_by = Auth::guard('admin')->user()->id;
             if (isset($params['password']) && $params['password']) {

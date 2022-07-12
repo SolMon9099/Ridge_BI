@@ -86,7 +86,7 @@
             </tbody>
         </table>
     </div>
-    <div id="debug"></div>
+    <div class="description">赤枠は4点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
     {{-- <div class="streaming-video" style="height:500px;">
         <safie-streaming-player></safie-streaming-player>
         <input type="button" value='Play' onClick="play()">
@@ -125,8 +125,12 @@
         text-align: center;
         margin-top: 10px;
     }
+    .description{
+        margin-top:10px;
+        color: #999;
+        font-size: 13px;
+    }
     #debug{
-        margin-top: 10px;
     }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>

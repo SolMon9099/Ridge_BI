@@ -61,7 +61,6 @@
                         <td>{{$item->location_name}}</td>
                         <td>{{$item->floor_number}}</td>
                         <td>{{$item->installation_position}}</td>
-                        <td>{{config('const.action')[$item->action_id]}}</td>
                     </tr>
                     </table>
                 </div>

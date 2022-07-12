@@ -257,7 +257,6 @@
             backgroundColor:'white'
         })
     });
-    console.log('datasets', datasets);
 
     var ctx = document.getElementById("myLineChart1");
     var myLineChart = new Chart(ctx, {

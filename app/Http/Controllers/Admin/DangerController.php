@@ -94,7 +94,7 @@ class DangerController extends AdminController
             $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
         }
 
-        $rules = DangerService::getDangerInfoById($danger->id);
+        $rules = DangerService::getRulesByCameraID($danger->camera_id);
 
         return view('admin.danger.edit')->with([
             'danger' => $danger,
@@ -111,9 +111,7 @@ class DangerController extends AdminController
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
             abort(403);
         }
-        $rule_data = json_decode($request['rule_data']);
-        $rule_data = (array) $rule_data;
-        if (DangerService::saveData($rule_data)) {
+        if (DangerService::saveData($request)) {
             $request->session()->flash('success', 'ルールを変更しました。');
 
             return redirect()->route('admin.danger');

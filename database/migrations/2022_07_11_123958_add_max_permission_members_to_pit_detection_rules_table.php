@@ -14,7 +14,7 @@ class AddMaxPermissionMembersToPitDetectionRulesTable extends Migration
     public function up()
     {
         Schema::table('pit_detection_rules', function (Blueprint $table) {
-            $table->tinyInteger('max_permission_members')->nullable()->after('blue_points')->comment('許容最大人数');
+            $table->integer('max_permission_time')->nullable()->after('blue_points')->comment('ピット内最大時間');
         });
     }
 
@@ -26,7 +26,7 @@ class AddMaxPermissionMembersToPitDetectionRulesTable extends Migration
     public function down()
     {
         Schema::table('pit_detection_rules', function (Blueprint $table) {
-            $table->dropColumn('max_permission_members');
+            $table->dropColumn('max_permission_time');
         });
     }
 }

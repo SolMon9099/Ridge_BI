@@ -28,44 +28,37 @@ class PitService
 
     public static function saveData($params)
     {
-        $rule_data = json_decode($params['rule_data']);
-        $rule_data = (array) $rule_data;
-        foreach ($rule_data as $rule) {
-            $param = (array) $rule;
-            if (isset($param['id']) && $param['id'] > 0) {
-                $cur_pit = PitDetectionRule::find($param['id']);
-                if (isset($param['is_deleted']) && $param['is_deleted'] == true) {
-                    $res = $cur_pit->delete();
-                } else {
-                    $cur_pit->red_points = isset($param['red_points']) && $param['red_points'] != '' ? json_encode($param['red_points']) : '';
-                    $cur_pit->blue_points = isset($param['blue_points']) && $param['blue_points'] != '' ? json_encode($param['blue_points']) : '';
-                    if (isset($params['max_permission_members']) && $params['max_permission_members'] > 0) {
-                        $cur_pit->max_permission_members = $params['max_permission_members'];
-                    }
-                    $cur_pit->updated_by = Auth::guard('admin')->user()->id;
-                    $res = $cur_pit->save();
-                }
-                if (!$res) {
-                    return false;
-                }
+        $red_points_data = $params['red_points_data'];
+        $blue_points_data = $params['blue_points_data'];
+        $camera_id = $params['camera_id'];
+        $cur_pit = self::getRulesByCameraID($camera_id)->first();
+        if ($cur_pit != null) {
+            $cur_pit->red_points = $red_points_data;
+            $cur_pit->blue_points = $blue_points_data;
+            if (isset($params['max_permission_time']) && $params['max_permission_time'] > 0) {
+                $cur_pit->max_permission_time = $params['max_permission_time'];
             } else {
-                if (isset($param['is_deleted']) && $param['is_deleted'] == true) {
-                    continue;
-                }
-                $new_pit = new PitDetectionRule();
-                $new_pit->camera_id = $param['camera_id'];
-                $new_pit->red_points = isset($param['red_points']) && $param['red_points'] != '' ? json_encode($param['red_points']) : '';
-                $new_pit->blue_points = isset($param['blue_points']) && $param['blue_points'] != '' ? json_encode($param['blue_points']) : '';
-                if (isset($params['max_permission_members']) && $params['max_permission_members'] > 0) {
-                    $new_pit->max_permission_members = $params['max_permission_members'];
-                }
-                $new_pit->created_by = Auth::guard('admin')->user()->id;
-                $new_pit->updated_by = Auth::guard('admin')->user()->id;
+                $cur_pit->max_permission_time = null;
+            }
+            $cur_pit->updated_by = Auth::guard('admin')->user()->id;
+            $res = $cur_pit->save();
+            if (!$res) {
+                return false;
+            }
+        } else {
+            $new_pit = new PitDetectionRule();
+            $new_pit->camera_id = $camera_id;
+            $new_pit->red_points = $red_points_data;
+            $new_pit->blue_points = $blue_points_data;
+            if (isset($params['max_permission_time']) && $params['max_permission_time'] > 0) {
+                $new_pit->max_permission_time = $params['max_permission_time'];
+            }
+            $new_pit->created_by = Auth::guard('admin')->user()->id;
+            $new_pit->updated_by = Auth::guard('admin')->user()->id;
 
-                $res = $new_pit->save();
-                if (!$res) {
-                    return false;
-                }
+            $res = $new_pit->save();
+            if (!$res) {
+                return false;
             }
         }
 
@@ -112,7 +105,7 @@ class PitService
                 'cameras.location_id',
                 'cameras.contract_no',
                 'locations.name as location_name',
-                'pit_detection_rules.max_permission_members'
+                'pit_detection_rules.max_permission_time'
             )
             ->leftJoin('pit_detection_rules', 'pit_detection_rules.id', 'pit_detections.rule_id')
             ->leftJoin('cameras', 'cameras.id', 'pit_detections.camera_id')

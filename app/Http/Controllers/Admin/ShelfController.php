@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\CameraMappingDetail;
 use Illuminate\Support\Facades\Auth;
 use App\Service\CameraService;
+use Illuminate\Support\Facades\Storage;
 
 class ShelfController extends AdminController
 {
@@ -132,5 +133,18 @@ class ShelfController extends AdminController
     public function detail()
     {
         return view('admin.shelf.detail');
+    }
+
+    public function save_sorted_imgage(Request $request)
+    {
+        $camera_data = CameraService::getCameraInfoById($request['camera_id']);
+        $safie_service = new SafieApiService($camera_data->contract_no);
+        $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
+        if ($camera_image_data != null) {
+            $file_name = date('YmdHis').'.jpeg';
+            $date = date('Ymd');
+            $device_id = $camera_data->camera_id;
+            Storage::disk('s3')->put('shelf_sorted/'.$device_id.'/'.$date.'/'.$file_name, $camera_image_data);
+        }
     }
 }

@@ -2,27 +2,44 @@
     $action_options = config('const.action');
     $login_user = Auth::guard('admin')->user();
     $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
+    $red_points = array();
+    $blue_points = array();
+    $max_permission_time = null;
     foreach ($rules as $key => $rule) {
-        if ($rule->red_points != null && $rule->red_points != '') $rule->red_points = json_decode($rule->red_points);
-        if ($rule->blue_points != null && $rule->blue_points != '') $rule->blue_points = json_decode($rule->blue_points);
-        $max_permission_members = $rule->max_permission_members;
+        if ($rule->red_points != null && $rule->red_points != '') $red_points = json_decode($rule->red_points);
+        if ($rule->blue_points != null && $rule->blue_points != '') $blue_points = json_decode($rule->blue_points);
+        $max_permission_time = $rule->max_permission_time;
     }
 ?>
+<div class='notice-area'>
+    <p>
+        【ピット内許容最大時間について】<br/>&nbsp;&nbsp;・ピット内作業員がどれだけの時間滞在したときに通知を行うかの時間設定を行ってください。
+    </p>
+    <p>
+        【エリア選択について】<br/>&nbsp;&nbsp;・入場を検知するエリアを4点を選択し矩形で囲ってください。<br/>&nbsp;&nbsp;※入場を検知する赤枠と退場を検知する青枠が自動生成されます。
+    </p>
+</div>
 <div class="no-scroll">
     {{-- @include('admin.layouts.flash-message') --}}
     <div class="scroll">
         <table class="table">
             <tr>
-                <th style="width:10%;">許容最大人数</th>
+                <th style="width:10%;">ピット内最大時間</th>
                 <td>
-                    <input style="background:white; width:50%;"
-                        name = 'max_permission_members' type="number"
-                        value="{{ old('max_permission_members', isset($max_permission_members)?$max_permission_members:'')}}"
-                    />
+                    <select name = 'max_permission_time' class="select-box" style="width:50%;">
+                        <option value=''></option>
+                        @foreach(config('const.pit_time_options') as $time)
+                            @if (old('max_permission_time', isset($max_permission_time)?$max_permission_time:'') == $time)
+                                <option selected value={{$time}}>{{$time}}分</option>
+                            @else
+                                <option value={{$time}}>{{$time}}分</option>
+                            @endif
+                        @endforeach
+                    </select>
                 </td>
             </tr>
         </table>
-        @error('max_permission_members')
+        @error('max_permission_time')
             <p class="error-message">{{ $message }}</p>
         @enderror
         <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
@@ -30,12 +47,13 @@
         <p class="error-message area" style="display: none">エリアを選択してください。</p>
         @if(!$super_admin_flag)
         <div class="btns" id="direction">
-            <button type="button" class="clear-btn history">クリア</button>
-            <button type="button" class="ok save-btn">決定</button>
+            <button type="button" class="clear-btn history" onclick="clearImage()">クリア</button>
+            <button type="button" class="ok save-btn" onclick="saveRule()">決定</button>
         </div>
         @endif
     </div>
-    <input type="hidden" value="" name="rule_data" id = 'rule_data'/>
+    <input type="hidden" value="" name="red_points_data" id = 'red_points_data'/>
+    <input type="hidden" value="" name="blue_points_data" id = 'blue_points_data'/>
 </div>
 <style>
     .clear-btn{
@@ -72,6 +90,9 @@
     }
     #debug{
     }
+    .notice-area{
+        color:#999;
+    }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
@@ -106,13 +127,12 @@
     var layer = null;
     var radius = "<?php echo config('const.camera_mark_radius');?>";
     radius = parseInt(radius);
-    var red_points = [];
-    var blue_points = [];
+    var red_points = <?php echo json_encode($red_points);?>;
+    var blue_points = <?php echo json_encode($blue_points);?>;
     var point_numbers = 0;
-    var rule_numbers = "<?php echo count($rules);?>";
-    rule_numbers = parseInt(rule_numbers);
-    var all_rules = <?php echo $rules;?>;
-    if (rule_numbers == 0) all_rules = [];
+    if (red_points.length == 4){
+        point_numbers = 4;
+    }
 
     function is_cross(line1, line2){
         var a = line1[0]; // A point
@@ -421,16 +441,13 @@
     }
 
     function checkValidation(){
-        if (all_rules.length == 0){
-            $('.error-message').show();
-            return false;
-        }
-        if (all_rules[0].red_points == null || all_rules[0].red_points == ''){
+        if (red_points.length != 4){
             $('.error-message').show();
             return false;
         }
 
-        $('#rule_data').val(JSON.stringify(all_rules));
+        $('#red_points_data').val(JSON.stringify(red_points));
+        $('#blue_points_data').val(JSON.stringify(blue_points));
         return true;
     }
 
@@ -439,42 +456,34 @@
         if (!checkValidation()) return;
         $('#form_pit_rule').submit();
     }
+    function clearImage(){
+        red_points = [];
+        point_numbers = 0;
+        layer.find('Circle').map(circle_item => {
+            circle_item.destroy();
+        })
+        layer.find('Line').map(line_item => {
+            line_item.destroy();
+        })
+        layer.draw();
+        $('#red_points_data').val('');
+        $('#blue_points_data').val('');
+    }
+
     $(document).ready(function() {
-        $('.save-btn').click(function(){
-            saveRule();
-        });
-        $('.clear-btn').click(function(){
-            red_points = [];
-            point_numbers = 0;
-            layer.find('Circle').map(circle_item => {
-                circle_item.destroy();
-            })
-            layer.find('Line').map(line_item => {
-                line_item.destroy();
-            })
-            layer.draw();
-            if (all_rules.length > 0){
-                all_rules[0].red_points = null;
-                all_rules[0].blue_points = null;
-            }
-        });
         drawing();
-        if (all_rules.length > 0){
-            selected_rule = all_rules[0];
-            if (selected_rule.red_points != null && selected_rule.red_points != ''){
-                red_points =  selected_rule.red_points;
-                red_points.map((center_point, point_index) => {
-                    drawCircle(center_point, point_index);
+        if (red_points != null && red_points.length == 4){
+            red_points.map((center_point, point_index) => {
+                drawCircle(center_point, point_index);
+            })
+            if (blue_points != null && blue_points.length == 4){
+                blue_points.map((center_point, point_index) => {
+                    drawCircle(center_point, point_index, 'blue');
                 })
-                if (selected_rule.blue_points != null && selected_rule.blue_points != ''){
-                    selected_rule.blue_points.map((center_point, point_index) => {
-                        drawCircle(center_point, point_index, 'blue');
-                    })
-                }
-                point_numbers = 4;
-                drawRect(red_points, selected_rule.blue_points);
             }
+            drawRect(red_points, blue_points);
         }
+
     });
 </script>
 

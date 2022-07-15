@@ -41,7 +41,6 @@ class PitRequest extends FormRequest
             } else {
                 $rules['selected_camera'] = ['nullable'];
             }
-            $rules['max_perimission_members'] = ['nullable', 'max:2'];
         }
 
         return $rules;
@@ -51,7 +50,6 @@ class PitRequest extends FormRequest
     {
         $attributes = parent::attributes();
         $attributes['selected_camera'] = 'カメラ';
-        $attributes['max_perimission_members'] = '許容最大人数';
 
         return $attributes;
     }
@@ -60,7 +58,6 @@ class PitRequest extends FormRequest
     {
         $messages = [];
         $messages['selected_camera.required'] = 'カメラを選択してください。';
-        $messages['max_perimission_members.max'] = '許容最大人数は2桁以下にして入力ください。';
 
         return $messages;
     }

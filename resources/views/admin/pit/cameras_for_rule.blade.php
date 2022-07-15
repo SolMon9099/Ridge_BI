@@ -14,7 +14,8 @@
             <div class="title-wrap">
                 <h2 class="title">ルール新規作成</h2>
             </div>
-            <div class="flow"><ul><li class="active"><span>Step.1</span>カメラを選択</li><li><span>Step.2</span>アクションとエリアを選択</li></ul></div>
+            <div class="notice-area">検知対象のエリアを設定するカメラを選択してください。</div>
+            <div class="flow"><ul><li class="active"><span>Step.1</span>カメラを選択</li><li><span>Step.2</span>エリアを選択</li></ul></div>
             <form action="{{route('admin.pit.create_rule')}}" method="get" name="form1" id="form1">
                 @csrf
                 {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
@@ -62,5 +63,11 @@
             </form>
         </div>
     </div>
+    <style>
+        .notice-area{
+            color: #999;
+            margin-bottom: 8px;
+        }
+    </style>
 
 @endsection

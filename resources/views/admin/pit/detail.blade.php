@@ -1,7 +1,12 @@
 @extends('admin.layouts.app')
 
 @section('content')
-
+<?php
+    foreach ($rules as $rule) {
+        if ($rule->red_points != null && $rule->red_points != '') $rule->red_points = json_decode($rule->red_points);
+        if ($rule->blue_points != null && $rule->blue_points != '') $rule->blue_points = json_decode($rule->blue_points);
+    }
+?>
 <form action="{{route('admin.pit.detail')}}" method="get" name="form1" id="form1">
 @csrf
     <div id="wrapper">
@@ -44,7 +49,18 @@
             <div class="list">
                 <div class="inner active">
                     <h3 class="title">ピット内人数推移</h3>
-                    <canvas id="myLineChart1"></canvas>
+                    <div id="image-container"></div>
+                    <div style="display: flex;width:100%;margin-bottom:30px;" class="mainbody">
+                        <div class='video-show' style="width:50%;">
+                            <div class="streaming-video" style="height:360px;width:640px;">
+                                <safie-streaming-player></safie-streaming-player>
+                                <input type="button" value='再生' onClick="play()">
+                                <input type="button" value='停止' onClick="pause()">
+                            </div>
+                        </div>
+                        <canvas id="myLineChart1"></canvas>
+                    </div>
+
                     <div class="left-right">
                         <div class="left-box">
                             <h3 class="title">入退場履歴</h3>
@@ -121,7 +137,7 @@
                                 <tbody>
                                     <tr>
                                         <td>9:22</td>
-                                        <td>人数オーバー(2人)</td>
+                                        <td>時間オーバー(120)</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -181,87 +197,212 @@
     </div>
     <!-- -->
 </form>
+<style>
+    #myLineChart1{
+        width:50%!important;
+        height: 360px!important;
+    }
+    #image-container{
+        width:640px;
+        height:360px;
+        position: absolute;
+    }
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
 <script>
     var ctx = document.getElementById("myLineChart1");
     var time_labels = ['09:05:25', '09:22:12', '11:23:17', '12:33:41', '14:25:32', '15:31:45', '18:23:14', '19:47:51'];
+    var y_data = [1,2,1,0,1,0,1,0];
     for(var i = 0; i<time_labels.length; i++){
         time_labels[i] = new Date('2022-07-12 ' + time_labels[i]);
     }
     time_labels.unshift(new Date('2022-07-12 08:00:00'));
     time_labels.push(new Date('2022-07-12 20:00:00'));
-    var y_data = [1,2,1,0,1,0,1,0];
     y_data.unshift(null);
     y_data.push(null);
-    var min_time = new Date();
-    min_time.setHours(8);
-    min_time.setMinutes(0);
-    min_time.setSeconds(0);
-    var max_time = new Date();
-    max_time.setHours(20);
-    max_time.setMinutes(0);
-    max_time.setSeconds(0);
-    console.log('min', min_time, max_time);
-    var myLineChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            // labels: ['0:00', '3:00', '6:00', '9:00', '12:00', '15:00', '18:00', '21:00','24:00'],
-            labels:time_labels,
-            datasets: [{
-                label: '人',
-                steppedLine:true,
-                data: y_data,
-                borderColor: "#42b688",
-                backgroundColor: "rgba(66,182,136, 0.3)",
-                pointBackgroundColor:'red',
-                fill:true
-            }],
-        },
-        options: {
-            title: {
-                display: false,
-                text: 'ピット内人数推移'
-            },
-            responsive: true,
-            interaction: {
-                intersect: false,
-                axis: 'x'
-            },
-            // plugins: {
-            //     title: {
-            //         display: true,
-            //         text: (ctx) => 'Step ' + ctx.chart.data.datasets[0].stepped + ' Interpolation',
-            //     }
-            // },
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        suggestedMax: Math.max(...y_data) + 1,
-                        suggestedMin: 0,
-                        stepSize: 1,
-                        callback: function(value, index, values){
-                            return  value +  '人'
-                        }
-                    }
-                }],
-                xAxes:[{
-                    type: 'time',
-                    time: {
-                        unit: 'hour',
-                        displayFormats: {
-                            hour: 'H:mm'
-                        },
-                        distribution: 'series'
-                    },
-                    // ticks: {
-                    //     max: max_time,
-                    //     min: min_time,
-                    //     stepSize: 1,
-                    // }
-                }]
-            },
+    // var min_time = new Date();
+    // min_time.setHours(8);
+    // min_time.setMinutes(0);
+    // min_time.setSeconds(0);
+    // var max_time = new Date();
+    // max_time.setHours(20);
+    // max_time.setMinutes(0);
+    // max_time.setSeconds(0);
 
+    function drawGraph(x_data, y_data){
+        var myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels:x_data,
+                datasets: [{
+                    label: '人',
+                    steppedLine:true,
+                    data: y_data,
+                    borderColor: "#42b688",
+                    backgroundColor: "rgba(66,182,136, 0.3)",
+                    pointBackgroundColor:'red',
+                    fill:true
+                }],
+            },
+            options: {
+                title: {
+                    display: false,
+                    text: 'ピット内人数推移'
+                },
+                responsive: true,
+                interaction: {
+                    intersect: false,
+                    axis: 'x'
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            suggestedMax: Math.max(...y_data) + 1,
+                            suggestedMin: 0,
+                            stepSize: 1,
+                            callback: function(value, index, values){
+                                return  value +  '人'
+                            }
+                        }
+                    }],
+                    xAxes:[{
+                        type: 'time',
+                        time: {
+                            unit: 'hour',
+                            displayFormats: {
+                                hour: 'H:mm'
+                            },
+                            distribution: 'series'
+                        },
+                        // ticks: {
+                        //     max: max_time,
+                        //     min: min_time,
+                        //     stepSize: 1,
+                        // }
+                    }]
+                },
+
+            }
+        });
+    }
+
+    drawGraph(time_labels, y_data);
+    setInterval(() => {
+        for (var i = 0; i < y_data.length; i++){
+            y_data[i] = Math.floor(Math.random() * 5);
         }
+        drawGraph(time_labels, y_data);
+    }, 100000);
+</script>
+<script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
+<script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
+
+<script>
+    var rules = <?php echo json_encode($rules);?>;
+    var radius = "<?php echo config('const.camera_mark_radius');?>";
+    radius = parseInt(radius);
+
+    var container = document.getElementById('image-container');
+    var stage = new Konva.Stage({
+        container: 'image-container',
+        width: container.clientWidth,
+        height: container.clientHeight,
+    });
+    layer = new Konva.Layer();
+    stage.add(layer);
+
+    function drawCircle(center_point, point_index, selected_color = null){
+        var circle = new Konva.Circle({
+            x: center_point.x,
+            y: center_point.y,
+            radius: radius,
+            fill: selected_color != null ? selected_color : 'red',
+            stroke: selected_color != null ? selected_color : 'red',
+            strokeWidth: 1,
+            id:point_index
+        });
+        layer.
+        add(circle);
+    }
+    function is_cross(line1, line2){
+        var a = line1[0]; // A point
+        var b = line1[1]; // B point
+        var c = line2[0]; // C point
+        var d = line2[1]; // D point
+        let s = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+        let t = (b.x - a.x) * (d.y - a.y) - (d.x - a.x) * (b.y - a.y);
+        return s * t < 0;
+    }
+    function sortRectanglePoints(rect_points) {
+        var res = rect_points;
+        if (is_cross([rect_points[0], rect_points[1]], [rect_points[2], rect_points[3]])) {
+            res = [rect_points[0], rect_points[2], rect_points[1], rect_points[3]];
+        } else if (is_cross([rect_points[0], rect_points[2]], [rect_points[1], rect_points[3]])) {
+            res = [rect_points[0], rect_points[1], rect_points[2], rect_points[3]];
+        } else {
+            res = [rect_points[0], rect_points[1], rect_points[3], rect_points[2]];
+        }
+        return res;
+    }
+    function drawRect(rect_points, selected_color = null){
+        // layer.find('Line').map(line_item => {
+        //     line_item.destroy();
+        // })
+        // layer.draw();
+        rect_points = sortRectanglePoints(rect_points);
+        var rect_area = new Konva.Line({
+            points: [
+                rect_points[0].x/2, rect_points[0].y/2,
+                rect_points[1].x/2, rect_points[1].y/2,
+                rect_points[2].x/2, rect_points[2].y/2,
+                rect_points[3].x/2, rect_points[3].y/2,
+                rect_points[0].x/2, rect_points[0].y/2
+            ],
+            stroke: selected_color != null ? selected_color : 'red',
+            strokeWidth: radius - 3 > 0? radius - 3 : 2,
+            lineCap: 'round',
+            lineJoin: 'round',
+        });
+        layer.add(rect_area);
+    }
+    function drawing(rule){
+        if (rule.red_points != undefined){
+            drawRect(rule.red_points, 'red');
+        }
+        if (rule.blue_points != undefined){
+            drawRect(rule.blue_points, 'blue');
+        }
+    }
+    let safieStreamingPlayerElement;
+    let safieStreamingPlayer;
+    function load() {
+        safieStreamingPlayerElement = document.querySelector('safie-streaming-player');
+        if(safieStreamingPlayerElement != undefined && safieStreamingPlayerElement != null){
+            safieStreamingPlayer = safieStreamingPlayerElement.instance;
+            safieStreamingPlayer.on('error', (error) => {
+                console.error(error);
+            });
+            // 初期化
+            safieStreamingPlayer.defaultProperties = {
+                defaultAccessToken: '<?php echo $access_token;?>',
+                defaultDeviceId: '<?php echo $device_id;?>',
+                defaultAutoPlay:true
+            };
+        }
+    }
+    function play() {
+        safieStreamingPlayer.play();
+    }
+    function pause() {
+        safieStreamingPlayer.pause();
+    }
+
+    $(document).ready(function() {
+        if (rules.length > 0){
+            drawing(rules[0]);
+        }
+
     });
 </script>
+
 @endsection

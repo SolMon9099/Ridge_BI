@@ -27,7 +27,7 @@
                 </div>
                 @endif
             </div>
-
+            <div class="notice-area">こちらの画面ではルールの新規登録・既存のルールの編集・削除が行えます。</div>
             @include('admin.layouts.flash-message')
             {{ $dangers->appends([])->links('vendor.pagination.admin-pagination') }}
             <div class="scroll active">
@@ -42,6 +42,7 @@
                         <th>アクション</th>
                         <th>カラー</th>
                         <th>検知履歴</th>
+                        <th>削除</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -56,6 +57,15 @@
                             <td><input disabled type="color" value = "{{$danger->color}}"/></td>
                             <td>
                                 <button type="button" class="history">履歴表示</button>
+                            </td>
+                            <td>
+                                @if (!$super_admin_flag)
+                                    <button type="button" class="delete_danger_rules history" delete_index="{{ $danger->id }}">削除</button>
+                                    <form id="frm_delete_{{ $danger->id }}" action="{{ route('admin.danger.delete', ['danger'=> $danger->id]) }}" method="POST" style="display: none;">
+                                        @csrf
+                                        @method('delete')
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
@@ -72,7 +82,11 @@
 </div>
 
 <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
-
+<style>
+    .notice-area{
+        color: #999;
+    }
+</style>
 <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <script src="{{ asset('assets/admin/js/helper.js?2') }}"></script>
 

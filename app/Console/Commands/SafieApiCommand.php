@@ -24,6 +24,18 @@ class SafieApiCommand extends Command
         $contracts_data = Admin::query()->where('is_main_admin', 1)->get()->all();
         if (count($contracts_data) > 0) {
             foreach ($contracts_data as $item) {
+                if (!isset($item->safie_user_name)) {
+                    continue;
+                }
+                if (!isset($item->safie_password)) {
+                    continue;
+                }
+                if (!isset($item->safie_client_id)) {
+                    continue;
+                }
+                if (!isset($item->safie_client_secret)) {
+                    continue;
+                }
                 $safie_service = new SafieApiService($item->contract_no);
                 $safie_service->generateRefreshToken();
             }

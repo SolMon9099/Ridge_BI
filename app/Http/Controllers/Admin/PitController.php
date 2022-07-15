@@ -184,6 +184,8 @@ class PitController extends AdminController
                 $rule->floor_number = $map_data->floor_number;
             }
         }
+        $access_token = '';
+        $device_id = '';
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $camera->id)
@@ -192,6 +194,15 @@ class PitController extends AdminController
             if ($map_data != null) {
                 $camera->floor_number = $map_data->floor_number;
             }
+            if ($device_id == '') {
+                $device_id = $camera->camera_id;
+            }
+            if ($access_token == '' && $camera->contract_no != null && $camera->contract_no != '') {
+                $safie_service = new SafieApiService($camera->contract_no);
+                if (isset($safie_service->access_token)) {
+                    $access_token = $safie_service->access_token;
+                }
+            }
         }
 
         return view('admin.pit.detail')->with([
@@ -199,6 +210,8 @@ class PitController extends AdminController
             'request' => $request,
             'rules' => $rules,
             'cameras' => $cameras,
+            'device_id' => $device_id,
+            'access_token' => $access_token,
         ]);
     }
 

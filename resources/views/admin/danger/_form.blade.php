@@ -2,89 +2,49 @@
     $action_options = config('const.action');
     $login_user = Auth::guard('admin')->user();
     $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
+    $actions = array();
+    $color = null;
+    $points = array();
+    foreach ($rules as $index => $rule) {
+        if ($rule->points != null && $rule->points != '') {
+            $points = json_decode($rule->points);
+        }
+        $actions[] = $rule->action_id;
+        if (isset($rule->color)){
+            $color = $rule->color;
+        }
+    }
 ?>
 <div class="no-scroll">
-    @if (!isset($danger))
-    <div class="title-wrap sp-m">
-        <button type="button" class="edit left create-rule">＋ ルール追加</button>
-    </div>
-    @endif
     @include('admin.layouts.flash-message')
     <div class="scroll">
-        <table class="table2 text-centre">
-            <thead>
-                <tr>
-                    <th>アクション</th>
-                    <th>カラー</th>
-                    <th>エリア選択</th>
-					<th>削除</th>
-                </tr>
-            </thead>
-            <tbody id="rull-list">
-                <tr id="rule-template" style="display: none">
-                    <td>
-                        <select class="select-box">
-                            <option value='0'>ルールを選択</option>
-                            @foreach($action_options as $id => $action)
-                                <option value={{$id}}>{{$action}}</option>
-                            @endforeach
-                        </select>
-                        <p class="error-message rule-select" style="display: none">ルールを選択してください。</p>
-                    </td>
-                    <td><input type="color" class="color"/></td>
-                    <td>
-                        <button type="button" class="edit show_camera_image">エリア選択</button>
-                        <p class="error-message area" style="display: none">エリアを選択してください。</p>
-                    </td>
-                    <td><button type="button" class="delete_danger_rules history">削除</button></td>
-                </tr>
-                <tr class="" id = "image-record-template" style="display: none">
-                    <td colspan="4">
-                        <div id="" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
-                        <div class="btns" id="direction">
-                            <button type="button" class="cancel-btn history">閉じる</button>
-                            <button type="button" class="clear-btn history">クリア</button>
+        <div style="display: flex;width:100%;">
+            <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
+            <div style="padding-left:10px;">
+                <div class="title-div">カラー</div>
+                <div class="content-div"><input onchange="changeColor(this)" name='color' type="color" class="color" value="{{$rule->color}}"/></div>
+                <div class="title-div">アクション</div>
+                <div class="content-div">
+                    @foreach($action_options as $id => $action)
+                        <div>
+                        @if (in_array($id, $actions))
+                            <input name="actions[]" value={{$id}} type="checkbox" id="{{'action_'.$id}}" checked>
+                        @else
+                            <input name="actions[]" value={{$id}} type="checkbox" id="{{'action_'.$id}}">
+                        @endif
+                        <label class="custom-style" for="{{'action_'.$id}}"></label>{{$action}}
                         </div>
-                    </td>
-                </tr>
-                @foreach ($rules as $index => $rule)
-                <?php if ($rule->points != null && $rule->points != '') $rule->points = json_decode($rule->points);?>
-                <tr data-index = {{$index}} id = {{$rule->id}} class="tr_line">
-                    <td>
-                        <select class="select-box">
-                            <option value='0'>ルールを選択</option>
-                            @foreach($action_options as $id => $action)
-                                @if ($id == $rule->action_id)
-                                    <option value={{$id}} selected>{{$action}}</option>
-                                @else
-                                    <option value={{$id}}>{{$action}}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                        <p class="error-message rule-select" style="display: none">ルールを選択してください。</p>
-                    </td>
-                    <td><input type="color" class="color" value="{{$rule->color}}" onchange="changeColor(this, {{$index}})"/></td>
-                    <td>
-                        <button type="button" class="edit show_camera_image" onclick="showCameraImage({{$index}})">エリア選択</button>
-                        <p class="error-message area" style="display: none">エリアを選択してください。</p>
-                    </td>
-                    <td>
-                        <button type="button" class="delete_danger_rules history" onclick="deleteRule({{$index}})" >削除</button>
-                    </td>
-                </tr>
-                <tr image-index = {{$index}} class="image-record">
-                    <td colspan="4">
-                        <div id="" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;">
-                        </div>
-                        <div class="btns" id="direction">
-                            <button type="button" class="cancel-btn history">閉じる</button>
-                            <button type="button" class="clear-btn history">クリア</button>
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                    @endforeach
+                </div>
+                <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
+            </div>
+        </div>
+        <p class="error-message area" style="display: none">エリアを選択してください。</p>
+
+        <div class="btns" id="direction">
+            <button type="button" onclick="clearImage()" class="clear-btn history">選択をクリア</button>
+            <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
+        </div>
     </div>
     <div class="description">赤枠は4点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
     {{-- <div class="streaming-video" style="height:500px;">
@@ -92,20 +52,10 @@
         <input type="button" value='Play' onClick="play()">
         <input type="button" value='Pause' onClick="pause()">
     </div> --}}
-    <input type="hidden" value="" name="rule_data" id = 'rule_data'/>
-    @if(!$super_admin_flag)
-    <div class="footer-area">
-        <button type="button" class="ok save-btn">決定</button>
-    </div>
-    @endif
+    <input type="hidden" value="" name="points_data" id = 'points_data'/>
 </div>
 <style>
     .clear-btn{
-        margin:0;
-        margin-right:15px;
-        padding: 15px 75px;
-    }
-    .cancel-btn{
         margin:0;
         margin-right:15px;
         padding: 15px 75px;
@@ -114,11 +64,9 @@
         display: none;
     }
     #image-container{
-        /* background-size:100%; */
         width:1280px;
         height:720px;
-        margin-left: auto;
-        margin-right: auto;
+        display: block;
     }
     .footer-area{
         widows: 100%;
@@ -129,6 +77,9 @@
         margin-top:10px;
         color: #999;
         font-size: 13px;
+    }
+    .content-div{
+        margin-bottom: 20px;
     }
     #debug{
     }
@@ -166,14 +117,10 @@
     var layer = null;
     var radius = "<?php echo config('const.camera_mark_radius');?>";
     radius = parseInt(radius);
-    var points = [];
+    var selected_color = '<?php echo $color;?>';
+    var points = <?php echo json_encode($points);?>;
     var point_numbers = 0;
-    var rule_numbers = "<?php echo count($rules);?>";
-    rule_numbers = parseInt(rule_numbers);
-    var selected_rule_index = null;
-    var selected_color = 'black';
-    var all_rules = <?php echo $rules;?>;
-    if (rule_numbers == 0) all_rules = [];
+    if (points.length == 4) point_numbers = 4;
 
     function is_cross(line1, line2){
         var a = line1[0]; // A point
@@ -217,7 +164,7 @@
             lineJoin: 'round',
         });
         layer.add(rect_area);
-        all_rules[selected_rule_index].points = rect_points;
+        points = rect_points;
     }
 
 
@@ -301,92 +248,40 @@
         })
     }
 
-    function showCameraImage(index){
-        point_numbers = 0;
+    function clearImage(){
         points = [];
-        selected_rule_index = index;
-        var selected_rule = all_rules[index];
-        var selected_image_tr = $('tr[image-index="'+ selected_rule_index +'"]');
-        resetImageContainers();
-        selected_image_tr.show();
-        $('.camera-image', selected_image_tr).attr('id', 'image-container');
-        drawing();
-        if (selected_rule.points != null && selected_rule.points != ''){
-            points =  selected_rule.points;
-        }
-        var selected_rule_tr = $('tr[data-index="'+ selected_rule_index +'"]');
-        selected_color = $('.color', selected_rule_tr).val();
-
-        buttonSetting(selected_image_tr);
-        if (points.length < 4) return;
-
-        points.map((center_point, point_index) => {
-            drawCircle(center_point, point_index);
+        point_numbers = 0;
+        layer.find('Circle').map(circle_item => {
+            circle_item.destroy();
         })
-        point_numbers = 4;
-        drawRect(points);
-    }
-
-    function buttonSetting(selected_image_tr){
-        $('.clear-btn', selected_image_tr).click(function(){
-            points = [];
-            point_numbers = 0;
-            layer.find('Circle').map(circle_item => {
-                circle_item.destroy();
-            })
-            layer.find('Line').map(line_item => {
-                line_item.destroy();
-            })
-            layer.draw();
-            all_rules[selected_rule_index].points = null;
-        });
-        $('.cancel-btn', selected_image_tr).click(function(){
-            points = [];
-            point_numbers = 0;
-            layer.find('Circle').map(circle_item => {
-                circle_item.destroy();
-            })
-            layer.find('Line').map(line_item => {
-                line_item.destroy();
-            })
-            layer.draw();
-            resetImageContainers();
-        });
+        layer.find('Line').map(line_item => {
+            line_item.destroy();
+        })
+        layer.draw();
     }
 
     function checkValidation(){
         var res = true;
-        $('.tr_line').each(function(index){
-            var action = $('.select-box', $(this)).val();
-            var color = $('.color', $(this)).val();
-            if ($(this).css('display') != 'none'){
-                if (!(action > 0)) {
-                    res = false;
-                    $('.error-message.rule-select', $(this)).show();
-                }
-                if (all_rules[index].points == null || all_rules[index].points == ''){
-                    $('.error-message.area', $(this)).show();
-                    res = false;
-                }
-            } else {
-                all_rules[index].is_deleted = true;
-            }
-
-            all_rules[index].color = color;
-            all_rules[index].action_id = action;
-        })
-        $('#rule_data').val(JSON.stringify(all_rules));
+        if (points.length != 4){
+            $('.error-message.area').show();
+            res = false;
+        }
+        var action_boxs = $('input[type=checkbox]:checked');
+        if (!(action_boxs.length > 0)) {
+            res = false;
+            $('.error-message.rule-select').show();
+        }
         return res;
     }
 
     function saveRule(){
         $('.error-message').hide();
         if (!checkValidation()) return;
+        $('#points_data').val(JSON.stringify(points));
         $('#form_danger_rule').submit();
     }
 
-    function changeColor(e, index){
-        if (index != selected_rule_index) return;
+    function changeColor(e){
         selected_color = e.value;
         layer.find('Circle').map(circle_item => {
             circle_item.fill(selected_color);
@@ -395,82 +290,16 @@
         layer.find('Line').map(line_item => {
             line_item.stroke(selected_color);
         })
-
-    }
-    function deleteRule(index){
-        $('tr[data-index="'+ index +'"]').hide();
-        $('tr[image-index="'+ index +'"]').hide();
-    }
-    function resetImageContainers(){
-        $('.image-record').each(function(){
-            $('.camera-image', $(this)).attr('id', '');
-            $(this).hide();
-        })
-    }
-    function addRule() {
-        rule_numbers++;
-        var tr_record = $("#rule-template").clone().show();
-        tr_record.attr('id', '');
-        tr_record.attr('data-index', rule_numbers-1);
-        tr_record.addClass('tr_line');
-        all_rules.push({id:0, camera_id:$('#camera_id').val(), color:'black', action_id:0, points:null});
-        var image_record = $('#image-record-template').clone().show();
-        image_record.attr('id', '');
-        image_record.attr('image-index', rule_numbers-1);
-        image_record.addClass('image-record');
-
-        $(".show_camera_image", tr_record).click(function() {
-            selected_rule_index = tr_record.attr('data-index');
-            var selected_rule = all_rules[selected_rule_index];
-            points = [];
-            point_numbers = 0;
-            selected_color = $('.color', tr_record).val();
-
-            var selected_image_tr = $('tr[image-index="'+ selected_rule_index +'"]');
-            resetImageContainers();
-            selected_image_tr.show();
-            $('.camera-image', selected_image_tr).attr('id', 'image-container');
-            drawing();
-            if (selected_rule.points != null && selected_rule.points != ''){
-                points =  selected_rule.points;
-                points.map((center_point, point_index) => {
-                    drawCircle(center_point, point_index);
-                })
-                point_numbers = 4;
-                drawRect(points);
-            }
-
-            $('.color', tr_record).change(function(){
-                if (selected_rule_index != tr_record.attr('data-index')) return;
-                selected_color = $(this).val();
-                layer.find('Circle').map(circle_item => {
-                    circle_item.fill(selected_color);
-                    circle_item.stroke(selected_color);
-                })
-                layer.find('Line').map(line_item => {
-                    line_item.stroke(selected_color);
-                })
-                all_rules[selected_rule_index].color = selected_color;
-            });
-
-            buttonSetting(selected_image_tr);
-        });
-        $(".delete_danger_rules", tr_record).click(function() {
-            tr_record.hide();
-            image_record.hide();
-        })
-
-        $("#rull-list").append(tr_record);
-        $("#rull-list").append(image_record);
-        image_record.hide();
     }
 
     $(document).ready(function() {
-        $(".create-rule").click(function(e) {
-            addRule();
+        drawing();
+
+        points.map((center_point, point_index) => {
+            drawCircle(center_point, point_index);
         });
-        $('.save-btn').click(function(){
-            saveRule();
-        });
+        if (points.length == 4){
+            drawRect(points);
+        }
     });
 </script>

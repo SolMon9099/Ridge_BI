@@ -27,6 +27,7 @@
                 </div>
                 @endif
             </div>
+            <div class="notice-area">こちらの画面ではルールの新規登録・既存のルールの編集・削除が行えます。</div>
 
             @include('admin.layouts.flash-message')
             {{ $pits->appends([])->links('vendor.pagination.admin-pagination') }}
@@ -39,7 +40,7 @@
                         <th>現場名</th>
                         <th>設置フロア</th>
                         <th>設置場所</th>
-                        <th>許容最大人数</th>
+                        <th>ピット内最大時間</th>
                         <th>検知履歴</th>
                         <th>削除</th>
                     </tr>
@@ -52,7 +53,7 @@
                             <td>{{$pit->location_name}}</td>
                             <td>{{$pit->floor_number}}</td>
                             <td>{{$pit->installation_position}}</td>
-                            <td>{{$pit->max_permission_members}}</td>
+                            <td>{{$pit->max_permission_time > 0 ? (string)($pit->max_permission_time).'分' : ''}}</td>
                             <td>
                                 <button type="button" class="history">履歴表示</button>
                             </td>
@@ -81,6 +82,11 @@
 
     <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 
+    <style>
+        .notice-area{
+            color: #999;
+        }
+    </style>
     <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
     <script src="{{ asset('assets/admin/js/helper.js?2') }}"></script>
 

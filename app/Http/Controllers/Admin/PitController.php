@@ -167,7 +167,7 @@ class PitController extends AdminController
 
     public function detail(Request $request)
     {
-        $pit_detections = PitService::searchDetections($request)->get()->all();
+        $pit_detections = PitService::searchDetections($request, true)->get()->all();
         $all_data = [];
         foreach ($pit_detections as $item) {
             $all_data[date('Y-m-d', strtotime($item->starttime))][] = $item;
@@ -212,6 +212,31 @@ class PitController extends AdminController
             'cameras' => $cameras,
             'device_id' => $device_id,
             'access_token' => $access_token,
+        ]);
+    }
+
+    public function past_analysis(Request $request)
+    {
+        $pit_detections = PitService::searchDetections($request)->get()->all();
+        $all_data = [];
+        foreach ($pit_detections as $item) {
+            $all_data[date('Y-m-d', strtotime($item->starttime))][] = $item;
+        }
+        $cameras = PitService::getAllCameras();
+        foreach ($cameras as $camera) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $camera->floor_number = $map_data->floor_number;
+            }
+        }
+
+        return view('admin.pit.past_analysis')->with([
+            'all_data' => json_encode($all_data),
+            'request' => $request,
+            'cameras' => $cameras,
         ]);
     }
 

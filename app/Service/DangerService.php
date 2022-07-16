@@ -119,12 +119,12 @@ class DangerService
         if (isset($params['starttime']) && $params['starttime'] != '') {
             $query->whereDate('danger_area_detections.starttime', '>=', $params['starttime']);
         } else {
-            $query->whereDate('danger_area_detections.starttime', '>=', date('Y-m-01'));
+            $query->whereDate('danger_area_detections.starttime', '>=', date('Y-m-d', strtotime('-1 week')));
         }
         if (isset($params['endtime']) && $params['endtime'] != '') {
             $query->whereDate('danger_area_detections.starttime', '<=', $params['endtime']);
         } else {
-            $query->whereDate('danger_area_detections.starttime', '<=', date('Y-m-t'));
+            $query->whereDate('danger_area_detections.starttime', '<=', date('Y-m-d'));
         }
         if (isset($params['rule_ids']) && $params['rule_ids'] != '') {
             $rule_ids = json_decode($params['rule_ids']);

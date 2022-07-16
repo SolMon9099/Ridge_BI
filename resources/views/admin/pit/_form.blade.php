@@ -13,20 +13,12 @@
 ?>
 <div class='notice-area'>
     <p>
-        【ピット内許容最大時間について】<br/>&nbsp;&nbsp;・ピット内作業員がどれだけの時間滞在したときに通知を行うかの時間設定を行ってください。
-    </p>
-    <p>
-        【エリア選択について】<br/>&nbsp;&nbsp;・入場を検知するエリアを4点を選択し矩形で囲ってください。<br/>&nbsp;&nbsp;※入場を検知する赤枠と退場を検知する青枠が自動生成されます。
-    </p>
-</div>
-<div class="no-scroll">
-    {{-- @include('admin.layouts.flash-message') --}}
-    <div class="scroll">
-        <table class="table">
+        【ピット内許容最大時間について】<br/>
+        <table class="table" style="margin-left: 20px;">
             <tr>
                 <th style="width:10%;">ピット内最大時間</th>
                 <td>
-                    <select name = 'max_permission_time' class="select-box" style="width:50%;">
+                    <select name = 'max_permission_time' class="select-box" style="width:60px;">
                         <option value=''></option>
                         @foreach(config('const.pit_time_options') as $time)
                             @if (old('max_permission_time', isset($max_permission_time)?$max_permission_time:'') == $time)
@@ -42,8 +34,22 @@
         @error('max_permission_time')
             <p class="error-message">{{ $message }}</p>
         @enderror
+    </p>
+    <div style="margin-bottom: 20px;">
+        【エリア選択について】
+        <ul style="margin-left: 40px;">
+            <li class="disc-list-style">ピットの入り口を4点クリックしてください</li>
+            <li class="disc-list-style">4点をクリックすると4角形が自動生成されます。</li>
+            <li class="disc-list-style">赤枠は入場を検知し青枠は退場を検知します。</li>
+            <li class="disc-list-style">赤枠及び青枠については点の部分をクリックしながら移動させることで調整できます。<br/> ※赤枠と青枠の間に一人分の体が入る距離を目安として適宜調整してください。</li>
+        </ul>
+    </div>
+</div>
+<div class="no-scroll">
+    {{-- @include('admin.layouts.flash-message') --}}
+    <div class="scroll">
         <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
-        <div class="description">青枠及び赤枠は4点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
+        <div id="debug"></div>
         <p class="error-message area" style="display: none">エリアを選択してください。</p>
         @if(!$super_admin_flag)
         <div class="btns" id="direction">
@@ -87,6 +93,9 @@
         margin-right: auto;
         color: #999;
         font-size: 13px;
+    }
+    .disc-list-style{
+        list-style: disc;
     }
     #debug{
     }
@@ -359,7 +368,7 @@
             lineJoin: 'round',
         });
         if (blue_data == null || blue_data == ''){
-            blue_points = getExpandRectanglePoints(rect_points, 60);
+            blue_points = getExpandRectanglePoints(rect_points, 120);
             blue_points.map((item, index) => {
                 drawCircle(item, index, 'blue');
             });
@@ -382,12 +391,6 @@
         });
         layer.add(red_rect_area);
         layer.add(blue_rect_area);
-
-        if (all_rules.length == 0){
-            all_rules.push({id:0, camera_id:$('#camera_id').val(), red_points:null, blue_points:null})
-        }
-        all_rules[0].red_points = rect_points;
-        all_rules[0].blue_points = blue_points;
     }
 
     function drawing(){

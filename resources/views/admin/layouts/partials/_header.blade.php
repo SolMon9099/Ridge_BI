@@ -66,80 +66,18 @@
         </div>
     </div>
     <ul class="nav" id="dropmenu">
-        @if ($super_admin_flag || in_array(config('const.header_menu_codes')['pit'], $headers))
-        <li><a href="#">ピット入退場検知</a>
+        @foreach (config('const.header_menus') as $code => $header_name)
+        @if ($super_admin_flag || in_array($code, $headers))
+            <li><a href="#">{{$header_name}}</a>
             <ul>
-                @if (!$general_user_flag || in_array('admin.pit', $manager_allowed_pages))
-                    <li><a href="{{route('admin.pit')}}">ルール一覧</a></li>
+            @foreach (config('const.pages')[$header_name] as $item)
+                <?php $page_id = $item['id']; $url = config('const.page_route_names')[$page_id];?>
+                @if (!$general_user_flag || in_array($url, $manager_allowed_pages))
+                    <li><a href="{{route($url)}}">{{$item['name']}}</a></li>
                 @endif
-                @if (!$general_user_flag || in_array('admin.pit.list', $manager_allowed_pages))
-                    <li><a href="{{route('admin.pit.list')}}">検知リスト</a></li>
-                @endif
-                @if (!$general_user_flag || in_array('admin.pit.detail', $manager_allowed_pages))
-                    <li><a href="{{route('admin.pit.detail')}}">詳細分析</a></li>
-                @endif
+            @endforeach
             </ul>
-        </li>
         @endif
-        @if ($super_admin_flag || in_array(config('const.header_menu_codes')['danger_area'], $headers))
-        <li><a href="#">危険エリア侵入検知</a>
-            <ul>
-                @if (!$general_user_flag || in_array('admin.danger', $manager_allowed_pages))
-                    <li><a href="{{route('admin.danger')}}">ルール一覧</a></li>
-                @endif
-                @if (!$general_user_flag || in_array('admin.danger.list', $manager_allowed_pages))
-                    <li><a href="{{route('admin.danger.list')}}">検知リスト</a></li>
-                @endif
-                @if (!$general_user_flag || in_array('admin.danger.detail', $manager_allowed_pages))
-                    <li><a href="{{route('admin.danger.detail')}}">詳細分析</a></li>
-                @endif
-            </ul>
-        </li>
-        @endif
-        @if ($super_admin_flag || in_array(config('const.header_menu_codes')['shelf'], $headers))
-        <li><a href="#">棚乱れ検知</a>
-            <ul>
-                @if (!$general_user_flag || in_array('admin.shelf', $manager_allowed_pages))
-                    <li><a href="{{route('admin.shelf')}}">ルール一覧</a></li>
-                @endif
-                @if (!$general_user_flag || in_array('admin.shelf.list', $manager_allowed_pages))
-                    <li><a href="{{route('admin.shelf.list')}}">検知リスト</a></li>
-                @endif
-                @if (!$general_user_flag || in_array('admin.shelf.detail', $manager_allowed_pages))
-                    <li><a href="{{route('admin.shelf.detail')}}">詳細分析</a></li>
-                @endif
-            </ul>
-        </li>
-        @endif
-        @if ($super_admin_flag || in_array(config('const.header_menu_codes')['meter'], $headers))
-        <li><a href="#">検針メーター検知</a>
-            <ul>
-                @if (!$general_user_flag || in_array('admin.meter', $manager_allowed_pages))
-                    <li><a href="{{route('admin.meter')}}">ルール一覧</a></li>
-                @endif
-                @if (!$general_user_flag || in_array('admin.meter.list', $manager_allowed_pages))
-                    <li><a href="{{route('admin.meter.list')}}">検知リスト</a></li>
-                @endif
-                @if (!$general_user_flag || in_array('admin.meter.detail', $manager_allowed_pages))
-                    <li><a href="{{route('admin.meter.detail')}}">詳細分析</a></li>
-                @endif
-            </ul>
-        </li>
-        @endif
-        @if ($super_admin_flag || in_array(config('const.header_menu_codes')['past_analysis'], $headers))
-        <li><a href="#">過去分析</a>
-            <ul>
-                @if (!$general_user_flag || in_array('admin.analyze', $manager_allowed_pages))
-                    <li><a href="{{route('admin.analyze')}}">新規分析依頼</a></li>
-                @endif
-                @if (!$general_user_flag || in_array('admin.analyze.now_list', $manager_allowed_pages))
-                    <li><a href="{{route('admin.analyze.now_list')}}">分析依頼中リスト</a></li>
-                @endif
-                @if (!$general_user_flag || in_array('admin.analyze.finish_list', $manager_allowed_pages))
-                    <li><a href="{{route('admin.analyze.finish_list')}}">分析済みリスト</a></li>
-                @endif
-            </ul>
-        </li>
-        @endif
+        @endforeach
       </ul>
 </header>

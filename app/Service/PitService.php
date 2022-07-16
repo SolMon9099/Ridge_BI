@@ -96,7 +96,7 @@ class PitService
         return $res;
     }
 
-    public static function searchDetections($params)
+    public static function searchDetections($params, $today_flag = false)
     {
         $query = PitDetection::query()
             ->select(
@@ -110,16 +110,16 @@ class PitService
             ->leftJoin('pit_detection_rules', 'pit_detection_rules.id', 'pit_detections.rule_id')
             ->leftJoin('cameras', 'cameras.id', 'pit_detections.camera_id')
             ->leftJoin('locations', 'locations.id', 'cameras.location_id');
-        if (isset($params['starttime']) && $params['starttime'] != '') {
-            $query->whereDate('pit_detections.starttime', '>=', $params['starttime']);
+        if ($today_flag == true) {
+            $query->whereDate('pit_detections.starttime', date('Y-m-d'));
         } else {
-            $query->whereDate('pit_detections.starttime', '>=', date('Y-m-01'));
+            if (isset($params['searchdate']) && $params['searchdate'] != '') {
+                $query->whereDate('pit_detections.starttime', $params['searchdate']);
+            } else {
+                $query->whereDate('pit_detections.starttime', date('Y-m-d'));
+            }
         }
-        if (isset($params['endtime']) && $params['endtime'] != '') {
-            $query->whereDate('pit_detections.starttime', '<=', $params['endtime']);
-        } else {
-            $query->whereDate('pit_detections.starttime', '<=', date('Y-m-t'));
-        }
+
         if (isset($params['rule_ids']) && $params['rule_ids'] != '') {
             $rule_ids = json_decode($params['rule_ids']);
             if (count($rule_ids) > 0) {

@@ -85,7 +85,7 @@ return [
         1 => 'admin.pit',
         2 => 'admin.danger',
         3 => 'admin.shelf',
-        4 => 'admin.meter',
+        4 => 'admin.thief',
         5 => 'admin.analyze',
     ],
 
@@ -93,7 +93,7 @@ return [
         1 => 'ピット入退場検知',
         2 => '危険エリア侵入検知',
         3 => '棚乱れ検知',
-        4 => '検針メーター検知',
+        4 => '大量盗難探知',
         5 => '過去分析',
     ],
 
@@ -101,7 +101,7 @@ return [
         'pit' => 1,
         'danger_area' => 2,
         'shelf' => 3,
-        'meter' => 4,
+        'thief' => 4,
         'past_analysis' => 5,
     ],
 
@@ -121,21 +121,22 @@ return [
             ['id' => 6, 'name' => 'カメラマッピング一覧'],
         ],
         'ピット入退場検知' => [
-            ['id' => 7, 'name' => 'ルール一覧'],
+            ['id' => 7, 'name' => 'ルール新規作成・編集'],
+            ['id' => 9, 'name' => 'ダッシュボード'],
             ['id' => 8, 'name' => '検知リスト'],
-            ['id' => 9, 'name' => '詳細分析'],
+            ['id' => 22, 'name' => '過去データ'],
         ],
         '危険エリア侵入検知' => [
-            ['id' => 10, 'name' => 'ルール一覧'],
+            ['id' => 10, 'name' => 'ルール新規作成・編集'],
             ['id' => 11, 'name' => '検知リスト'],
-            ['id' => 12, 'name' => '詳細分析'],
+            ['id' => 12, 'name' => '過去データ'],
         ],
         '棚乱れ検知' => [
             ['id' => 13, 'name' => 'ルール一覧'],
             ['id' => 14, 'name' => '検知リスト'],
             ['id' => 15, 'name' => '詳細分析'],
         ],
-        '検針メーター検知' => [
+        '大量盗難探知' => [
             ['id' => 19, 'name' => 'ルール一覧'],
             ['id' => 20, 'name' => '検知リスト'],
             ['id' => 21, 'name' => '詳細分析'],
@@ -157,6 +158,7 @@ return [
         7 => 'admin.pit',
         8 => 'admin.pit.list',
         9 => 'admin.pit.detail',
+        22 => 'admin.pit.past_analysis',
         10 => 'admin.danger',
         11 => 'admin.danger.list',
         12 => 'admin.danger.detail',
@@ -166,13 +168,13 @@ return [
         16 => 'admin.analyze',
         17 => 'admin.analyze.now_list',
         18 => 'admin.analyze.finish_list',
-        19 => 'admin.meter',
-        20 => 'admin.meter.list',
-        21 => 'admin.meter.detail',
+        19 => 'admin.thief',
+        20 => 'admin.thief.list',
+        21 => 'admin.thief.detail',
     ],
 
     'camera_start_time' => '08:00:00',
     'camera_end_time' => '21:00:00',
     'request_interval' => 5,        //分
-    'pit_time_options' => [15, 30, 45, 60, 75, 90],
+    'pit_time_options' => [15, 30, 45, 60, 75, 90, 105, 120],
 ];

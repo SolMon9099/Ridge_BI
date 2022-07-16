@@ -13,6 +13,10 @@
         <div class="title-wrap">
             <h2 class="title">検知リスト</h2>
         </div>
+        <div class='notice-area'>
+            ピット内最大時間(ピット内の人数が０人から１人になった時点を始点とし時間を測定)を超えた際に検知を行います。<br/>
+            ※時間計測開始時の画像を表示しています。
+        </div>
         <form action="{{route('admin.pit.list')}}" method="get" name="form1" id="form1">
         @csrf
             <div class="title-wrap ver2 stick">
@@ -61,6 +65,7 @@
                         <td>{{$item->location_name}}</td>
                         <td>{{$item->floor_number}}</td>
                         <td>{{$item->installation_position}}</td>
+                        <td>時間オーバー(90分)</td>
                     </tr>
                     </table>
                 </div>
@@ -137,6 +142,9 @@
 <!-- -->
 
 <style>
+    .notice-area{
+        color:#999;
+    }
 </style>
 <script>
     function selectRule(){

@@ -81,6 +81,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::get('/create_rule', 'PitController@create_rule')->name('admin.pit.create_rule');
         Route::get('/list', 'PitController@list')->name('admin.pit.list');
         Route::get('/detail', 'PitController@detail')->name('admin.pit.detail');
+        Route::get('/past_analysis', 'PitController@past_analysis')->name('admin.pit.past_analysis');
         Route::post('/store', 'PitController@store')->name('admin.pit.store');
         Route::put('/update/{pit}', 'PitController@update')->name('admin.pit.update');
         Route::delete('/delete/{pit}', 'PitController@delete')->name('admin.pit.delete');
@@ -108,6 +109,16 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::get('/list', 'ShelfController@list')->name('admin.shelf.list');
         Route::get('/detail', 'ShelfController@detail')->name('admin.shelf.detail');
         Route::get('/save_sorted_imgage', 'ShelfController@save_sorted_imgage')->name('admin.shelf.save_sorted_imgage');
+    });
+
+    Route::group(['prefix' => 'thief'], function () {
+        Route::get('/', 'ThiefController@index')->name('admin.thief');
+        Route::get('/create', 'ThiefController@create')->name('admin.thief.create');
+        Route::post('/create_rule', 'ThiefController@create_rule')->name('admin.thief.create_rule');
+        Route::get('/edit', 'ThiefController@edit')->name('admin.thief.edit');
+        Route::post('/edit2', 'ThiefController@edit2')->name('admin.thief.edit2');
+        Route::get('/list', 'ThiefController@list')->name('admin.thief.list');
+        Route::get('/detail', 'ThiefController@detail')->name('admin.thief.detail');
     });
 
     Route::group(['prefix' => 'meter'], function () {

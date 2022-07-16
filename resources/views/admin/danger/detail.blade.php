@@ -8,12 +8,12 @@
         <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.danger')}}">危険エリア侵入検知</a></li>
-            <li>詳細分析</li>
+            <li>過去データ</li>
         </ul>
         </div>
         <div id="r-content">
             <div class="title-wrap">
-                <h2 class="title">詳細分析</h2>
+                <h2 class="title">過去データ</h2>
             </div>
             <div class="title-wrap ver2 stick">
             <div class="sp-ma">
@@ -23,11 +23,13 @@
                     <h4>検出期間</h4>
                     </li>
                     <li>
-                        <input id='starttime' type="date" name='starttime' value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-01'))}}">
+                        <input id='starttime' type="date" name='starttime' onchange="search()"
+                            value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')))}}">
                     </li>
                     <li>～</li>
                     <li>
-                        <input id='endtime' type="date" name='endtime' value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-t'))}}">
+                        <input id='endtime' type="date" name='endtime' onchange="search()"
+                            value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'))}}">
                     </li>
                 </ul>
                 </div>
@@ -206,6 +208,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
 <script>
 
+    function search(){
+        $('#form1').submit();
+    }
+
     function setSelectedSearchOption(value){
         $('#selected_search_option').val(value);
     }
@@ -227,6 +233,7 @@
     Object.keys(actions).map(id => {
         totals_by_action[id] = [];
     })
+    var max_y = 0;
     for (var d = starttime; d <= endtime; d.setDate(d.getDate() + 1)) {
         var date_key = d.getFullYear();
         var month = d.getMonth() + 1 > 9 ? (d.getMonth() + 1).toString(): '0' + (d.getMonth() + 1).toString();
@@ -244,6 +251,7 @@
                     totals_by_action[id].push(0);
                 } else {
                     totals_by_action[id].push(all_data[date_key][id].length);
+                    if (all_data[date_key][id].length > max_y) max_y = all_data[date_key][id].length;
                 }
             })
         }
@@ -273,9 +281,9 @@
             scales: {
                 yAxes: [{
                 ticks: {
-                    suggestedMax: 20,
+                    suggestedMax: max_y + 2,
                     suggestedMin: 0,
-                    stepSize: 10,
+                    stepSize: 1,
                     callback: function(value, index, values){
                     return  value +  '回'
                     }

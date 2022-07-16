@@ -27,8 +27,7 @@
                 </div>
                 @endif
             </div>
-            <div class="notice-area">こちらの画面ではルールの新規登録・既存のルールの編集・削除が行えます。</div>
-
+            <div class="notice-area">こちらの画面では、カメラ毎に通知ルールの新規登録・既存の通知ルールの編集・削除が行えます。</div>
             @include('admin.layouts.flash-message')
             {{ $pits->appends([])->links('vendor.pagination.admin-pagination') }}
             <div class="scroll active">

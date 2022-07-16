@@ -438,7 +438,8 @@ input[type=text], input[type=password], input[type=number] {
 }
 #dropmenu li ul li a {
   padding: 15px 15px;
-		background: #0062de;
+  padding-right:10px;
+  background: #0062de;
   text-align: left;
   color: #d7e6fe;
 }
@@ -1140,7 +1141,7 @@ background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz3
 		margin: 10px 0 0 0;
 		font-size: 13px;
 	}
-	
+
 }
 #r-content h2.title2 {
   font-size: 18px;
@@ -1418,7 +1419,7 @@ table.table td {
   font-size: 14px;
   vertical-align: middle;
 	padding: 10px 0;
-} 
+}
 table.table td.half{
 	width:25%;
 }
@@ -1986,9 +1987,9 @@ input[type=checkbox]:checked + label:before, input[type=radio]:checked + label:b
 .custom-style:before{
    width:16px !important; /* チェックボックスの幅 */
   height:16px !important; /* チェックボックスの高さ */
-  left:5px; 
+  left:5px;
   border:1px solid #ccc !important; /* チェックボックスの枠 */
-  border-radius:3px !important; 
+  border-radius:3px !important;
   margin-top:6px !important;
 	background: none !important;
 	opacity: 1 !important;
@@ -4464,7 +4465,7 @@ ul.date-list li h4 {
 			padding-left: 10px;
   }
 }
-ul.date-list li input[type=tel], 
+ul.date-list li input[type=tel],
 ul.date-list li input[type=date] {
   font-size: 14px;
   padding: 5px 5px 2px 5px;
@@ -4500,7 +4501,7 @@ ul.date-list li:last-child{
 		margin: 0 15px;
 	}
 }
-	
+
 button.ok {
   background: linear-gradient(-135deg, #2ebf43, #00db4f);
   font-size: 16px;
@@ -4730,7 +4731,7 @@ ul.radio-list li {
 	margin-bottom: 20px;
 }
 @media only screen and (max-width:768px) {
-	
+
 	.real img{
 		margin-bottom: 15px;
 	}

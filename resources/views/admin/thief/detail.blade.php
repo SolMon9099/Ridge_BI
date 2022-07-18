@@ -5,7 +5,7 @@
 <div id="wrapper">
     <div class="breadcrumb">
         <ul>
-            <li>大量盗難探知</li>
+            <li>大量盗難検知</li>
             <li>詳細分析</li>
         </ul>
     </div>
@@ -205,7 +205,7 @@
         options: {
             title: {
                 display: true,
-                text: '棚乱れ検知の合計回数'
+                text: '大量盗難検知の合計回数'
             },
             scales: {
                 yAxes: [{
@@ -245,7 +245,7 @@
         options: {
             title: {
                 display: true,
-                text: '棚乱れ検知の合計回数'
+                text: '大量盗難検知の合計回数'
             },
             scales: {
                 yAxes: [{

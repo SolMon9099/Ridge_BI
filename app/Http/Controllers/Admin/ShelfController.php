@@ -45,7 +45,7 @@ class ShelfController extends AdminController
             $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
         }
 
-        $rules = ShelfService::getShelfRuleInfoById($shelf->id);
+        $rules = ShelfService::getRulesByCameraID($shelf->camera_id);
 
         return view('admin.shelf.edit')->with([
             'shelf' => $shelf,
@@ -62,9 +62,7 @@ class ShelfController extends AdminController
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
             abort(403);
         }
-        $rule_data = json_decode($request['rule_data']);
-        $rule_data = (array) $rule_data;
-        if (ShelfService::saveData($rule_data)) {
+        if (ShelfService::saveData($request)) {
             $request->session()->flash('success', 'ルールを変更しました。');
 
             return redirect()->route('admin.shelf');
@@ -123,6 +121,19 @@ class ShelfController extends AdminController
             'device_id' => $safie_service->device_id,
             'access_token' => $safie_service->access_token,
         ]);
+    }
+
+    public function delete(Request $request, ShelfDetectionRule $shelf)
+    {
+        if (ShelfService::doDelete($shelf)) {
+            $request->session()->flash('success', 'ルールを削除しました。');
+
+            return redirect()->route('admin.shelf');
+        } else {
+            $request->session()->flash('error', 'ルール削除が失敗しました。');
+
+            return redirect()->route('admin.shelf');
+        }
     }
 
     public function list()

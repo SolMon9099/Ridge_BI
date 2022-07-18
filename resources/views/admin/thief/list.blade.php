@@ -5,7 +5,7 @@
 <div id="wrapper">
     <div class="breadcrumb">
       <ul>
-        <li>大量盗難探知</li>
+        <li>大量盗難検知</li>
         <li>検知リスト</li>
       </ul>
     </div>

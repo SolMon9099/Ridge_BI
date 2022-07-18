@@ -1390,7 +1390,7 @@ h4.subtitle + p {
 	font-size: 14px;
 }
 }
-.add, .tel-add {
+.tel-add {
 	margin: 0 0 0 35px !important;
 	padding: 0 !important;
 }

@@ -38,7 +38,11 @@
             </div>
             <div class="list">
                 <div class="inner active">
-                    <h3 class="title">ピット内人数推移</h3>
+                    <div style="display: flex;">
+                        <h3 class="title">ピット内人数推移</h3>
+                        <button type='button' class="time-change-btn" onclick="changeXRange()">時間軸切り替え</button>
+                        <button type="button" class='time-change-btn' onclick="moveXRange()">時間軸➞</button>
+                    </div>
                     <canvas id="myLineChart1"></canvas>
 
                     <div class="left-right">
@@ -178,6 +182,13 @@
     <!-- -->
 </form>
 <style>
+    .time-change-btn{
+        margin-left: 25px;
+        height: 35px;
+        margin-top: 10px;
+        padding-left: 10px;
+        padding-right:10px;
+    }
     /* #myLineChart1{
         width:50%!important;
         height: 360px!important;
@@ -193,6 +204,8 @@
     function search(){
         $('#form1').submit();
     }
+    var x_range = 3;
+    var start_x = 8;
 
     var ctx = document.getElementById("myLineChart1");
     var time_labels = ['09:05:25', '09:22:12', '11:23:17', '12:33:41', '14:25:32', '15:31:45', '18:23:14', '19:47:51'];
@@ -200,28 +213,47 @@
     for(var i = 0; i<time_labels.length; i++){
         time_labels[i] = new Date('2022-07-12 ' + time_labels[i]);
     }
-    time_labels.unshift(new Date('2022-07-12 08:00:00'));
-    time_labels.push(new Date('2022-07-12 20:00:00'));
-    y_data.unshift(null);
-    y_data.push(null);
-    // var min_time = new Date();
-    // min_time.setHours(8);
-    // min_time.setMinutes(0);
-    // min_time.setSeconds(0);
-    // var max_time = new Date();
-    // max_time.setHours(20);
-    // max_time.setMinutes(0);
-    // max_time.setSeconds(0);
+    // time_labels.unshift(new Date('2022-07-12 08:00:00'));
+    // time_labels.push(new Date('2022-07-12 20:00:00'));
+    // y_data.unshift(null);
+    // y_data.push(null);
+    var min_time = new Date();
+    min_time.setHours(8);
+    min_time.setMinutes(0);
+    min_time.setSeconds(0);
+    var max_time = new Date();
+    max_time.setHours(20);
+    max_time.setMinutes(0);
+    max_time.setSeconds(0);
 
-    function drawGraph(x_data, y_data){
+    function drawGraph(x_data, y_data, time_range, start_time){
+        var new_x_data = [];
+        var new_y_data = [];
+        var end_time_value = time_range + start_time;
+        if (end_time_value < 10) end_time_value = '0' + end_time_value.toString();
+        end_time_value = new Date('2022-07-12 ' + end_time_value + ':00:00');
+        if (start_time < 10) start_time = '0' + start_time.toString();
+        start_time = new Date('2022-07-12 ' + start_time + ':00:00');
+        for(var i = 0; i < x_data.length; i++){
+            if (x_data[i].getTime() <= end_time_value.getTime() && x_data[i].getTime() >= start_time.getTime()) {
+                new_x_data.push(x_data[i]);
+                new_y_data.push(y_data[i]);
+            }
+        }
+
+        new_x_data.push(end_time_value);
+        new_y_data.push(null);
+        new_x_data.unshift(start_time);
+        new_y_data.unshift(null);
+
         var myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels:x_data,
+                labels:new_x_data,
                 datasets: [{
                     label: '人',
                     steppedLine:true,
-                    data: y_data,
+                    data: new_y_data,
                     borderColor: "#42b688",
                     backgroundColor: "rgba(66,182,136, 0.3)",
                     pointBackgroundColor:'red',
@@ -241,7 +273,7 @@
                 scales: {
                     yAxes: [{
                         ticks: {
-                            suggestedMax: Math.max(...y_data) + 1,
+                            suggestedMax: Math.max(...new_y_data) + 1,
                             suggestedMin: 0,
                             stepSize: 1,
                             callback: function(value, index, values){
@@ -252,17 +284,17 @@
                     xAxes:[{
                         type: 'time',
                         time: {
-                            unit: 'hour',
+                            unit: 'minute',
                             displayFormats: {
-                                hour: 'H:mm'
+                                minute: 'H:mm'
                             },
                             distribution: 'series'
                         },
-                        // ticks: {
-                        //     max: max_time,
-                        //     min: min_time,
-                        //     stepSize: 1,
-                        // }
+                        ticks: {
+                            max: max_time,
+                            min: min_time,
+                            stepSize: 15,
+                        }
                     }]
                 },
 
@@ -270,6 +302,29 @@
         });
     }
 
-    drawGraph(time_labels, y_data);
+    function changeXRange(){
+        if (x_range == 3) {
+            x_range = 6;
+        } else if (x_range == 6){
+            x_range = 12;
+        } else {
+            x_range = 3;
+        }
+        start_x = 8;
+        drawGraph(time_labels, y_data, x_range, start_x);
+    }
+
+    function moveXRange(){
+        if (x_range == 12) return;
+        if (start_x + x_range >= 20){
+            start_x = 8;
+        } else {
+            start_x = start_x + x_range;
+        }
+        console.log('rrrr', x_range, start_x);
+        drawGraph(time_labels, y_data, x_range, start_x);
+    }
+
+    drawGraph(time_labels, y_data, x_range, start_x);
 </script>
 @endsection

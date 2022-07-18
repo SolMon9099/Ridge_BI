@@ -41,6 +41,7 @@
                         <th>設置場所</th>
                         <th>カラー</th>
                         <th>検知履歴</th>
+                        <th>削除</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,6 +56,15 @@
                             <td>
                                 <button type="button" class="history">履歴表示</button>
                             </td>
+                            <td>
+                                @if (!$super_admin_flag)
+                                    <button type="button" class="delete_shelf_rules history" delete_index="{{ $shelf->id }}">削除</button>
+                                    <form id="frm_delete_{{ $shelf->id }}" action="{{ route('admin.shelf.delete', ['shelf'=> $shelf->id]) }}" method="POST" style="display: none;">
+                                        @csrf
+                                        @method('delete')
+                                    </form>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -62,6 +72,25 @@
         </div>
         {{ $shelfs->appends([])->links('vendor.pagination.admin-pagination') }}
     </div>
-  </div>
-
+</div>
+<div id="dialog-confirm" title="test" style="display:none">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+    <span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
+<script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('assets/admin/js/helper.js?2') }}"></script>
+<script>
+    var delete_id = "";
+    $(document).ready(function () {
+      $(".delete_shelf_rules").click(function(e){
+          e.preventDefault();
+          delete_id = $(this).attr('delete_index');
+          helper_confirm("dialog-confirm", "削除", "ルールを削除します。<br />よろしいですか？", 300, "確認", "閉じる", function(){
+              var frm_id = "#frm_delete_" + delete_id;
+              $(frm_id).submit();
+          });
+      });
+    });
+</script>
 @endsection

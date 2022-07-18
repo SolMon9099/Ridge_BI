@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateShelfDetectionRulesTable extends Migration
+class CreateThiefDetectionRulesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,18 +13,12 @@ class CreateShelfDetectionRulesTable extends Migration
      */
     public function up()
     {
-        Schema::create('shelf_detection_rules', function (Blueprint $table) {
+        Schema::create('thief_detection_rules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('camera_id')->references('id')->on('cameras')->comment('カメラID');
+            $table->string('hanger')->comment('ハンガーの色');
             $table->string('color')->comment('カラー');
-            $table->double('first_x')->comment('四角形の初点のX桁表');
-            $table->double('first_y')->comment('四角形の初点のY桁表');
-            $table->double('second_x')->comment('四角形の2番目の点のX桁表');
-            $table->double('second_y')->comment('四角形の2番目の点のY桁表');
-            $table->double('third_x')->comment('四角形の3番目の点のX桁表');
-            $table->double('third_y')->comment('四角形の3番目の点のY桁表');
-            $table->double('fourth_x')->comment('四角形の4番目の点のX桁表');
-            $table->double('fourth_y')->comment('四角形の4番目の点のY桁表');
+            $table->string('points')->comment('矩形データ');
             $table->timestamps();
             $table->integer('created_by')->nullable()->comment('データ作成者ID');
             $table->integer('updated_by')->nullable()->comment('データ最終更新者ID');
@@ -40,6 +34,6 @@ class CreateShelfDetectionRulesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('shelf_detection_rules');
+        Schema::dropIfExists('thief_detection_rules');
     }
 }

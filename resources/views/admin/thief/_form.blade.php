@@ -3,8 +3,7 @@
     $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
     $color = null;
     $points = array();
-    $hour = '';
-    $mins = '';
+    $hanger = null;
     foreach ($rules as $index => $rule) {
         if ($rule->points != null && $rule->points != '') {
             $points[$index]['positions'] =  json_decode($rule->points);
@@ -12,49 +11,33 @@
                 $color = $rule->color;
                 $points[$index]['color'] = $color;
             }
-            if (isset($rule->hour) && $rule->hour !== '') {
-                $hour = $rule->hour;
-            }
-            if (isset($rule->mins) && $rule->mins !== '') {
-                $mins = $rule->mins;
+            if (isset($rule->hanger) && $rule->hanger !== '') {
+                $hanger = $rule->hanger;
             }
         }
     }
 ?>
 <div class="no-scroll">
-    {{-- @if (!isset($shelf))
-    <div class="title-wrap sp-m">
-        <button type="button" class="edit left create-rule">＋ ルール追加</button>
-    </div>
-    @endif --}}
     @include('admin.layouts.flash-message')
     <div class="scroll">
         <div class="n-area2">
             <div class="video-area" style="width:85%;">
-                <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
+                <div id="image-container" class="camera-image"></div>
                 <p class="error-message area" style="display: none">エリアを選択してください。</p>
                 <div class="description">赤枠は4点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
             </div>
             <div style="width:10%;">
                 <div class="time-wrap">
-                    <h3>定時撮影時刻を入力</h3>
-                    <ul class="time">
-                        <li>
-                            <input name="hour" type="number" inputmode="numeric" pattern="\d*" max='23' min='0'
-                                onchange= "getInput(this, 'hour')" value="{{old('hour', isset($hour)?$hour:'')}}">
-                        </li>
-                        <li>:</li>
-                        <li>
-                            <input name="mins" type="number" inputmode="numeric" pattern="\d*" max='59' min='0'
-                                onchange= "getInput(this, 'mins')" value="{{old('mins', isset($mins)?$mins:'')}}">
-                        </li>
-                    </ul>
-                    <p class="error-message time" style="display: none">定時撮影時刻を正しく入力してください。</p>
-                    <p><small>※指定時刻の陳列を正常とし検知します</small></p>
+                    <h3>エリア内のハンガーの色を選択</h3>
+                    <div id="result" class="mb20">
+                        <div class="demo_color"></div>
+                        <input type="hidden" id='hanger' name="hanger" value="{{old('hanger', isset($hanger) ? $hanger : null)}}"/>
+                        <p class="error-message hanger" style="display: none">ハンガーの色を選択してください。</p>
+                    </div>
                 </div>
-                <div class="color-wrap">
+                <div id="colorarea">
                     <h3>カラーを選択</h3>
-                    <input onchange="changeColor(this)" name='color' type="color" class="color"
+                    <input onchange="changeColor(this)" name='color' type="color" class="color choice-color"
                         value="{{old('color', isset($color) ? $color:'#000000')}}"/>
                 </div>
             </div>
@@ -85,7 +68,7 @@
         <div class="explain">
             <h3>【使い方】</h3>
             <ul>
-                <li>①日々棚乱れが発生していない時間(開店時間等)を「定時撮影時刻」として指定</li>
+                <li>①ハンガーの色をスポイトで選択</li>
                 <li>②「選択エリアを追加」ボタンを押下し検知するエリアを4点を選択し矩形で囲ってください。
                     <small>※最大3エリア作成可能</small>
                 </li>
@@ -129,6 +112,10 @@
     }
     #debug{
     }
+    canvas{
+        width:1280px;
+        height:720px;
+    }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
@@ -162,35 +149,21 @@
     var stage = null;
     var layer = null;
     var enable_darw_flag = false;
+    var checked_hanger_flag = false;
     var point_numbers = 0;
-    var hour = "<?php echo old('hour', isset($hour)?$hour:'');?>";
-    if (isNaN(parseInt(hour))){
-        hour = '';
-    } else {
-        hour = parseInt(hour);
+    // var url = "<?php echo asset('assets/admin/img/canvas4.jpg');?>"
+    var hanger = "<?php echo old('hanger', isset($hanger)?$hanger:'');?>";
+    if (hanger != undefined && hanger != null && hanger != ''){
+        $('.demo_color').css('background-color', hanger);
     }
-    var mins = "<?php echo old('mins', isset($mins)?$mins:'');?>";
-    if (isNaN(parseInt(mins))){
-        mins = '';
-    } else {
-        mins = parseInt(mins);
-    }
-    var shelf_max_rect_numbers = "<?php echo config('const.shelf_max_rect_numbers');?>";
-    shelf_max_rect_numbers = parseInt(shelf_max_rect_numbers);
+    var camera_image_data = "<?php echo $camera_image_data;?>";
+    var thief_max_rect_numbers = "<?php echo config('const.thief_max_rect_numbers');?>";
+    thief_max_rect_numbers = parseInt(thief_max_rect_numbers);
+    var selected_color = "<?php echo isset($color) && $color != '' ? $color : 'black';?>";
     var radius = "<?php echo config('const.camera_mark_radius');?>";
     radius = parseInt(radius);
     var points = <?php echo json_encode($points);?>;
 
-    var selected_color = "<?php echo isset($color) && $color != '' ? $color : 'black';?>";
-
-    function getInput(e, param){
-        if (param == 'hour'){
-            hour = e.value;
-        }
-        if (param == 'mins'){
-            mins = e.value;
-        }
-    }
     function is_cross(line1, line2){
         var a = line1[0]; // A point
         var b = line1[1]; // B point
@@ -240,7 +213,7 @@
             }
         })
         enable_darw_flag = false;
-        if (point_numbers < shelf_max_rect_numbers * 4){
+        if (point_numbers < thief_max_rect_numbers * 4){
             $('.balloon1').css('opacity', 1);
             $('button#area_select').attr('disabled', false);
 		    $('button#area_select').css('opacity', 1);
@@ -298,9 +271,36 @@
         })
         layer = new Konva.Layer();
         stage.add(layer);
+        $('canvas').attr('id', 'canvas-container2');
+        var imageObj = new Image();
+        imageObj.onload = function () {
+            var backImage = new Konva.Image({
+                x: 0,
+                y: 0,
+                image: imageObj,
+                width: container.clientWidth,
+                height: container.clientHeight,
+            });
+
+            // add the shape to the layer
+            layer.add(backImage);
+        };
+        imageObj.src = camera_image_data;
+        // imageObj.src = url;
+
         stage.on('click', function(e){
+            if (checked_hanger_flag != true){
+                var canvas = document.getElementsByTagName('canvas')[0];
+                var ctx = canvas.getContext('2d');
+                var imgData = ctx.getImageData(e.evt.offsetX, e.evt.offsetY, 1, 1);
+                var rgba = imgData.data;
+                hanger = "#" + parseInt(rgba[0]).toString(16) + parseInt(rgba[1]).toString(16) + parseInt(rgba[2]).toString(16) + parseInt(rgba[3]).toString(16);
+                $('.demo_color').css('background-color', hanger);
+                $('#hanger').val(hanger);
+                return;
+            }
             if (enable_darw_flag != true) return;
-            if (point_numbers == shelf_max_rect_numbers * 4) return;
+            if (point_numbers == thief_max_rect_numbers * 4) return;
             var rect_index = parseInt(point_numbers/4);
             point_numbers++;
             drawCircle({x:e.evt.offsetX, y:e.evt.offsetY}, point_numbers, selected_color);
@@ -322,11 +322,13 @@
     }
 
     function enableDraw(){
-        if (point_numbers >= shelf_max_rect_numbers * 4) return;
-        enable_darw_flag = true;
+        checked_hanger_flag = true;
+        $('canvas').attr('id', '');
         $('.balloon1').css('opacity', 0);
         $('button#area_select').attr('disabled', true);
 		$('button#area_select').css('opacity', 0.3);
+        if (point_numbers >= thief_max_rect_numbers * 4) return;
+        enable_darw_flag = true;
     }
 
     function clearImage(){
@@ -340,7 +342,9 @@
         })
         layer.draw();
         enable_darw_flag = false;
-        if (point_numbers < shelf_max_rect_numbers * 4){
+        checked_hanger_flag = false;
+        $('canvas').attr('id', 'canvas-container2');
+        if (point_numbers < thief_max_rect_numbers * 4){
             $('.balloon1').css('opacity', 1);
             $('button#area_select').attr('disabled', false);
 		    $('button#area_select').css('opacity', 1);
@@ -348,13 +352,8 @@
     }
 
     function checkValidation(){
-        var check_time_flag = false;
-        if (mins === '') check_time_flag = true;
-        if (hour === '') check_time_flag = true;
-        if (hour > 23) check_time_flag = true;
-        if (mins > 59) check_time_flag = true;
-        if (check_time_flag == true){
-            $('.error-message.time').show();
+        if (hanger == undefined || hanger == null || hanger == ''){
+            $('.error-message.hanger').show();
             return false;
         }
         var check_points_flag = false;
@@ -373,7 +372,7 @@
     function saveRule(){
         $('.error-message').hide();
         if (!checkValidation()) return;
-        $('#form_shelf_rule').submit();
+        $('#form_thief_rule').submit();
     }
 
     function changeColor(e, index){
@@ -382,23 +381,25 @@
 
     $(document).ready(function() {
         drawingStage();
-        point_numbers = 0;
-        if (points.length > 0){
-            points.map(record => {
-                if (record.positions != undefined && record.positions.length == 4){
-                    record.positions.map((point) => {
-                        point_numbers++;
-                        drawCircle(point, point_numbers, record.color);
-                        point.id = point_numbers;
-                    });
+        setTimeout(() => {
+            point_numbers = 0;
+            if (points.length > 0){
+                points.map(record => {
+                    if (record.positions != undefined && record.positions.length == 4){
+                        record.positions.map((point) => {
+                            point_numbers++;
+                            drawCircle(point, point_numbers, record.color);
+                            point.id = point_numbers;
+                        });
+                    }
+                })
+                if (point_numbers % 4 == 0 && point_numbers > 0){
+                    drawRect(points);
                 }
-            })
-            if (point_numbers % 4 == 0 && point_numbers > 0){
-                drawRect(points);
             }
-        }
-        if (point_numbers < shelf_max_rect_numbers * 4){
-            $('.balloon1').css('opacity', 1);
-        }
+            if (point_numbers < thief_max_rect_numbers * 4){
+                $('.balloon1').css('opacity', 1);
+            }
+        }, 500);
     });
 </script>

@@ -13,6 +13,7 @@
     <div id="r-content">
         <div class="title-wrap">
             <h2 class="title">ルール新規作成</h2>
+            <p><a data-target="howto" class="modal-open">使い方</a></p>
         </div>
         <div class="flow">
             <ul>
@@ -26,6 +27,5 @@
             @include('admin.shelf._form')
         </form>
     </div>
-  </div>
-
+</div>
 @endsection

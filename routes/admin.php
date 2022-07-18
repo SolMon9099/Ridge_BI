@@ -102,23 +102,24 @@ Route::group(['middleware' => 'auth:admin'], function () {
     Route::group(['prefix' => 'shelf'], function () {
         Route::get('/', 'ShelfController@index')->name('admin.shelf');
         Route::get('/edit/{shelf}', 'ShelfController@edit')->name('admin.shelf.edit');
-        Route::post('/edit2', 'ShelfController@edit2')->name('admin.shelf.edit2');
         Route::get('/cameras_for_rule', 'ShelfController@cameras_for_rule')->name('admin.shelf.cameras_for_rule');
         Route::post('/create_rule', 'ShelfController@create_rule')->name('admin.shelf.create_rule');
         Route::post('/store', 'ShelfController@store')->name('admin.shelf.store');
         Route::get('/list', 'ShelfController@list')->name('admin.shelf.list');
         Route::get('/detail', 'ShelfController@detail')->name('admin.shelf.detail');
         Route::get('/save_sorted_imgage', 'ShelfController@save_sorted_imgage')->name('admin.shelf.save_sorted_imgage');
+        Route::delete('/delete/{shelf}', 'ShelfController@delete')->name('admin.shelf.delete');
     });
 
     Route::group(['prefix' => 'thief'], function () {
         Route::get('/', 'ThiefController@index')->name('admin.thief');
-        Route::get('/create', 'ThiefController@create')->name('admin.thief.create');
+        Route::get('/cameras_for_rule', 'ThiefController@cameras_for_rule')->name('admin.thief.cameras_for_rule');
         Route::post('/create_rule', 'ThiefController@create_rule')->name('admin.thief.create_rule');
-        Route::get('/edit', 'ThiefController@edit')->name('admin.thief.edit');
-        Route::post('/edit2', 'ThiefController@edit2')->name('admin.thief.edit2');
+        Route::get('/edit/{thief}', 'ThiefController@edit')->name('admin.thief.edit');
+        Route::post('/store', 'ThiefController@store')->name('admin.thief.store');
         Route::get('/list', 'ThiefController@list')->name('admin.thief.list');
         Route::get('/detail', 'ThiefController@detail')->name('admin.thief.detail');
+        Route::delete('/delete/{thief}', 'ThiefController@delete')->name('admin.thief.delete');
     });
 
     Route::group(['prefix' => 'meter'], function () {

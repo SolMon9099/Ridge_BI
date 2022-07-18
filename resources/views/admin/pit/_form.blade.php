@@ -308,24 +308,27 @@
             stage.container().style.cursor = 'default';
         });
         circle.on('dragmove', function (e) {
-            if (point_numbers == 4){
-                if (color == null){
-                    var index = red_points.findIndex(point => point.id == e.target.id());
-                    if (index > -1){
-                        red_points[index].x = e.evt.offsetX;
-                        red_points[index].y = e.evt.offsetY;
+            if (color == null){
+                var index = red_points.findIndex(point => point.id == e.target.id());
+                if (index > -1){
+                    red_points[index].x = e.evt.offsetX;
+                    red_points[index].y = e.evt.offsetY;
+                    if (point_numbers == 4){
                         drawRect(red_points);
                     }
-                } else {
-                    index = blue_points.findIndex(point => point.id == e.target.id());
-                    if (index > -1){
-                        blue_points[index].x = e.evt.offsetX;
-                        blue_points[index].y = e.evt.offsetY;
+                }
+            } else {
+                index = blue_points.findIndex(point => point.id == e.target.id());
+                if (index > -1){
+                    blue_points[index].x = e.evt.offsetX;
+                    blue_points[index].y = e.evt.offsetY;
+                    if (point_numbers == 4){
                         drawRect(red_points, blue_points);
                     }
                 }
-
             }
+
+
         })
         layer.add(circle);
     }
@@ -421,14 +424,15 @@
                 stage.container().style.cursor = 'default';
             });
             circle.on('dragmove', function (e) {
-                if (point_numbers == 4){
-                    var index = red_points.findIndex(point => point.id == e.target.id());
-                    if (index > -1){
-                        red_points[index].x = e.evt.offsetX;
-                        red_points[index].y = e.evt.offsetY;
+                var index = red_points.findIndex(point => point.id == e.target.id());
+                if (index > -1){
+                    red_points[index].x = e.evt.offsetX;
+                    red_points[index].y = e.evt.offsetY;
+                    if (point_numbers == 4){
                         drawRect(red_points);
                     }
                 }
+
             })
             layer.add(circle);
             red_points.push({x:e.evt.offsetX, y:e.evt.offsetY, id:point_numbers})

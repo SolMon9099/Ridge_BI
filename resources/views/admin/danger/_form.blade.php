@@ -22,7 +22,7 @@
             <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
             <div style="padding-left:10px;">
                 <div class="title-div">カラー</div>
-                <div class="content-div"><input onchange="changeColor(this)" name='color' type="color" class="color" value="{{$rule->color}}"/></div>
+                <div class="content-div"><input onchange="changeColor(this)" name='color' type="color" class="color" value="{{isset($color) ? $color:'#000000'}}"/></div>
                 <div class="title-div">アクション</div>
                 <div class="content-div">
                     @foreach($action_options as $id => $action)
@@ -186,14 +186,15 @@
             stage.container().style.cursor = 'default';
         });
         circle.on('dragmove', function (e) {
-            if (point_numbers == 4){
-                var index = points.findIndex(point => point.id == e.target.id());
-                if (index > -1){
-                    points[index].x = e.evt.offsetX;
-                    points[index].y = e.evt.offsetY;
+            var index = points.findIndex(point => point.id == e.target.id());
+            if (index > -1){
+                points[index].x = e.evt.offsetX;
+                points[index].y = e.evt.offsetY;
+                if (point_numbers == 4){
                     drawRect(points);
                 }
             }
+
         })
         layer.add(circle);
     }
@@ -209,39 +210,12 @@
         stage.add(layer);
         stage.on('click', function(e){
             if (point_numbers == 4) return;
-            var circle = new Konva.Circle({
-                x: e.evt.offsetX,
-                y: e.evt.offsetY,
-                radius: radius,
-                fill: selected_color,
-                stroke: selected_color,
-                strokeWidth: 1,
-                draggable:true,
-                id:point_numbers
-            });
-            circle.on('mouseenter', function () {
-                stage.container().style.cursor = 'pointer';
-            });
-            circle.on('mouseleave', function () {
-                stage.container().style.cursor = 'default';
-            });
-            circle.on('dragmove', function (e) {
-                if (point_numbers == 4){
-                    var index = points.findIndex(point => point.id == e.target.id());
-                    if (index > -1){
-                        points[index].x = e.evt.offsetX;
-                        points[index].y = e.evt.offsetY;
-                        drawRect(points);
-                    }
-                }
-            })
-            layer.add(circle);
+            drawCircle({x:e.evt.offsetX, y:e.evt.offsetY}, point_numbers);
             points.push({x:e.evt.offsetX, y:e.evt.offsetY, id:point_numbers})
             point_numbers++;
             if (point_numbers == 4){
                 drawRect(points);
             }
-
         })
         stage.on('mousemove', function(e){
             document.getElementById("debug").innerHTML = `X座標${e.evt.offsetX}:Y座標${e.evt.offsetY}`;

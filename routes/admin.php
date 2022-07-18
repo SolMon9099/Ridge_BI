@@ -107,7 +107,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::post('/store', 'ShelfController@store')->name('admin.shelf.store');
         Route::get('/list', 'ShelfController@list')->name('admin.shelf.list');
         Route::get('/detail', 'ShelfController@detail')->name('admin.shelf.detail');
-        Route::get('/save_sorted_imgage', 'ShelfController@save_sorted_imgage')->name('admin.shelf.save_sorted_imgage');
+        Route::get('/save_sorted_imgage/{detect}', 'ShelfController@save_sorted_imgage')->name('admin.shelf.save_sorted_imgage');
         Route::delete('/delete/{shelf}', 'ShelfController@delete')->name('admin.shelf.delete');
     });
 

@@ -21,11 +21,11 @@
                         <ul class="date-list">
                             <li><h4>検出期間</h4></li>
                             <li>
-                                <input type="date" name='starttime' value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-01'))}}">
+                                <input type="date" name='starttime' value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')))}}">
                             </li>
                             <li>～</li>
                             <li>
-                                <input type="date" name='endtime' value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-t'))}}">
+                                <input type="date" name='endtime' value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'))}}">
                             </li>
                         </ul>
                         <ul class="date-list">

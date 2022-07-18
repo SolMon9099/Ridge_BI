@@ -50,7 +50,7 @@
 
                     <div class="left-right">
                         <div class="left-box">
-                            <h3 class="title">アラート検知</h3>
+                            <h3 class="title">ピット内最大時間の超過検知</h3>
                             <table class="table2 text-centre top50">
                                 <thead>
                                     <tr>

@@ -7,6 +7,7 @@ use App\Service\SafieApiService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\DangerAreaDetection;
+use App\Models\ShelfDetection;
 
 class AICommand extends Command
 {
@@ -46,18 +47,31 @@ class AICommand extends Command
                             Log::info('video ok~~~~~~~');
                             $thumb_image = $safie_service->getDeviceImage($file_content->camera_no, $file_content->starttime_format_for_image);
                             $file_name = date('YmdHis', strtotime($file_content->starttime)).'.mp4';
-                            Storage::disk('video')->put('danger'.'\\'.$file_content->camera_no.'\\'.$file_name, $video_data);
-                            $danger_detection = new DangerAreaDetection();
-                            $danger_detection->camera_id = $file_content->camera_id;
-                            $danger_detection->rule_id = $file_content->rule_id;
-                            $danger_detection->video_file_path = 'danger'.'/'.$file_content->camera_no.'/'.$file_name;
-                            $danger_detection->starttime = $file_content->starttime;
-                            $danger_detection->endtime = $file_content->endtime;
-                            if ($thumb_image != null) {
-                                Storage::disk('thumb')->put('danger'.'\\'.$file_content->camera_no.'\\'.date('YmdHis', strtotime($file_content->starttime)).'.jpeg', $thumb_image);
-                                $danger_detection->thumb_img_path = 'danger'.'/'.$file_content->camera_no.'/'.date('YmdHis', strtotime($file_content->starttime)).'.jpeg';
+
+                            $type = $file_content->type;
+                            $folder_name = 'danger';
+                            switch ($type) {
+                                case 'danger_area':
+                                    $folder_name = 'danger';
+                                    $detection_model = new DangerAreaDetection();
+                                    break;
+                                case 'shelf':
+                                    $folder_name = 'shelf';
+                                    $detection_model = new ShelfDetection();
+                                    break;
                             }
-                            $danger_detection->save();
+                            Storage::disk('video')->put($folder_name.'\\'.$file_content->camera_no.'\\'.$file_name, $video_data);
+
+                            $detection_model->camera_id = $file_content->camera_id;
+                            $detection_model->rule_id = $file_content->rule_id;
+                            $detection_model->video_file_path = $folder_name.'/'.$file_content->camera_no.'/'.$file_name;
+                            $detection_model->starttime = $file_content->starttime;
+                            $detection_model->endtime = $file_content->endtime;
+                            if ($thumb_image != null) {
+                                Storage::disk('thumb')->put($folder_name.'\\'.$file_content->camera_no.'\\'.date('YmdHis', strtotime($file_content->starttime)).'.jpeg', $thumb_image);
+                                $detection_model->thumb_img_path = $folder_name.'/'.$file_content->camera_no.'/'.date('YmdHis', strtotime($file_content->starttime)).'.jpeg';
+                            }
+                            $detection_model->save();
                             $safie_service->deleteMediaFile($file_content->camera_no, $file_content->request_id);
                             Storage::disk('temp')->delete($file);
                         }

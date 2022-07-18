@@ -40,6 +40,7 @@
                         <th>設置フロア</th>
                         <th>設置場所</th>
                         <th>カラー</th>
+                        <th>定時撮影時刻</th>
                         <th>検知履歴</th>
                         <th>削除</th>
                     </tr>
@@ -53,6 +54,7 @@
                             <td>{{$shelf->floor_number}}</td>
                             <td>{{$shelf->installation_position}}</td>
                             <td><input disabled type="color" value = "{{$shelf->color}}"/></td>
+                            <td>{{$shelf->hour.':'.$shelf->mins}}</td>
                             <td>
                                 <button type="button" class="history">履歴表示</button>
                             </td>

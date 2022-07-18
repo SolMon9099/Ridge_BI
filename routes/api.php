@@ -24,7 +24,10 @@ Route::group(['prefix' => 'camera'], function () {
 });
 
 Route::group(['prefix' => 'detection'], function () {
-    Route::post('/danger', 'DetectionController@saveDangerDetection')->name('api.detection.danger');
+    Route::get('/danger', 'DetectionController@saveDangerDetection')->name('api.detection.danger');
+    Route::get('/shelf', 'DetectionController@saveShelfDetection')->name('api.detection.shelf');
+    Route::get('/pit', 'DetectionController@savePitDetection')->name('api.detection.pit');
+    Route::get('/thief', 'DetectionController@saveThiefDetection')->name('api.detection.thief');
 });
 
 Route::middleware('auth:api')->group(function () {

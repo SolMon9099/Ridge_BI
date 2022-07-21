@@ -18,9 +18,12 @@
 <div class="no-scroll">
     @include('admin.layouts.flash-message')
     <div class="scroll">
-        <div style="display: flex;width:100%;">
-            <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
-            <div style="padding-left:10px;">
+        <div class="n-area2">
+            <div class="video-area" style="width:85%;">
+                <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
+                <p class="error-message area" style="display: none">エリアを選択してください。</p>
+            </div>
+            <div style="width:11%;">
                 <div class="title-div">カラー</div>
                 <div class="content-div"><input onchange="changeColor(this)" name='color' type="color" class="color" value="{{isset($color) ? $color:'#000000'}}"/></div>
                 <div class="title-div">アクション</div>
@@ -39,8 +42,6 @@
                 <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
             </div>
         </div>
-        <p class="error-message area" style="display: none">エリアを選択してください。</p>
-
         <div class="btns" id="direction">
             <button type="button" onclick="clearImage()" class="clear-btn history">選択をクリア</button>
             <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
@@ -67,6 +68,8 @@
         width:1280px;
         height:720px;
         display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
     .footer-area{
         widows: 100%;

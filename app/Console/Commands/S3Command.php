@@ -4,6 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Service\SafieApiService;
+use App\Service\DangerService;
+use App\Service\PitService;
+use App\Service\ShelfService;
+use App\Service\ThiefService;
 use App\Models\S3VideoHistory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -28,16 +32,20 @@ class S3Command extends Command
         $cur_time_object = new \DateTime();
         $cur_time_object->setTimezone(new \DateTimeZone('+0900')); //GMT
         $now = $cur_time_object->format('Y-m-d H:i:s');
-        if (strtotime($camera_start_on_time) <= strtotime($now) && strtotime($camera_end_off_time) >= strtotime($now)) {
+        $now_date = $cur_time_object->format('Y-m-d');
+        if (strtotime($now_date.' '.$camera_start_on_time) <= strtotime($now) && strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
+            Log::info('start finding camera-------- ');
             $cameras = Camera::all();
             if (count($cameras) == 0) {
                 return 0;
             }
             $record_start_time_object = clone $cur_time_object;
-            $record_start_time_object->sub(new \DateInterval('PT'.(string) 2 * $request_interval.'M'));
+            // $record_start_time_object->sub(new \DateInterval('PT'.(string) 2 * $request_interval.'M'));
+            $record_start_time_object->sub(new \DateInterval('PT'.(string) (2 * $request_interval + 3).'M'));
             $record_start_time = $record_start_time_object->format('c');
             $record_end_time_object = clone $cur_time_object;
-            $record_end_time_object->sub(new \DateInterval('PT'.(string) $request_interval.'M'));
+            // $record_end_time_object->sub(new \DateInterval('PT'.(string) $request_interval.'M'));
+            $record_end_time_object->sub(new \DateInterval('PT'.(string) ($request_interval + 3).'M'));
             $record_end_time = $record_end_time_object->format('c');
 
             foreach ($cameras as $camera) {
@@ -52,7 +60,7 @@ class S3Command extends Command
 
                 //メディアファイル作成要求一覧取得・S3に保存--------------------------------
                 Log::info('saveMedia start****************');
-                $this->saveMedia($camera->camera_id, $camera->contract_no);
+                $this->saveMedia($camera->camera_id, $camera->contract_no, $camera->id);
                 //----------------------------------------------------------------------
                 //メディアファイル作成要求--------------------------------
                 $request_id = $safie_service->makeMediaFile(null, $record_start_time, $record_end_time);
@@ -97,7 +105,7 @@ class S3Command extends Command
         $record->save();
     }
 
-    public function saveMedia($device_id = null, $contract_no = null)
+    public function saveMedia($device_id = null, $contract_no = null, $id_camera = 0)
     {
         $device_id = $device_id == null ? 'FvY6rnGWP12obPgFUj0a' : $device_id;
         $data = S3VideoHistory::query()->where('device_id', $device_id)
@@ -122,15 +130,193 @@ class S3Command extends Command
                         $start_time = $item->start_time;
                         $end_time = $item->end_time;
                         $start_date = date('Ymd', strtotime($start_time));
-                        $file_name = date('YmdHis', strtotime($start_time)).'_'.date('YmdHis', strtotime($end_time));
+                        $file_name = date('YmdHis', strtotime($start_time)).'_'.date('YmdHis', strtotime($end_time)).'.mp4';
                         Storage::disk('s3')->put($device_id.'\\'.$start_date.'\\'.$file_name, $video_data);
-                        // Storage::disk('s3')->delete('FvY6rnGWP12obPgFUj0a/20220622071500__.mp4');
                         $item->status = 2;
                         $item->file_path = $device_id.'/'.$start_date.'/'.$file_name;
                         $item->save();
+                        //request rule data to AI--------
+                        $aws_url = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/';
+                        $movie_path = $aws_url.$device_id.'/'.$start_date.'/'.$file_name;
+                        $this->reqeuestToAI($device_id, $id_camera, $movie_path);
+                        //-------------------------------
                     }
                 }
             }
+        }
+    }
+
+    public function reqeuestToAI($device_id, $id_camera, $movie_path)
+    {
+        $url = '';
+        $header = [
+            'Content-Type: application/json',
+        ];
+        //2. 危険エリア侵入検知解析リクエスト（BI→AI） api/v1/danger-zone/register-camera
+        $rules = DangerService::getRulesByCameraID($id_camera);
+        if (count($rules) > 0) {
+            $params = [];
+            foreach ($rules as $rule) {
+                if (!isset($params['camera_info'])) {
+                    $params['camera_info'] = [];
+                }
+                $params['camera_info']['camera_id'] = $device_id;
+                if (!isset($params['movie_info'])) {
+                    $params['movie_info'] = [];
+                }
+                $params['movie_info']['movie_path'] = $movie_path;
+                if (!isset($params['rect_info'])) {
+                    $params['rect_info'] = [];
+                }
+
+                $params['rect_info']['rect_id'] = (string) $rule->id;
+                $params['rect_info']['rect_point_array'] = json_decode($rule->points);
+                $params['rect_info']['action_id'] = [$rule->action_id];
+                $params['priority'] = 1;
+                Log::info('danger request start----------');
+                $url = 'https://52.192.123.36/api/v1/danger-zone/register-camera';
+                $this->sendPostApi($url, $header, $params, 'json');
+            }
+        }
+        //--------------------------------------
+
+        //４．ピット入退場解析リクエスト（BI→AI） /api/v1/pit/register-camera
+        $rules = PitService::getRulesByCameraID($id_camera);
+        if (count($rules) > 0) {
+            if (count($rules) > 0) {
+                $params = [];
+                foreach ($rules as $rule) {
+                    if (!isset($params['camera_info'])) {
+                        $params['camera_info'] = [];
+                    }
+                    $params['camera_info']['camera_id'] = $device_id;
+                    if (!isset($params['movie_info'])) {
+                        $params['movie_info'] = [];
+                    }
+                    $params['movie_info']['movie_path'] = $movie_path;
+                    if (!isset($params['rect_info'])) {
+                        $params['rect_info'] = [];
+                    }
+                    $params['rect_info']['rect_id'] = (string) $rule->id;
+                    $params['rect_info']['entrance_rect_point_array'] = json_decode($rule->red_points);
+                    $params['rect_info']['exit_rect_point_array'] = json_decode($rule->blue_points);
+                    $params['priority'] = 1;
+
+                    Log::info('pit request start----------');
+                    $url = 'https://52.192.123.36/api/v1/pit/register-camera';
+                    $this->sendPostApi($url, $header, $params, 'json');
+                }
+            }
+        }
+        //--------------------------------------
+        //６．棚乱れ解析リクエスト（BI→AI） /api/v1/shelf-theft/register-camera
+        $rules = ShelfService::getRulesByCameraID($id_camera);
+        if (count($rules) > 0) {
+            if (count($rules) > 0) {
+                $params = [];
+                foreach ($rules as $rule) {
+                    if (!isset($params['camera_info'])) {
+                        $params['camera_info'] = [];
+                    }
+                    $params['camera_info']['camera_id'] = $device_id;
+                    if (!isset($params['movie_info'])) {
+                        $params['movie_info'] = [];
+                    }
+                    $params['movie_info']['movie_path'] = $movie_path;
+                    if (!isset($params['rect_info'])) {
+                        $params['rect_info'] = [];
+                    }
+                    $rect_param = [];
+                    $rect_param['rect_id'] = (string) $rule->id;
+                    $rect_param['rect_point_array'] = json_decode($rule->points);
+                    $params['rect_info'][] = $rect_param;
+                    $params['priority'] = 1;
+                }
+                Log::info('shelf request start----------');
+                $url = 'https://52.192.123.36/api/v1/shelf-theft/register-camera';
+                $this->sendPostApi($url, $header, $params, 'json');
+            }
+        }
+        //--------------------------------------
+
+        //９．大量盗難解析リクエスト（BI→AI） /api/v1/hanger-counter/register-camera
+        $rules = ThiefService::getRulesByCameraID($id_camera);
+        if (count($rules) > 0) {
+            if (count($rules) > 0) {
+                $params = [];
+                foreach ($rules as $rule) {
+                    if (!isset($params['camera_info'])) {
+                        $params['camera_info'] = [];
+                    }
+                    $params['camera_info']['camera_id'] = $device_id;
+                    if (!isset($params['movie_info'])) {
+                        $params['movie_info'] = [];
+                    }
+                    $params['movie_info']['movie_path'] = $movie_path;
+                    if (!isset($params['rect_info'])) {
+                        $params['rect_info'] = [];
+                    }
+                    $rect_param = [];
+                    $rect_param['rect_id'] = (string) $rule->id;
+                    $rect_param['color_code'] = $rule->hanger;
+                    $rect_param['rect_point_array'] = json_decode($rule->points);
+                    $params['rect_info'][] = $rect_param;
+                    $params['priority'] = 1;
+                }
+                Log::info('thief request start----------');
+                $url = 'https://52.192.123.36/api/v1/hanger-counter/register-camera';
+                $this->sendPostApi($url, $header, $params, 'json');
+            }
+        }
+        //--------------------------------------
+    }
+
+    public function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
+    {
+        Log::info('【Start Post Api for AI】url:'.$url);
+        // Log::info($data);
+
+        $curl = curl_init($url);
+        //POSTで送信
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_HEADER, true);
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+        if ($header) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+        }
+
+        if ($data) {
+            switch ($request_type) {
+                case 'query':
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+                    break;
+                case 'json':
+                    Log::info('post param data ='.json_encode($data));
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                    break;
+            }
+        }
+
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('httpcode = '.$httpcode);
+        curl_close($curl);
+        if ($httpcode == 200) {
+            $response_return = json_decode($response, true);
+
+            Log::info($response_return);
+            Log::info('【Finish Post Api】url:'.$url);
+
+            return $response_return;
+        } else {
+            echo 'HTTP code: '.$httpcode;
+
+            return null;
         }
     }
 }

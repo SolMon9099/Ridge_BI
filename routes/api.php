@@ -23,11 +23,15 @@ Route::group(['prefix' => 'camera'], function () {
     Route::get('/getLiveStreaming', 'SafieController@getLiveStreaming')->name('api.camera.getLiveStreaming');
 });
 
+Route::group(['prefix' => 'safie'], function () {
+    Route::get('/getReactInfo', 'SafieController@getReactInfo')->name('api.safie.getReactInfo');
+});
+
 Route::group(['prefix' => 'detection'], function () {
-    Route::get('/danger', 'DetectionController@saveDangerDetection')->name('api.detection.danger');
-    Route::get('/shelf', 'DetectionController@saveShelfDetection')->name('api.detection.shelf');
-    Route::get('/pit', 'DetectionController@savePitDetection')->name('api.detection.pit');
-    Route::get('/thief', 'DetectionController@saveThiefDetection')->name('api.detection.thief');
+    Route::post('/danger', 'DetectionController@saveDangerDetection')->name('api.detection.danger');
+    Route::post('/shelf', 'DetectionController@saveShelfDetection')->name('api.detection.shelf');
+    Route::post('/pit', 'DetectionController@savePitDetection')->name('api.detection.pit');
+    Route::post('/thief', 'DetectionController@saveThiefDetection')->name('api.detection.thief');
 });
 
 Route::middleware('auth:api')->group(function () {

@@ -67,4 +67,16 @@ class ThiefService
     {
         return ThiefDetectionRule::query()->where('camera_id', $camera_id)->get();
     }
+
+    public static function getCameraByRuleID($rule_id)
+    {
+        $res = null;
+        $rule_data = self::getThiefRuleInfoById($rule_id)->first();
+        if (isset($rule_data)) {
+            $camera_id = $rule_data->camera_id;
+            $res = CameraService::getCameraInfoById($camera_id);
+        }
+
+        return $res;
+    }
 }

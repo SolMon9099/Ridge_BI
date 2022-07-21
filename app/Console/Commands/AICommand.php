@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\DangerAreaDetection;
 use App\Models\ShelfDetection;
+use App\Models\PitDetection;
+use App\Models\ThiefDetection;
 
 class AICommand extends Command
 {
@@ -58,6 +60,20 @@ class AICommand extends Command
                                 case 'shelf':
                                     $folder_name = 'shelf';
                                     $detection_model = new ShelfDetection();
+                                    break;
+                                case 'pit':
+                                    $folder_name = 'pit';
+                                    $detection_model = new PitDetection();
+                                    if (isset($file_content->nb_exit)) {
+                                        $detection_model->nb_exit = $file_content->nb_exit;
+                                    }
+                                    if (isset($file_content->nb_entry)) {
+                                        $detection_model->nb_entry = $file_content->nb_entry;
+                                    }
+                                    break;
+                                case 'thief':
+                                    $folder_name = 'thief';
+                                    $detection_model = new ThiefDetection();
                                     break;
                             }
                             Storage::disk('video')->put($folder_name.'\\'.$file_content->camera_no.'\\'.$file_name, $video_data);

@@ -142,8 +142,8 @@ class SafieApiService
 
     public function getAuthCode()
     {
+        Log::info('getAuthCode start------------');
         $auth_url = $this->getAuthUrl();
-
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $auth_url);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
@@ -151,13 +151,15 @@ class SafieApiService
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
         $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('Auth httpcode='.$httpcode);
         curl_close($curl);
         $dom = HtmlDomParser::str_get_html($response);
         $code = '';
         $access_confirm = $dom->find('input[name="access_confirm"]');
         if (count($access_confirm) > 0) {
             $access_confirm = $access_confirm[0]->value;
-
+            Log::info('access_confirm----------'.$access_confirm);
             $authorize_url = 'https://app.safie.link/auth/authorize';
 
             $params = [];
@@ -177,8 +179,14 @@ class SafieApiService
             curl_setopt($curl, CURLOPT_HEADER, true);
             curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
+
             $response = curl_exec($curl);
+            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            Log::info('httpcode='.$httpcode);
             $split_data = explode('code=', $response);
             if (count($split_data) > 1) {
                 $code = explode('&', $split_data[1])[0];

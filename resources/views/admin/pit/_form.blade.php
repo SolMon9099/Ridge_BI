@@ -57,7 +57,7 @@
 
         @if(!$super_admin_flag)
         <div class="btns" id="direction">
-            <button type="button" class="clear-btn history" onclick="clearImage()">クリア</button>
+            <button type="button" class="clear-btn history" onclick="clearImage()">選択をクリア</button>
             <button type="button" class="ok save-btn" onclick="saveRule()">決定</button>
         </div>
         @endif

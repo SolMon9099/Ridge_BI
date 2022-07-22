@@ -13,11 +13,11 @@
     <div id="r-content">
         <div class="title-wrap">
             <h2 class="title">ルール編集</h2>
+            <p><a data-target="howto" class="modal-open">使い方</a></p>
         </div>
         <div class="flow">
             <ul>
-            <li><span>Step.1</span>カメラを選択</li>
-            <li class="active"><span>Step.2</span>アクションとエリアを選択</li>
+            <li class="active"><span>Step.2</span>エリア選択・検知設定</li>
             </ul>
         </div>
         <form action="{{route('admin.danger.store')}}" method="post" name="form1" id="form_danger_rule">

@@ -12,12 +12,18 @@
     </div>
     <div id="r-content">
         <div class="title-wrap">
-            <h2 class="title">ルール新規作成</h2>
+            <div style="display: flex;">
+                <a style="padding-top:17px;margin-right:10px;" href="{{route('admin.danger.cameras_for_rule')}}">
+                    <img width="25px;" src="{{asset('assets/admin/img/icons8-back-arrow-48.png')}}"/>
+                </a>
+                <h2 class="title">ルール新規作成</h2>
+            </div>
+            <p><a data-target="howto" class="modal-open">使い方</a></p>
         </div>
         <div class="flow">
             <ul>
-            <li><span>Step.1</span>カメラを選択</li>
-            <li class="active"><span>Step.2</span>アクションとエリアを選択</li>
+                <li><a href="{{route('admin.danger.cameras_for_rule')}}"><span>Step.1</span>カメラを選択</a></li>
+            <li class="active"><span>Step.2</span>エリア選択・検知設定</li>
             </ul>
         </div>
         <form action="{{route('admin.danger.store')}}" method="post" name="form1" id="form_danger_rule">

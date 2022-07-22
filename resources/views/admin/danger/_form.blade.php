@@ -22,6 +22,7 @@
             <div class="video-area" style="width:85%;">
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
                 <p class="error-message area" style="display: none">エリアを選択してください。</p>
+                <div id="debug"></div>
             </div>
             <div style="width:11%;">
                 <div class="title-div">カラー</div>
@@ -47,7 +48,6 @@
             <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
         </div>
     </div>
-    <div class="description">赤枠は4点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
     {{-- <div class="streaming-video" style="height:500px;">
         <safie-streaming-player></safie-streaming-player>
         <input type="button" value='Play' onClick="play()">
@@ -55,6 +55,28 @@
     </div> --}}
     <input type="hidden" value="" name="points_data" id = 'points_data'/>
 </div>
+<!--MODAL -->
+<div id="howto" class="modal-content">
+    <div class="textarea">
+        <div class="explain">
+            <h3>【使い方】</h3>
+            <ul>
+                <li>①動画内をクリックし危険エリアとして指定する矩形を作成します。
+                    <small>※四角形(最大3つ)、多角形(最大1つ)を選択できます。</small>
+                </li>
+                <li>②危険エリアを指定する矩形毎に
+                    <small>検知するアクションを選択します。</small>
+                    <small>※複数選択可能</small>
+                </li>
+                <li>③選択が完了したら「決定」ボタンを押下してください。
+                    <small>※「選択をクリア」した際は全ての選択がクリアされます。</small>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <p class="closemodal"><a class="modal-close">×</a></p>
+</div>
+<!-- -->
 <style>
     .clear-btn{
         margin:0;

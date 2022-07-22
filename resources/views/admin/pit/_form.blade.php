@@ -5,20 +5,37 @@
     $red_points = array();
     $blue_points = array();
     $max_permission_time = null;
+    $min_members = null;
     foreach ($rules as $key => $rule) {
         if ($rule->red_points != null && $rule->red_points != '') $red_points = json_decode($rule->red_points);
         if ($rule->blue_points != null && $rule->blue_points != '') $blue_points = json_decode($rule->blue_points);
         $max_permission_time = $rule->max_permission_time;
+        $min_members = $rule->min_members;
     }
 ?>
-<div class='notice-area'>
-    <p>
-        【ピット内許容最大時間について】<br/>
-        <table class="table" style="margin-left: 20px;">
-            <tr>
-                <th style="width:10%;">ピット内最大時間</th>
-                <td>
-                    <select name = 'max_permission_time' class="select-box" style="width:60px;">
+<div class="no-scroll">
+    {{-- @include('admin.layouts.flash-message') --}}
+    <div class="scroll">
+        <div class="n-area2">
+            <div class="video-area" style="width:85%;">
+                <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
+                <p class="error-message area" style="display: none">エリアを選択してください。</p>
+                <div id="debug"></div>
+            </div>
+            <div style="width:10%;">
+                <h2>検知設定</h2>
+                <div style="margin-top: 10px;">
+                    <h3>ピット内人数：</h3>
+                    <input name="min_members" type="number" inputmode="numeric" pattern="\d*" max='10' min='0' class='members_input'
+                        value="{{old('min_members', isset($min_members)?$min_members:'')}}">
+                        <span style="font-size: 14px;">以上</span>
+                    @error('min_members')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div style="margin-top: 10px;">
+                    <h3>アラート対象滞在時間：</h3>
+                    <select name = 'max_permission_time' class="select-box" style="width:60px;margin-right:0px;">
                         <option value=''></option>
                         @foreach(config('const.pit_time_options') as $time)
                             @if (old('max_permission_time', isset($max_permission_time)?$max_permission_time:'') == $time)
@@ -28,29 +45,16 @@
                             @endif
                         @endforeach
                     </select>
-                </td>
-            </tr>
-        </table>
-        @error('max_permission_time')
-            <p class="error-message">{{ $message }}</p>
-        @enderror
-    </p>
-    <div style="margin-bottom: 20px;">
-        【エリア選択について】
-        <ul style="margin-left: 40px;">
-            <li class="disc-list-style">ピットの入り口を4点クリックしてください</li>
-            <li class="disc-list-style">4点をクリックすると4角形が自動生成されます。</li>
-            <li class="disc-list-style">赤枠は入場を検知し青枠は退場を検知します。</li>
-            <li class="disc-list-style">赤枠及び青枠については点の部分をクリックしながら移動させることで調整できます。<br/> ※赤枠と青枠の間に一人分の体が入る距離を目安として適宜調整してください。</li>
-        </ul>
-    </div>
-</div>
-<div class="no-scroll">
-    {{-- @include('admin.layouts.flash-message') --}}
-    <div class="scroll">
-        <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
-        <div id="debug"></div>
-        <p class="error-message area" style="display: none">エリアを選択してください。</p>
+                    <span style="font-size: 14px;">を超えた時</span>
+                    @error('max_permission_time')
+                        <p class="error-message">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+
+
         @if(!$super_admin_flag)
         <div class="btns" id="direction">
             <button type="button" class="clear-btn history" onclick="clearImage()">クリア</button>
@@ -61,6 +65,31 @@
     <input type="hidden" value="" name="red_points_data" id = 'red_points_data'/>
     <input type="hidden" value="" name="blue_points_data" id = 'blue_points_data'/>
 </div>
+<!--MODAL -->
+<div id="howto" class="modal-content">
+    <div class="textarea">
+        <div class="explain">
+            <h3>【使い方】</h3>
+            <ul>
+                <li>①動画内をクリックしピットの入り口を囲ってください。
+                    <small>　※4点をクリックすると4角形が自動生成されます。</small>
+                    <small>　※赤枠は入場を検知し青枠は退場を検知します。</small>
+                    <small>　※赤枠及び青枠については点の部分をクリックしながら移動させることで調整できます。</small>
+                    <small>　　(赤枠と青枠の間に一人分の体が入る距離を目安として適宜調整してください。)</small>
+                </li>
+                <li>②検知設定として
+                    <small>「ピット内人数」　「アラート対象滞在時間」を指定してください。</small>
+                    <small>※何人以上の滞在が何分続いたという検知を行います。</small>
+                </li>
+                <li>③選択が完了したら「決定」ボタンを押下してください。
+                    <small>※「選択をクリア」した際は全ての選択がクリアされます。</small>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <p class="closemodal"><a class="modal-close">×</a></p>
+</div>
+<!-- -->
 <style>
     .clear-btn{
         margin:0;
@@ -101,6 +130,10 @@
     }
     .notice-area{
         color:#999;
+    }
+    .members_input{
+        background: white!important;
+        width:60px!important;
     }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>

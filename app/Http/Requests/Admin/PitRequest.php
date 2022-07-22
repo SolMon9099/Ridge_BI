@@ -41,6 +41,11 @@ class PitRequest extends FormRequest
             } else {
                 $rules['selected_camera'] = ['nullable'];
             }
+
+            if ($this->action == 'admin.pit.store') {
+                $rules['max_permission_time'] = ['required'];
+                $rules['min_members'] = ['required', 'max:2'];
+            }
         }
 
         return $rules;
@@ -58,6 +63,9 @@ class PitRequest extends FormRequest
     {
         $messages = [];
         $messages['selected_camera.required'] = 'カメラを選択してください。';
+        $messages['max_permission_time.required'] = 'アラート対象滞在時間を選択してください。';
+        $messages['min_members.required'] = 'ピット内人数を入力してください。';
+        $messages['min_members.max'] = 'ピット内人数は2桁以下にして入力してください。';
 
         return $messages;
     }

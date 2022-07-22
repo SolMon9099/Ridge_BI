@@ -63,6 +63,7 @@ class S3Command extends Command
                 $this->saveMedia($camera->camera_id, $camera->contract_no, $camera->id);
                 //----------------------------------------------------------------------
                 //メディアファイル作成要求--------------------------------
+                Log::info('メディアファイル作成要求--------------------------------');
                 $request_id = $safie_service->makeMediaFile(null, $record_start_time, $record_end_time);
                 Log::info('request_id = '.$request_id);
                 if ($request_id > 0) {
@@ -86,7 +87,7 @@ class S3Command extends Command
         if (count($data) > 0) {
             foreach ($data as $item) {
                 $res = $safie_service->deleteMediaFile($item->device_id, $item->request_id);
-                if ($res != null) {
+                if ($res == 200 || $res == 404) {
                     $item->status = 3;
                     $item->save();
                 }
@@ -115,9 +116,9 @@ class S3Command extends Command
             ->orderByDesc('updated_at')->limit(10)->get();
         $safie_service = new SafieApiService($contract_no);
         foreach ($data as $item) {
+            Log::info('check media request status-------------');
             $media_status = $safie_service->getMediaFileStatus($device_id, $item->request_id);
             if ($media_status != null) {
-                Log::info($media_status);
                 if ($media_status['state'] == 'AVAILABLE') {
                     if ($item->status == 0) {
                         $item->status = 1;
@@ -126,7 +127,7 @@ class S3Command extends Command
                     $video_data = $safie_service->downloadMediaFile($media_status['url']);
 
                     if ($video_data != null) {
-                        Log::info('video-------');
+                        Log::info('video donwload success-------');
                         $start_time = $item->start_time;
                         $end_time = $item->end_time;
                         $start_date = date('Ymd', strtotime($start_time));
@@ -274,7 +275,6 @@ class S3Command extends Command
     public function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
     {
         Log::info('【Start Post Api for AI】url:'.$url);
-        // Log::info($data);
 
         $curl = curl_init($url);
         //POSTで送信
@@ -309,13 +309,10 @@ class S3Command extends Command
         if ($httpcode == 200) {
             $response_return = json_decode($response, true);
 
-            Log::info($response_return);
             Log::info('【Finish Post Api】url:'.$url);
 
             return $response_return;
         } else {
-            echo 'HTTP code: '.$httpcode;
-
             return null;
         }
     }

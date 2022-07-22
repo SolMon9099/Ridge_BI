@@ -40,6 +40,11 @@ class PitService
             } else {
                 $cur_pit->max_permission_time = null;
             }
+            if (isset($params['min_members']) && $params['min_members'] > 0) {
+                $cur_pit->min_members = $params['min_members'];
+            } else {
+                $cur_pit->min_members = null;
+            }
             $cur_pit->updated_by = Auth::guard('admin')->user()->id;
             $res = $cur_pit->save();
             if (!$res) {
@@ -52,6 +57,9 @@ class PitService
             $new_pit->blue_points = $blue_points_data;
             if (isset($params['max_permission_time']) && $params['max_permission_time'] > 0) {
                 $new_pit->max_permission_time = $params['max_permission_time'];
+            }
+            if (isset($params['min_members']) && $params['min_members'] > 0) {
+                $new_pit->min_members = $params['min_members'];
             }
             $new_pit->created_by = Auth::guard('admin')->user()->id;
             $new_pit->updated_by = Auth::guard('admin')->user()->id;
@@ -105,7 +113,8 @@ class PitService
                 'cameras.location_id',
                 'cameras.contract_no',
                 'locations.name as location_name',
-                'pit_detection_rules.max_permission_time'
+                'pit_detection_rules.max_permission_time',
+                'pit_detection_rules.min_members'
             )
             ->leftJoin('pit_detection_rules', 'pit_detection_rules.id', 'pit_detections.rule_id')
             ->leftJoin('cameras', 'cameras.id', 'pit_detections.camera_id')

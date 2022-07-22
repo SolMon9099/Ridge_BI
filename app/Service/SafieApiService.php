@@ -332,10 +332,6 @@ class SafieApiService
     public function downloadMediaFile($url)
     {
         ini_set('memory_limit', '1024M');
-        // $device_id = $device_id != null ? $device_id : $this->device_id;
-        // $request_id = '3112844';
-        // $file_name = '2022-06-22_07:15:00.mp4';
-        // $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests/%s/%s', $device_id, $request_id, $file_name);
         $header = [
             'Authorization: Bearer '.$this->access_token,
             'Content-Type: application/json',
@@ -362,7 +358,6 @@ class SafieApiService
     public function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
     {
         Log::info('【Start Post Api】url:'.$url);
-        Log::info($data);
 
         $curl = curl_init($url);
         //POSTで送信
@@ -397,7 +392,6 @@ class SafieApiService
             $response_edit = strstr($response, '{');
             $response_return = json_decode($response_edit, true);
 
-            Log::info($response_return);
             Log::info('【Finish Post Api】url:'.$url);
 
             return $response_return;
@@ -416,7 +410,6 @@ class SafieApiService
     public static function sendDeleteApi($url, $header = null, $data = null)
     {
         Log::info('【Start Delete Api】url:'.$url);
-        Log::info($data);
 
         $curl = curl_init($url);
         //POSTで送信
@@ -434,24 +427,14 @@ class SafieApiService
         $response = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         Log::info('httpcode = '.$httpcode);
-        if ($httpcode == 200) {
-            // $response_edit = strstr($response, '{');
-            // $response_return = json_decode($response_edit, true);
-            // Log::info($response_return);
-            Log::info('【Finish Delete Api】url:'.$url);
+        Log::info('【Finish Delete Api】url:'.$url);
 
-            return true;
-        } else {
-            Log::info('【Finish Delete Api】url:'.$url);
-
-            return null;
-        }
+        return $httpcode;
     }
 
     public function sendGetApi($url, $header, $json_type = true)
     {
         Log::info('【Start Get Api】url:'.$url);
-        Log::info($header);
 
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);

@@ -53,7 +53,11 @@
                             <td>{{$danger->location_name}}</td>
                             <td>{{$danger->floor_number}}</td>
                             <td>{{$danger->installation_position}}</td>
-                            <td>{{config('const.action')[$danger->action_id]}}</td>
+                            <td>
+                                @foreach (json_decode($danger->action_id) as $action_code)
+                                    <div>{{config('const.action')[$action_code]}}</div>
+                                @endforeach
+                            </td>
                             <td><input disabled type="color" value = "{{$danger->color}}"/></td>
                             <td>
                                 <button type="button" class="history">履歴表示</button>

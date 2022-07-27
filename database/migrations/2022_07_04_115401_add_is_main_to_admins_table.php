@@ -14,7 +14,7 @@ class AddIsMainToAdminsTable extends Migration
     public function up()
     {
         Schema::table('admins', function (Blueprint $table) {
-            $table->string('is_main_admin')->nullable()->after('header_menu_ids')->comment('最初の管理者フラグ');
+            $table->boolean('is_main_admin')->nullable()->after('header_menu_ids')->comment('最初の管理者フラグ');
             $table->string('safie_user_name')->nullable()->after('is_main_admin')->comment('SafieのID');
             $table->string('safie_password')->nullable()->after('safie_user_name')->comment('Safieのパス');
             $table->string('safie_client_id')->nullable()->after('safie_password')->comment('SafieのクライアントID');

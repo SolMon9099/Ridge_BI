@@ -16,7 +16,7 @@ class AddContractAdminsTable extends Migration
         Schema::table('admins', function (Blueprint $table) {
             $table->string('authority_id')->comment('99999:スーパー管理者, 1:管理者, 2:現場責任者, 3:現場担当者')->change();
             $table->string('contract_no')->nullable()->after('authority_id')->comment('契約番号');
-            $table->string('header_menu_ids')->nullable()->after('contract_no')->comment('1:ピット入退場検知, 2:危険エリア侵入検知, 3 :棚乱れ検知,4:検針メーター検知, 5 :過去分析');
+            $table->string('header_menu_ids')->nullable()->after('contract_no')->comment('1:ピット入退場検知, 2:危険エリア侵入検知, 3 :棚乱れ検知,4:大量盗難検知, 5 :過去分析');
         });
     }
 

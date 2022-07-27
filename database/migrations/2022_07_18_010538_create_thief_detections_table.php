@@ -15,6 +15,7 @@ class CreateThiefDetectionsTable extends Migration
     {
         Schema::create('thief_detections', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('camera_id')->references('id')->on('cameras')->comment('カメラID');
             $table->foreignId('rule_id')->references('id')->on('thief_detection_rules')->comment('ルールID');
             $table->string('video_file_path')->comment('映像データパス');
             $table->string('thumb_img_path')->nullable()->comment('サムネイル');

@@ -34,7 +34,7 @@ class S3Command extends Command
         $now = $cur_time_object->format('Y-m-d H:i:s');
         $now_date = $cur_time_object->format('Y-m-d');
         if (strtotime($now_date.' '.$camera_start_on_time) <= strtotime($now) && strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
-            Log::info('start finding camera-------- ');
+            Log::info('カメラチェック開始');
             $cameras = Camera::all();
             if (count($cameras) == 0) {
                 return 0;
@@ -55,11 +55,11 @@ class S3Command extends Command
                 $safie_service = new SafieApiService($camera->contract_no);
 
                 //メディアファイル 作成要求削除(s3に保存されたもの)
-                Log::info('Delete request****************');
+                Log::info('メディアファイル 作成要求削除(s3に保存されたもの)ーーーー');
                 $this->deleteOldRequests($camera->contract_no);
 
                 //メディアファイル作成要求一覧取得・S3に保存--------------------------------
-                Log::info('saveMedia start****************');
+                Log::info('メディアファイル作成要求一覧取得・S3に保存ーーーー');
                 $this->saveMedia($camera->camera_id, $camera->contract_no, $camera->id);
                 //----------------------------------------------------------------------
                 //メディアファイル作成要求--------------------------------
@@ -115,8 +115,9 @@ class S3Command extends Command
             ->where('status', '!=', 3)
             ->orderByDesc('updated_at')->limit(10)->get();
         $safie_service = new SafieApiService($contract_no);
+        $this->reqeuestToAI($device_id, $id_camera);
         foreach ($data as $item) {
-            Log::info('check media request status-------------');
+            Log::info('メディアファイル 作成要求取得ーーーー');
             $media_status = $safie_service->getMediaFileStatus($device_id, $item->request_id);
             if ($media_status != null) {
                 if ($media_status['state'] == 'AVAILABLE') {
@@ -125,9 +126,8 @@ class S3Command extends Command
                         $item->save();
                     }
                     $video_data = $safie_service->downloadMediaFile($media_status['url']);
-
                     if ($video_data != null) {
-                        Log::info('video donwload success-------');
+                        Log::info('メディアファイル ダウンロード成功ーーーー');
                         $start_time = $item->start_time;
                         $end_time = $item->end_time;
                         $start_date = date('Ymd', strtotime($start_time));
@@ -139,7 +139,6 @@ class S3Command extends Command
                         //request rule data to AI--------
                         $aws_url = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/';
                         $movie_path = $aws_url.$device_id.'/'.$start_date.'/'.$file_name;
-                        $this->reqeuestToAI($device_id, $id_camera, $movie_path);
                         //-------------------------------
                     }
                 }
@@ -147,7 +146,7 @@ class S3Command extends Command
         }
     }
 
-    public function reqeuestToAI($device_id, $id_camera, $movie_path)
+    public function reqeuestToAI($device_id, $id_camera, $movie_path = null)
     {
         $url = '';
         $header = [
@@ -165,16 +164,19 @@ class S3Command extends Command
                 if (!isset($params['movie_info'])) {
                     $params['movie_info'] = [];
                 }
-                $params['movie_info']['movie_path'] = $movie_path;
+                // $params['movie_info']['movie_path'] = $movie_path;
+                $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_danger/20220311/20220311100323_20220311100822.mp4';
                 if (!isset($params['rect_info'])) {
                     $params['rect_info'] = [];
                 }
 
                 $params['rect_info']['rect_id'] = (string) $rule->id;
-                $params['rect_info']['rect_point_array'] = json_decode($rule->points);
-                $params['rect_info']['action_id'] = [$rule->action_id];
+                // $params['rect_info']['rect_point_array'] = json_decode($rule->points);
+                $sample_point_data = '[{"x": 1041,"y": 238,"id": 0},{"x": 1001,"y": 433,"id": 1},{"x": 581,"y": 231,"id": 2},{"x": 707,"y": 114,"id": 3}]';
+                $params['rect_info']['rect_point_array'] = json_decode($sample_point_data);
+                $params['rect_info']['action_id'] = json_decode($rule->action_id);
                 $params['priority'] = 1;
-                Log::info('danger request start----------');
+                Log::info('危険エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
                 $url = 'https://52.192.123.36/api/v1/danger-zone/register-camera';
                 $this->sendPostApi($url, $header, $params, 'json');
             }
@@ -194,7 +196,8 @@ class S3Command extends Command
                     if (!isset($params['movie_info'])) {
                         $params['movie_info'] = [];
                     }
-                    $params['movie_info']['movie_path'] = $movie_path;
+                    // $params['movie_info']['movie_path'] = $movie_path;
+                    $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_pit/20220707/20220707153430_20220707153455.mp4';
                     if (!isset($params['rect_info'])) {
                         $params['rect_info'] = [];
                     }
@@ -203,7 +206,7 @@ class S3Command extends Command
                     $params['rect_info']['exit_rect_point_array'] = json_decode($rule->blue_points);
                     $params['priority'] = 1;
 
-                    Log::info('pit request start----------');
+                    Log::info('ピット入退場解析リクエスト（BI→AI）開始ーーーー');
                     $url = 'https://52.192.123.36/api/v1/pit/register-camera';
                     $this->sendPostApi($url, $header, $params, 'json');
                 }
@@ -223,7 +226,8 @@ class S3Command extends Command
                     if (!isset($params['movie_info'])) {
                         $params['movie_info'] = [];
                     }
-                    $params['movie_info']['movie_path'] = $movie_path;
+                    // $params['movie_info']['movie_path'] = $movie_path;
+                    $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_shelf/20220707/20220707153430_20220707153455.mp4';
                     if (!isset($params['rect_info'])) {
                         $params['rect_info'] = [];
                     }
@@ -233,7 +237,7 @@ class S3Command extends Command
                     $params['rect_info'][] = $rect_param;
                     $params['priority'] = 1;
                 }
-                Log::info('shelf request start----------');
+                Log::info('棚乱れ解析リクエスト（BI→AI）開始ーーーー');
                 $url = 'https://52.192.123.36/api/v1/shelf-theft/register-camera';
                 $this->sendPostApi($url, $header, $params, 'json');
             }
@@ -253,7 +257,8 @@ class S3Command extends Command
                     if (!isset($params['movie_info'])) {
                         $params['movie_info'] = [];
                     }
-                    $params['movie_info']['movie_path'] = $movie_path;
+                    // $params['movie_info']['movie_path'] = $movie_path;
+                    $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_thief/20220311/20220311100323_20220311100346.mp4';
                     if (!isset($params['rect_info'])) {
                         $params['rect_info'] = [];
                     }
@@ -264,7 +269,7 @@ class S3Command extends Command
                     $params['rect_info'][] = $rect_param;
                     $params['priority'] = 1;
                 }
-                Log::info('thief request start----------');
+                Log::info('大量盗難解析リクエスト（BI→AI）開始ーーーー');
                 $url = 'https://52.192.123.36/api/v1/hanger-counter/register-camera';
                 $this->sendPostApi($url, $header, $params, 'json');
             }

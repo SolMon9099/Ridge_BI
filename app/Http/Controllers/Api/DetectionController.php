@@ -20,7 +20,9 @@ class DetectionController extends Controller
 
     public function saveDangerDetection(Request $request)
     {
-        Log::info('Danger Detection Receive Start****************');
+        Log::info('危険エリア侵入検知解析結果送受信API（AI→BI）開始');
+        Log::info('パラメータ');
+        Log::info($request);
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
@@ -84,19 +86,21 @@ class DetectionController extends Controller
                 'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
             ];
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
-            Log::info('Finish Danger Detection****************');
+            Log::info('危険エリア侵入検知解析結果送受信API（AI→BI）終了');
 
             return ['success' => '送信成功'];
         } else {
-            Log::info('Finish Danger Detection****************');
+            Log::info('危険エリア侵入検知解析結果送受信API（AI→BI）終了');
 
-            return ['success' => '送信失敗'];
+            return ['error' => '送信失敗'];
         }
     }
 
     public function saveShelfDetection(Request $request)
     {
-        Log::info('Shelf Detection Receive Start****************');
+        Log::info('棚乱れ検知ルール通知解析結果送受信API（AI→BI）開始');
+        Log::info('パラメータ');
+        Log::info($request);
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
@@ -160,19 +164,21 @@ class DetectionController extends Controller
                 'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
             ];
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
-            Log::info('Finish Shelf Detection****************');
+            Log::info('棚乱れ検知ルール通知解析結果送受信API（AI→BI）終了');
 
             return ['success' => '送信成功'];
         } else {
-            Log::info('Finish Shelf Detection****************');
+            Log::info('棚乱れ検知ルール通知解析結果送受信API（AI→BI）終了');
 
-            return ['success' => '送信失敗'];
+            return ['error' => '送信失敗'];
         }
     }
 
     public function savePitDetection(Request $request)
     {
-        Log::info('Pit Detection Receive Start****************');
+        Log::info('ピット入退場解析結果送受信API（AI→BI）開始');
+        Log::info('パラメータ');
+        Log::info($request);
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
@@ -246,19 +252,21 @@ class DetectionController extends Controller
                 'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
             ];
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
-            Log::info('Finish pit Detection****************');
+            Log::info('ピット入退場解析結果送受信API（AI→BI）終了');
 
             return ['success' => '送信成功'];
         } else {
-            Log::info('Finish pit Detection****************');
+            Log::info('ピット入退場解析結果送受信API（AI→BI）終了');
 
-            return ['success' => '送信失敗'];
+            return ['error' => '送信失敗'];
         }
     }
 
     public function saveThiefDetection(Request $request)
     {
-        Log::info('Thief Detection Receive Start****************');
+        Log::info('大量盗難解析結果送受信API（AI→BI）開始');
+        Log::info('パラメータ');
+        Log::info($request);
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
@@ -323,13 +331,13 @@ class DetectionController extends Controller
                 'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
             ];
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
-            Log::info('Finish thief Detection****************');
+            Log::info('大量盗難解析結果送受信API（AI→BI）終了');
 
             return ['success' => '送信成功'];
         } else {
-            Log::info('Finish thief Detection****************');
+            Log::info('大量盗難解析結果送受信API（AI→BI）終了');
 
-            return ['success' => '送信失敗'];
+            return ['error' => '送信失敗'];
         }
     }
 }

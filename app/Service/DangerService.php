@@ -6,6 +6,7 @@ use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
 use App\Models\DangerAreaDetection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DangerService
 {
@@ -28,41 +29,22 @@ class DangerService
 
     public static function saveData($params)
     {
-        $color = $params['color'];
-        $actions = $params['actions'];
         $camera_id = $params['camera_id'];
-        $points = $params['points_data'];
-        foreach (config('const.action_code') as $action_id) {
-            $cur_danger = DangerAreaDetectionRule::query()->where('action_id', $action_id)->where('camera_id', $camera_id)->get()->first();
-            if (in_array($action_id, $actions)) {
-                if (isset($cur_danger)) {
-                    $cur_danger->action_id = $action_id;
-                    $cur_danger->color = $color;
-                    $cur_danger->points = $points;
-                    $cur_danger->updated_by = Auth::guard('admin')->user()->id;
+        $rule_data = (array) json_decode($params['rule_data']);
+        if (count($rule_data) > 0) {
+            DB::table('danger_area_detection_rules')->where('camera_id', $camera_id)->delete();
+            foreach ($rule_data as $rule_item) {
+                $new_Danger = new DangerAreaDetectionRule();
+                $new_Danger->action_id = json_encode($rule_item->action_id);
+                $new_Danger->color = $rule_item->color;
+                $new_Danger->camera_id = $camera_id;
+                $new_Danger->points = json_encode($rule_item->points);
+                $new_Danger->created_by = Auth::guard('admin')->user()->id;
+                $new_Danger->updated_by = Auth::guard('admin')->user()->id;
 
-                    $res = $cur_danger->save();
-                    if (!$res) {
-                        return false;
-                    }
-                } else {
-                    $new_Danger = new DangerAreaDetectionRule();
-                    $new_Danger->action_id = $action_id;
-                    $new_Danger->color = $color;
-                    $new_Danger->camera_id = $camera_id;
-                    $new_Danger->points = $points;
-
-                    $new_Danger->created_by = Auth::guard('admin')->user()->id;
-                    $new_Danger->updated_by = Auth::guard('admin')->user()->id;
-
-                    $res = $new_Danger->save();
-                    if (!$res) {
-                        return false;
-                    }
-                }
-            } else {
-                if (isset($cur_danger)) {
-                    $cur_danger->delete();
+                $res = $new_Danger->save();
+                if (!$res) {
+                    return false;
                 }
             }
         }

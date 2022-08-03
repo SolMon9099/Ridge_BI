@@ -64,7 +64,7 @@ class S3Command extends Command
                 //----------------------------------------------------------------------
                 //メディアファイル作成要求--------------------------------
                 Log::info('メディアファイル作成要求--------------------------------');
-                $request_id = $safie_service->makeMediaFile(null, $record_start_time, $record_end_time);
+                $request_id = $safie_service->makeMediaFile($camera->camera_id, $record_start_time, $record_end_time);
                 Log::info('request_id = '.$request_id);
                 if ($request_id > 0) {
                     $this->createS3History($request_id, $record_start_time_object, $record_end_time_object, $camera->camera_id, $camera->contract_no);

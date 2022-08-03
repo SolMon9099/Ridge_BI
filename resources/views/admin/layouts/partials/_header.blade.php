@@ -5,6 +5,10 @@
     $general_user_flag = !($super_admin_flag | $admin_flag);
     $headers = isset($login_user->header_menu_ids)?explode(",", $login_user->header_menu_ids):[];
     $manager_allowed_pages = $login_user->manager_allowed_pages;
+    $suffix = '';
+    if ($super_admin_flag) $suffix = '（スーパー管理者）';
+    if ($admin_flag) $suffix = '（管理者）';
+
 ?>
 <div class="overlay" id="js__overlay"></div>
 <div id="sp-head">
@@ -15,6 +19,9 @@
         <div id="r-head">
             <div id="r-head-right">
                 <ul>
+                    <li>
+                        <div style="color:#999; padding-top:7px;">{{$login_user->name.$suffix}}</div>
+                    </li>
                     <li>
                         <button type="button" class="logout">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(208,211,219, 1);transform: ;msFilter:;">

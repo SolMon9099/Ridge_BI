@@ -86,7 +86,7 @@ return [
         2 => 'admin.danger',
         3 => 'admin.shelf',
         4 => 'admin.thief',
-        5 => 'admin.analyze',
+        // 5 => 'admin.analyze',
     ],
 
     'header_menus' => [
@@ -94,7 +94,7 @@ return [
         2 => '危険エリア侵入検知',
         3 => '棚乱れ検知',
         4 => '大量盗難検知',
-        5 => '過去分析',
+        // 5 => '過去分析',
     ],
 
     'header_menu_codes' => [
@@ -102,7 +102,7 @@ return [
         'danger_area' => 2,
         'shelf' => 3,
         'thief' => 4,
-        'past_analysis' => 5,
+        // 'past_analysis' => 5,
     ],
 
     'admin_pages' => ['全般', '現場設定', 'カメラ設定'],
@@ -141,11 +141,11 @@ return [
             ['id' => 20, 'name' => '検知リスト'],
             ['id' => 21, 'name' => '詳細分析'],
         ],
-        '過去分析' => [
-            ['id' => 16, 'name' => '新規分析依頼'],
-            ['id' => 17, 'name' => '新規分析依頼中リスト'],
-            ['id' => 18, 'name' => '分析済みリスト'],
-        ],
+        // '過去分析' => [
+        //     ['id' => 16, 'name' => '新規分析依頼'],
+        //     ['id' => 17, 'name' => '新規分析依頼中リスト'],
+        //     ['id' => 18, 'name' => '分析済みリスト'],
+        // ],
     ],
 
     'page_route_names' => [
@@ -165,9 +165,9 @@ return [
         13 => 'admin.shelf',
         14 => 'admin.shelf.list',
         15 => 'admin.shelf.detail',
-        16 => 'admin.analyze',
-        17 => 'admin.analyze.now_list',
-        18 => 'admin.analyze.finish_list',
+        // 16 => 'admin.analyze',
+        // 17 => 'admin.analyze.now_list',
+        // 18 => 'admin.analyze.finish_list',
         19 => 'admin.thief',
         20 => 'admin.thief.list',
         21 => 'admin.thief.detail',
@@ -175,7 +175,7 @@ return [
 
     'camera_start_time' => '08:00:00',
     'camera_end_time' => '21:00:00',
-    'request_interval' => 1,        //分
+    'request_interval' => 5,        //分
     'pit_time_options' => [15, 30, 45, 60, 75, 90, 105, 120],
     'shelf_max_rect_numbers' => 3,
     'thief_max_rect_numbers' => 3,

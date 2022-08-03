@@ -97,7 +97,11 @@
                             <td>{{$rule->location_name}}</td>
                             <td>{{$rule->floor_number}}</td>
                             <td>{{$rule->installation_position}}</td>
-                            <td>{{config('const.action')[$rule->action_id]}}</td>
+                            <td>
+                                @foreach (json_decode($rule->action_id) as $action_code)
+                                    <div>{{config('const.action')[$action_code]}}</div>
+                                @endforeach
+                            </td>
                             <td><input disabled type="color" value = "{{$rule->color}}"></td>
                         </tr>
                         @endforeach

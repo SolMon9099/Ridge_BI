@@ -40,12 +40,12 @@ class S3Command extends Command
                 return 0;
             }
             $record_start_time_object = clone $cur_time_object;
-            // $record_start_time_object->sub(new \DateInterval('PT'.(string) 2 * $request_interval.'M'));
-            $record_start_time_object->sub(new \DateInterval('PT'.(string) (2 * $request_interval + 3).'M'));
+            $record_start_time_object->sub(new \DateInterval('PT'.(string) 2 * $request_interval.'M'));
+            // $record_start_time_object->sub(new \DateInterval('PT'.(string) (2 * $request_interval + 3).'M'));
             $record_start_time = $record_start_time_object->format('c');
             $record_end_time_object = clone $cur_time_object;
-            // $record_end_time_object->sub(new \DateInterval('PT'.(string) $request_interval.'M'));
-            $record_end_time_object->sub(new \DateInterval('PT'.(string) ($request_interval + 3).'M'));
+            $record_end_time_object->sub(new \DateInterval('PT'.(string) $request_interval.'M'));
+            // $record_end_time_object->sub(new \DateInterval('PT'.(string) ($request_interval + 3).'M'));
             $record_end_time = $record_end_time_object->format('c');
 
             foreach ($cameras as $camera) {
@@ -174,7 +174,11 @@ class S3Command extends Command
                 // $params['rect_info']['rect_point_array'] = json_decode($rule->points);
                 $sample_point_data = '[{"x": 1041,"y": 238,"id": 0},{"x": 1001,"y": 433,"id": 1},{"x": 581,"y": 231,"id": 2},{"x": 707,"y": 114,"id": 3}]';
                 $params['rect_info']['rect_point_array'] = json_decode($sample_point_data);
-                $params['rect_info']['action_id'] = json_decode($rule->action_id);
+                $action_data = [];
+                foreach (json_decode($rule->action_id) as $action_code) {
+                    $action_data[] = (int) $action_code;
+                }
+                $params['rect_info']['action_id'] = $action_data;
                 $params['priority'] = 1;
                 Log::info('危険エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
                 $url = 'https://52.192.123.36/api/v1/danger-zone/register-camera';

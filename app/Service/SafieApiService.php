@@ -212,6 +212,7 @@ class SafieApiService
         }
         $curl = curl_init($url);
         Log::debug("--- {$url} ---");
+        Log::debug('access_token = '.$this->access_token);
         curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_POST, false);

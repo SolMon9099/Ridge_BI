@@ -489,7 +489,7 @@
                 rules_object[rule_index].action_id.splice(action_index, 1);
             }
         } else {
-            rules_object[rule_index].action_id.push(id_action);
+            rules_object[rule_index].action_id.push(parseInt(id_action));
         }
     }
 
@@ -587,7 +587,7 @@
                     rules_object[rule_index].action_id.splice(action_index, 1);
                 }
             } else {
-                rules_object[rule_index].action_id.push($(this).val());
+                rules_object[rule_index].action_id.push(parseInt($(this).val()));
             }
         });
         $('.draw-btn', template_item).click(function(){

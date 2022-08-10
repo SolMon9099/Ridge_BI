@@ -53,7 +53,7 @@
                     <tr>
                         <th class="w10"></th>
                         <th>カメラNo</th>
-                        <th>現場名</th>
+                        <th>設置エリア</th>
                         <th>設置フロア</th>
                         <th>設置場所</th>
                         <th>アクション</th>
@@ -119,7 +119,7 @@
                 <tr>
                 <th class="w10"></th>
                 <th>カメラNo</th>
-                <th>現場名</th>
+                <th>設置エリア</th>
                 <th>設置フロア</th>
                 <th>設置場所</th>
                 </tr>

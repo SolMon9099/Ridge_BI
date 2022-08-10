@@ -33,7 +33,7 @@
             <div class="sp-ma">
                 <div class="sort">
                     <ul class="date-list">
-                        <li><h4>現場名</h4></li>
+                        <li><h4>設置エリア</h4></li>
                         <li>
                             <div class="select-c">
                                 <select name="location">
@@ -62,8 +62,11 @@
                         <li>
                             <ul class="radio-list">
                                 @foreach (config('const.camera_status') as $key => $status )
-                                    <li><input name="is_enabled" type="radio" id="is_enabled_{{ $key }}" value="{{ $key }}" {{ old('is_enabled', (isset($input) && $input->has('is_enabled')) ? $input->is_enabled : config('const.enable_status_code.enable')) == $key ? 'checked' : ''  }}>
-                                    <label for="is_enabled_{{ $key }}">{{  $status }}</label></li>
+                                    <li>
+                                        <input name="is_enabled" type="radio" id="is_enabled_{{ $key }}" value="{{ $key }}"
+                                        {{ old('is_enabled', (isset($input) && $input->has('is_enabled') && $input->is_enabled != '') ? $input->is_enabled : config('const.enable_status_code.enable')) == $key ? 'checked' : ''  }}>
+                                        <label for="is_enabled_{{ $key }}">{{  $status }}</label>
+                                    </li>
                                 @endforeach
                             </ul>
                         </li>
@@ -74,7 +77,11 @@
         </div>
         </form>
         @include('admin.layouts.flash-message')
-        {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
+        {{ $cameras->appends([
+            'is_enabled' => isset($input) && $input->has('is_enabled') ? $input->is_enabled : '',
+            'location'=>isset($input) && $input->has('location') && $input->location > 0 ? $input->location : '',
+            'floor_number'=>isset($input) && $input->has('floor_number') ? $input->floor_number : ''
+            ])->links('vendor.pagination.admin-pagination') }}
         <ul class="camera-list">
         @foreach($cameras as $camera)
             <li>
@@ -91,7 +98,7 @@
                         <td>{{$camera->camera_id}}</td>
                     </tr>
                     <tr>
-                        <th>現場名</th>
+                        <th>設置エリア</th>
                         <td>{{isset($locations[$camera->location_id])?$locations[$camera->location_id]:''}}</td>
                     </tr>
                     <tr>
@@ -107,7 +114,11 @@
             </li>
         @endforeach
         </ul>
-        {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
+        {{ $cameras->appends([
+            'is_enabled' => isset($input) && $input->has('is_enabled') ? $input->is_enabled : '',
+            'location'=>isset($input) && $input->has('location') && $input->location > 0 ? $input->location : '',
+            'floor_number'=>isset($input) && $input->has('floor_number') ? $input->floor_number : ''
+            ])->links('vendor.pagination.admin-pagination') }}
     </div>
 </div>
 

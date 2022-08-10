@@ -10,12 +10,12 @@
     <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.location')}}">現場設定</a></li>
-            <li>現場名一覧</li>
+            <li>設置エリア一覧</li>
         </ul>
     </div>
     <div id="r-content">
         <div class="title-wrap">
-            <h2 class="title">現場名一覧</h2>
+            <h2 class="title">設置エリア一覧</h2>
             @if(!$super_admin_flag)
             <div class="new-btn">
                 <a href="{{route('admin.location.create')}}">
@@ -34,8 +34,8 @@
                 <thead>
                 <tr>
                     <th>編集</th>
-                    <th>現場コード</th>
-                    <th>現場名</th>
+                    {{-- <th>現場コード</th> --}}
+                    <th>設置エリア</th>
                     {{-- <th>現場責任者</th> --}}
                     <th>現場担当者</th>
                     <th>有効設定</th>
@@ -46,7 +46,7 @@
                 @foreach($locations as $location)
                 <tr>
                     <td><button type="button" class="edit" onclick="location.href='{{route('admin.location.edit', ['location' => $location->id])}}'">編集</button></td>
-                    <td>{{$location->code}}</td>
+                    {{-- <td>{{$location->code}}</td> --}}
                     <td>{{$location->name}}</td>
                     {{-- <td>
                     @foreach(explode(",",$location->owner) as $owner)

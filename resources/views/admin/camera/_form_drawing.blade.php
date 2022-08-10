@@ -4,10 +4,10 @@
     <table class="table">
         <thead>
         <tr>
-            <th>現場名</th>
+            <th>設置エリア</th>
             <td><div class="select-c">
                 <select name="location_id">
-                    <option value="">現場名を選択してください</option>
+                    <option value="">設置エリアを選択してください</option>
                     @foreach ($locations as $key => $location)
                         @if (old('location_id', isset($drawing->location_id)? $drawing->location_id:'') == $key)
                         <option value="{{$key}}" selected>{{$location}}</option>

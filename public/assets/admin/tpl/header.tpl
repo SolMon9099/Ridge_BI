@@ -32,7 +32,7 @@ define("root" ,"/bi/");
                         </li>
                         <li><h2>現場設定</h2>
                             <ul>
-                                <li><a href="location.php">現場名一覧</a></li>
+                                <li><a href="location.php">設置エリア一覧</a></li>
                             </ul>
                         </li>
                         <li><h2>カメラ設定</h2>

@@ -125,7 +125,7 @@
     #container-canvas{
         margin-left: auto;
         margin-right: auto;
-        width:1280px;
+        /* width:1280px; */
         /* height:720px; */
         background-repeat: no-repeat!important;
         background-size:contain!important;
@@ -160,6 +160,10 @@
     var selected_edit_camera_id = '';
     var selected_edit_camera_object = null;
     var selected_edit_drawing_id = '';
+    var drawing_width = "<?php echo config('const.drawing_width_criteria');?>";
+    drawing_width = parseInt(drawing_width);
+    var drawing_height = "<?php echo config('const.drawing_height_criteria');?>";
+    drawing_height = parseInt(drawing_height);
     var radius = "<?php echo config('const.camera_mark_radius');?>";
     var camera_mapping_info = <?php echo json_encode($camera_mapping_info);?>;
 
@@ -251,10 +255,12 @@
     $(document).ready(function () {
         var container = document.getElementById('container-canvas');
         $('#camera_mapping_info').val(JSON.stringify(camera_mapping_info));
+        $('#container-canvas').css('width', drawing_width);
+        $('#container-canvas').css('height', drawing_height);
         stage = new Konva.Stage({
             container: 'container-canvas',
-            width: container.clientWidth,
-            height: window.innerHeight,
+            width: drawing_width,
+            height: drawing_height,
         })
 
         layer = new Konva.Layer();

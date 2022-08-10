@@ -114,7 +114,7 @@ return [
             ['id' => 3, 'name' => '通知設定'],
         ],
         '現場設定' => [
-            ['id' => 4, 'name' => '現場名一覧'],
+            ['id' => 4, 'name' => '設置エリア一覧'],
         ],
         'カメラ設定' => [
             ['id' => 5, 'name' => 'カメラ一覧'],
@@ -128,16 +128,19 @@ return [
         ],
         '危険エリア侵入検知' => [
             ['id' => 10, 'name' => 'ルール新規作成・編集'],
+            ['id' => 12, 'name' => 'ダッシュボード'],
             ['id' => 11, 'name' => '検知リスト'],
-            ['id' => 12, 'name' => '過去データ'],
+            ['id' => 23, 'name' => '過去データ'],
         ],
         '棚乱れ検知' => [
             ['id' => 13, 'name' => 'ルール一覧'],
+            ['id' => 15, 'name' => 'ダッシュボード'],
             ['id' => 14, 'name' => '検知リスト'],
-            ['id' => 15, 'name' => '詳細分析'],
+            ['id' => 24, 'name' => '詳細分析'],
         ],
         '大量盗難検知' => [
             ['id' => 19, 'name' => 'ルール一覧'],
+            ['id' => 25, 'name' => 'ダッシュボード'],
             ['id' => 20, 'name' => '検知リスト'],
             ['id' => 21, 'name' => '詳細分析'],
         ],
@@ -162,15 +165,18 @@ return [
         10 => 'admin.danger',
         11 => 'admin.danger.list',
         12 => 'admin.danger.detail',
+        23 => 'admin.danger.past_analysis',
         13 => 'admin.shelf',
         14 => 'admin.shelf.list',
         15 => 'admin.shelf.detail',
+        24 => 'admin.shelf.past_analysis',
         // 16 => 'admin.analyze',
         // 17 => 'admin.analyze.now_list',
         // 18 => 'admin.analyze.finish_list',
         19 => 'admin.thief',
         20 => 'admin.thief.list',
         21 => 'admin.thief.detail',
+        25 => 'admin.thief.past_analysis',
     ],
 
     'camera_start_time' => '08:00:00',
@@ -179,4 +185,7 @@ return [
     'pit_time_options' => [15, 30, 45, 60, 75, 90, 105, 120],
     'shelf_max_rect_numbers' => 3,
     'thief_max_rect_numbers' => 3,
+    'danger_max_figure_numbers' => 3,
+    'drawing_width_criteria' => 1024,    //px
+    'drawing_height_criteria' => 960,    //px
 ];

@@ -36,12 +36,12 @@
                     <tr>
                         <th>編集</th>
                         <th>カメラNo</th>
-                        <th>現場名</th>
+                        <th>設置エリア</th>
                         <th>設置フロア</th>
                         <th>設置場所</th>
                         <th>アクション</th>
                         <th>カラー</th>
-                        <th>検知履歴</th>
+                        {{-- <th>検知履歴</th> --}}
                         <th>削除</th>
                     </tr>
                     </thead>
@@ -59,9 +59,9 @@
                                 @endforeach
                             </td>
                             <td><input disabled type="color" value = "{{$danger->color}}"/></td>
-                            <td>
+                            {{-- <td>
                                 <button type="button" class="history">履歴表示</button>
-                            </td>
+                            </td> --}}
                             <td>
                                 @if (!$super_admin_flag)
                                     <button type="button" class="delete_danger_rules history" delete_index="{{ $danger->id }}">削除</button>

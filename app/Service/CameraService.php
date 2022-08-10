@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Models\Camera;
 use App\Models\CameraMappingDetail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CameraService
 {
@@ -19,7 +20,7 @@ class CameraService
                 ->leftJoin('location_drawings as drawing', 'drawing.id', 'map.drawing_id')->whereNull('drawing.deleted_at')
                 ->where('drawing.floor_number', 'LIKE', '%'.$params->floor_number.'%');
         }
-        if ($params->has('is_enabled')) {
+        if ($params->has('is_enabled') && $params->is_enabled != '') {
             $cameras = $cameras->where('is_enabled', $params->is_enabled ? 1 : 0);
         }
         if (Auth::guard('admin')->user()->contract_no != null) {
@@ -48,7 +49,23 @@ class CameraService
         $new_Camera->created_by = Auth::guard('admin')->user()->id;
         $new_Camera->updated_by = Auth::guard('admin')->user()->id;
 
-        return $new_Camera->save();
+        $new_Camera->save();
+        if ($new_Camera->id > 0 && isset($params['drawing_id']) && $params['drawing_id'] > 0) {
+            if (isset($params['x_coordinate']) && $params['y_coordinate'] != null && (int) $params['x_coordinate'] >= 0
+                && isset($params['y_coordinate']) && $params['y_coordinate'] != null && (int) $params['y_coordinate'] >= 0) {
+                $new_mapping = new CameraMappingDetail();
+                $new_mapping->drawing_id = $params['drawing_id'];
+                $new_mapping->camera_id = $new_Camera->id;
+                $new_mapping->x_coordinate = $params['x_coordinate'];
+                $new_mapping->y_coordinate = $params['y_coordinate'];
+                $new_mapping->created_by = Auth::guard('admin')->user()->id;
+                $new_mapping->updated_by = Auth::guard('admin')->user()->id;
+
+                $new_mapping->save();
+            }
+        }
+
+        return true;
     }
 
     public static function doUpdate($params, $cur_Camera)
@@ -65,7 +82,39 @@ class CameraService
             $cur_Camera->is_enabled = isset($params['is_enabled']) ? $params['is_enabled'] : 1;
             $cur_Camera->updated_by = Auth::guard('admin')->user()->id;
 
-            return $cur_Camera->save();
+            $cur_Camera->save();
+
+            if (isset($params['drawing_id']) && $params['drawing_id'] > 0) {
+                $mapping_record = CameraMappingDetail::query()->where('camera_id', $cur_Camera->id)->where('drawing_id', $params['drawing_id'])->get()->first();
+                if ($mapping_record != null) {
+                    if (isset($params['x_coordinate']) && $params['y_coordinate'] != null && (int) $params['x_coordinate'] >= 0
+                        && isset($params['y_coordinate']) && $params['y_coordinate'] != null && (int) $params['y_coordinate'] >= 0) {
+                        $mapping_record->x_coordinate = $params['x_coordinate'];
+                        $mapping_record->y_coordinate = $params['y_coordinate'];
+                        $mapping_record->updated_by = Auth::guard('admin')->user()->id;
+                        $mapping_record->save();
+                    } else {
+                        $mapping_record->delete();
+                    }
+                } else {
+                    if (isset($params['x_coordinate']) && $params['y_coordinate'] != null && (int) $params['x_coordinate'] >= 0
+                        && isset($params['y_coordinate']) && $params['y_coordinate'] != null && (int) $params['y_coordinate'] >= 0) {
+                        DB::table('camera_mapping_details')->where('camera_id', $cur_Camera->id)->delete();
+
+                        $new_mapping = new CameraMappingDetail();
+                        $new_mapping->drawing_id = $params['drawing_id'];
+                        $new_mapping->camera_id = $cur_Camera->id;
+                        $new_mapping->x_coordinate = $params['x_coordinate'];
+                        $new_mapping->y_coordinate = $params['y_coordinate'];
+                        $new_mapping->created_by = Auth::guard('admin')->user()->id;
+                        $new_mapping->updated_by = Auth::guard('admin')->user()->id;
+
+                        $new_mapping->save();
+                    }
+                }
+            }
+
+            return true;
         } else {
             abort(403);
         }
@@ -74,7 +123,10 @@ class CameraService
     public static function doDelete($cur_Camera)
     {
         if (is_object($cur_Camera)) {
-            return $cur_Camera->delete();
+            $cur_Camera->delete();
+            DB::table('camera_mapping_details')->where('camera_id', $cur_Camera->id)->delete();
+
+            return true;
         } else {
             abort(403);
         }

@@ -60,18 +60,21 @@ class CameraController extends AdminController
             abort(403);
         }
         $locations = LocationService::getAllLocationNames();
+        $drawing_data = LocationDrawingService::getDrawingDataObject($locations);
         $safie_service = new SafieApiService(Auth::guard('admin')->user()->contract_no);
         $devices = $safie_service->getAllDevices();
 
         return view('admin.camera.create')->with([
             'locations' => $locations,
             'devices' => $devices,
+            'drawing_data' => $drawing_data,
         ]);
     }
 
     public function edit(Request $request, Camera $camera)
     {
         $locations = LocationService::getAllLocationNames();
+        $drawing_data = LocationDrawingService::getDrawingDataObject($locations);
         if ($camera->contract_no != null) {
             $safie_service = new SafieApiService($camera->contract_no);
             $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
@@ -79,11 +82,23 @@ class CameraController extends AdminController
                 $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
             }
             $camera->img = $camera_image_data;
+            $map_data = CameraMappingDetail::select('drawing.*', 'camera_mapping_details.x_coordinate', 'camera_mapping_details.y_coordinate')
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $camera->drawing_id = $map_data->id;
+                $camera->drawing_file_path = $map_data->drawing_file_path;
+                $camera->floor_number = $map_data->floor_number;
+                $camera->x_coordinate = $map_data->x_coordinate;
+                $camera->y_coordinate = $map_data->y_coordinate;
+            }
         }
 
         return view('admin.camera.edit')->with([
             'camera' => $camera,
             'locations' => $locations,
+            'drawing_data' => $drawing_data,
         ]);
     }
 

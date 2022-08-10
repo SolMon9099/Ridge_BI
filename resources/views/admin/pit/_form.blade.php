@@ -16,40 +16,40 @@
 <div class="no-scroll">
     {{-- @include('admin.layouts.flash-message') --}}
     <div class="scroll">
+        <h2>検知設定</h2>
+        <div style="display: flex;">
+            <div style="margin-right:30px;">
+                <label>ピット内人数：</label>
+                <input name="min_members" type="number" inputmode="numeric" pattern="\d*" max='10' min='0' class='members_input'
+                    value="{{old('min_members', isset($min_members)?$min_members:'')}}">
+                    <span style="font-size: 14px;">以上</span>
+                @error('min_members')
+                    <p class="error-message min_members">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label>アラート対象滞在時間：</label>
+                <select name = 'max_permission_time' class="select-box" style="width:60px;margin-right:0px;">
+                    <option value=''></option>
+                    @foreach(config('const.pit_time_options') as $time)
+                        @if (old('max_permission_time', isset($max_permission_time)?$max_permission_time:'') == $time)
+                            <option selected value={{$time}}>{{$time}}分</option>
+                        @else
+                            <option value={{$time}}>{{$time}}分</option>
+                        @endif
+                    @endforeach
+                </select>
+                <span style="font-size: 14px;">を超えた時</span>
+                @error('max_permission_time')
+                    <p class="error-message max_permission_time">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
         <div class="n-area2">
-            <div class="video-area" style="width:85%;">
+            <div class="video-area" style="width:100%;">
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
                 <p class="error-message area" style="display: none">エリアを選択してください。</p>
                 <div id="debug"></div>
-            </div>
-            <div style="width:10%;">
-                <h2>検知設定</h2>
-                <div style="margin-top: 10px;">
-                    <h3>ピット内人数：</h3>
-                    <input name="min_members" type="number" inputmode="numeric" pattern="\d*" max='10' min='0' class='members_input'
-                        value="{{old('min_members', isset($min_members)?$min_members:'')}}">
-                        <span style="font-size: 14px;">以上</span>
-                    @error('min_members')
-                        <p class="error-message">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div style="margin-top: 10px;">
-                    <h3>アラート対象滞在時間：</h3>
-                    <select name = 'max_permission_time' class="select-box" style="width:60px;margin-right:0px;">
-                        <option value=''></option>
-                        @foreach(config('const.pit_time_options') as $time)
-                            @if (old('max_permission_time', isset($max_permission_time)?$max_permission_time:'') == $time)
-                                <option selected value={{$time}}>{{$time}}分</option>
-                            @else
-                                <option value={{$time}}>{{$time}}分</option>
-                            @endif
-                        @endforeach
-                    </select>
-                    <span style="font-size: 14px;">を超えた時</span>
-                    @error('max_permission_time')
-                        <p class="error-message">{{ $message }}</p>
-                    @enderror
-                </div>
             </div>
         </div>
 

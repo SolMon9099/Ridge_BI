@@ -2,9 +2,11 @@
 
 @section('content')
 <?php
+    $selected_rule = null;
     foreach ($rules as $rule) {
         if ($rule->red_points != null && $rule->red_points != '') $rule->red_points = json_decode($rule->red_points);
         if ($rule->blue_points != null && $rule->blue_points != '') $rule->blue_points = json_decode($rule->blue_points);
+        $selected_rule = $rule;
     }
 ?>
 <form action="{{route('admin.pit.detail')}}" method="get" name="form1" id="form1">
@@ -36,16 +38,23 @@
             <div class="list">
                 <div class="inner active">
                     <h3 class="title">ピット内人数推移</h3>
-                    <div id="image-container"></div>
+                    @if($selected_rule != null)
+                        <div id="image-container" onclick="location.href='{{route('admin.pit.edit', ['pit' => $selected_rule->id])}}'"></div>
+                    @endif
                     <div style="display: flex;width:100%;margin-bottom:30px;" class="mainbody">
                         <div class='video-show' style="width:50%;">
+                            @if($selected_rule != null)
                             <div class="streaming-video" style="height:360px;width:640px;">
                                 <safie-streaming-player></safie-streaming-player>
-                                <input type="button" value='再生' onClick="play()">
-                                <input type="button" value='停止' onClick="pause()">
+                                {{-- <input type="button" value='再生' onClick="play()">
+                                <input type="button" value='停止' onClick="pause()"> --}}
                             </div>
+                            @endif
                         </div>
-                        <canvas id="myLineChart1"></canvas>
+                        @if($selected_rule != null)
+                            <canvas id="myLineChart1" onclick="location.href='{{route('admin.pit.edit', ['pit' => $selected_rule->id])}}'"></canvas>
+                        @endif
+
                     </div>
 
                     <div class="left-right">
@@ -56,12 +65,14 @@
                                     <tr>
                                         <th>時間</th>
                                         <th>検知条件</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>9:22</td>
                                         <td>時間オーバー(120)</td>
+                                        <td><a class="move-href">検知リスト</a></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -145,9 +156,10 @@
                         <tr>
                             <th class="w10"></th>
                             <th>カメラNo</th>
-                            <th>現場名</th>
+                            <th>設置エリア</th>
                             <th>設置フロア</th>
                             <th>設置場所</th>
+                            <th>カメラ画像確認</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -170,6 +182,7 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
+                            <td><img width="100px" src="{{$camera->img}}"/></td>
                         </tr>
                         @endforeach
                         </tbody>
@@ -187,12 +200,23 @@
 <style>
     #myLineChart1{
         width:50%!important;
-        height: 360px!important;
+        height: 400px!important;
+        cursor: pointer;
     }
     #image-container{
         width:640px;
         height:360px;
         position: absolute;
+        z-index: 1;
+        cursor: pointer;
+    }
+    .streaming-video{
+        position: absolute;
+    }
+    .move-href{
+        text-decoration: underline;
+        color: blue;
+        cursor: pointer;
     }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
@@ -229,9 +253,14 @@
                     backgroundColor: "rgba(66,182,136, 0.3)",
                     pointBackgroundColor:'red',
                     fill:true
-                }],
+                }]
             },
             options: {
+                legend: {
+                    labels: {
+                        fontSize: 30
+                    }
+                },
                 title: {
                     display: false,
                     text: 'ピット内人数推移'
@@ -247,6 +276,7 @@
                             suggestedMax: Math.max(...y_data) + 1,
                             suggestedMin: 0,
                             stepSize: 1,
+                            fontSize: 30,
                             callback: function(value, index, values){
                                 return  value +  '人'
                             }
@@ -261,11 +291,12 @@
                             },
                             distribution: 'series'
                         },
-                        // ticks: {
-                        //     max: max_time,
-                        //     min: min_time,
-                        //     stepSize: 1,
-                        // }
+                        ticks: {
+                            fontSize: 30,
+                            // max: max_time,
+                            // min: min_time,
+                            // stepSize: 1,
+                        }
                     }]
                 },
 
@@ -372,7 +403,7 @@
             // 初期化
             safieStreamingPlayer.defaultProperties = {
                 defaultAccessToken: '<?php echo $access_token;?>',
-                defaultDeviceId: '<?php echo $device_id;?>',
+                defaultDeviceId: '<?php echo isset($selected_rule) ? $selected_rule->camera_no : '';?>',
                 defaultAutoPlay:true
             };
         }
@@ -386,7 +417,7 @@
 
     $(document).ready(function() {
         if (rules.length > 0){
-            drawing(rules[0]);
+            drawing(rules[rules.length - 1]);
         }
 
     });

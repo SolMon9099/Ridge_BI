@@ -42,7 +42,11 @@
                 </div>
             </div>
         </form>
-        {{ $pit_detections->appends([])->links('vendor.pagination.admin-pagination') }}
+        {{ $pit_detections->appends([
+            'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
+            'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
+            'rule_ids' => isset($request) && $request->has('rule_ids')?$request->rule_ids:''
+        ])->links('vendor.pagination.admin-pagination') }}
         <ul class="kenchi-list">
             @foreach ($pit_detections as $item)
             <?php
@@ -72,7 +76,11 @@
             </li>
             @endforeach
         </ul>
-        {{ $pit_detections->appends([])->links('vendor.pagination.admin-pagination') }}
+        {{ $pit_detections->appends([
+            'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
+            'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
+            'rule_ids' => isset($request) && $request->has('rule_ids')?$request->rule_ids:''
+        ])->links('vendor.pagination.admin-pagination') }}
     </div>
 </div>
 <!--MODAL -->
@@ -86,7 +94,7 @@
                 <tr>
                     <th class="w10"></th>
                     <th>カメラNo</th>
-                    <th>現場名</th>
+                    <th>設置エリア</th>
                     <th>設置フロア</th>
                     <th>設置場所</th>
                 </tr>

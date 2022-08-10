@@ -16,8 +16,8 @@ class CreateLocationsTable extends Migration
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->string('code')->comment('現場コード');
-            $table->string('name')->comment('現場名');
+            $table->string('code')->nullable()->comment('現場コード');
+            $table->string('name')->comment('設置エリア');
             $table->string('owner')->nullable()->comment('現場責任者');
             $table->string('manager')->nullable()->comment('現場担当者');
             $table->tinyInteger('is_enabled')->default(1)->comment('有効設定');

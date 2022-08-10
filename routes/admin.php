@@ -94,6 +94,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::get('/create_rule', 'DangerController@create_rule')->name('admin.danger.create_rule');
         Route::get('/list', 'DangerController@list')->name('admin.danger.list');
         Route::get('/detail', 'DangerController@detail')->name('admin.danger.detail');
+        Route::get('/past_analysis', 'DangerController@past_analysis')->name('admin.danger.past_analysis');
         Route::post('/store', 'DangerController@store')->name('admin.danger.store');
         Route::put('/update/{danger}', 'DangerController@update')->name('admin.danger.update');
         Route::delete('/delete/{danger}', 'DangerController@delete')->name('admin.danger.delete');
@@ -107,6 +108,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::post('/store', 'ShelfController@store')->name('admin.shelf.store');
         Route::get('/list', 'ShelfController@list')->name('admin.shelf.list');
         Route::get('/detail', 'ShelfController@detail')->name('admin.shelf.detail');
+        Route::get('/past_analysis', 'ShelfController@detail')->name('admin.shelf.past_analysis');
         Route::get('/save_sorted_imgage/{detect}', 'ShelfController@save_sorted_imgage')->name('admin.shelf.save_sorted_imgage');
         Route::delete('/delete/{shelf}', 'ShelfController@delete')->name('admin.shelf.delete');
     });
@@ -119,6 +121,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::post('/store', 'ThiefController@store')->name('admin.thief.store');
         Route::get('/list', 'ThiefController@list')->name('admin.thief.list');
         Route::get('/detail', 'ThiefController@detail')->name('admin.thief.detail');
+        Route::get('/past_analysis', 'ThiefController@detail')->name('admin.thief.past_analysis');
         Route::delete('/delete/{thief}', 'ThiefController@delete')->name('admin.thief.delete');
     });
 

@@ -52,7 +52,7 @@ class CameraRequest extends FormRequest
     {
         $attributes = parent::attributes();
         $attributes['camera_id'] = 'カメラNo';
-        $attributes['location_id'] = '現場名';
+        $attributes['location_id'] = '設置エリア';
         $attributes['installation_position'] = '設置場所';
 
         return $attributes;
@@ -63,7 +63,7 @@ class CameraRequest extends FormRequest
         $messages = [];
         $messages['camera_id.required'] = 'カメラNoを入力してください。';
         $messages['camera_id.unique'] = 'すでに登録されたカメラNoです。';
-        $messages['location_id.required'] = '現場名を入力してください。';
+        $messages['location_id.required'] = '設置エリアを入力してください。';
         $messages['installation_position.required'] = '設置場所を入力してください。';
 
         return $messages;

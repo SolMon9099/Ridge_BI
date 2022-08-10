@@ -34,7 +34,7 @@
                     <div class="sort">
                         <ul class="date-list">
                             <li>
-                            <h4>現場名</h4>
+                            <h4>設置エリア</h4>
                             </li>
                             <li>
                             <div class="select-c">
@@ -57,13 +57,13 @@
             </div>
         </form>
         @include('admin.layouts.flash-message')
-        {{ $drawings->appends([])->links('vendor.pagination.admin-pagination') }}
+        {{ $drawings->appends(['location'=>(isset($input) && $input->has('location') && $input->location > 0) ? $input->location : ''])->links('vendor.pagination.admin-pagination') }}
         <div class="scroll active">
             <table class="table2 text-centre">
                 <thead>
                 <tr>
                     <th>編集</th>
-                    <th>現場名</th>
+                    <th>設置エリア</th>
                     <th>設置フロア</th>
                     <th>詳細</th>
                     <th>削除</th>
@@ -90,7 +90,7 @@
                 </tbody>
             </table>
         </div>
-        {{ $drawings->appends([])->links('vendor.pagination.admin-pagination') }}
+        {{ $drawings->appends(['location'=>(isset($input) && $input->has('location') && $input->location > 0) ? $input->location : ''])->links('vendor.pagination.admin-pagination') }}
     </div>
   </div>
 

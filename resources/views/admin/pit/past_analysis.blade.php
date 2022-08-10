@@ -142,9 +142,10 @@
                         <tr>
                             <th class="w10"></th>
                             <th>カメラNo</th>
-                            <th>現場名</th>
+                            <th>設置エリア</th>
                             <th>設置フロア</th>
                             <th>設置場所</th>
+                            <th>カメラ画像確認</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -167,6 +168,7 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
+                            <td><img width="100px" src="{{$camera->img}}"/></td>
                         </tr>
                         @endforeach
                         </tbody>

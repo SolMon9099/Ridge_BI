@@ -9,8 +9,8 @@
 <div id="wrapper">
     <div class="breadcrumb">
         <ul>
-            <li><a href="{{route('admin.location')}}">現場マスタ</a></li>
-            <li><a href="{{route('admin.location')}}">現場名一覧</a></li>
+            <li><a href="{{route('admin.location')}}">現場設定</a></li>
+            <li><a href="{{route('admin.location')}}">設置エリア一覧</a></li>
             <li>現場編集</li>
         </ul>
     </div>

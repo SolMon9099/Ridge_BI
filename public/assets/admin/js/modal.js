@@ -44,9 +44,11 @@ $(function () {
     });
     // 「.modal-overlay」あるいは「.modal-close」をクリック
     $('.modal-wrap, .modal-close, .ok').off().click(function () {
-			if($('.modal-open').hasClass('play')){
-        video.pause();
-			}
+		if($('.modal-open').hasClass('play')){
+            if (video != undefined){
+                video.pause();
+            }
+		}
       $('#redcover img').fadeIn();
       $('#redcover img').fadeOut();
       $('#redcover').animate({

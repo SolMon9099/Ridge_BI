@@ -38,7 +38,11 @@
                 </div>
             </div>
         </form>
-        {{ $danger_detections->appends([])->links('vendor.pagination.admin-pagination') }}
+        {{ $danger_detections->appends([
+            'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
+            'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
+            'rule_ids' => isset($request) && $request->has('rule_ids')?$request->rule_ids:''
+        ])->links('vendor.pagination.admin-pagination') }}
         <ul class="kenchi-list">
             @foreach ($danger_detections as $item)
             <?php
@@ -61,14 +65,24 @@
                         <td>{{$item->location_name}}</td>
                         <td>{{$item->floor_number}}</td>
                         <td>{{$item->installation_position}}</td>
-                        <td>{{config('const.action')[$item->action_id]}}</td>
+                        <td>
+                            @if (isset($item->action_id))
+                            @foreach (json_decode($item->action_id) as $action_code)
+                                <div>{{config('const.action')[$action_code]}}</div>
+                            @endforeach
+                            @endif
+                        </td>
                     </tr>
                     </table>
                 </div>
             </li>
             @endforeach
         </ul>
-        {{ $danger_detections->appends([])->links('vendor.pagination.admin-pagination') }}
+        {{ $danger_detections->appends([
+            'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
+            'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
+            'rule_ids' => isset($request) && $request->has('rule_ids')?$request->rule_ids:''
+        ])->links('vendor.pagination.admin-pagination') }}
     </div>
 </div>
 <!--MODAL -->
@@ -82,11 +96,12 @@
                 <tr>
                     <th class="w10"></th>
                     <th>カメラNo</th>
-                    <th>現場名</th>
+                    <th>設置エリア</th>
                     <th>設置フロア</th>
                     <th>設置場所</th>
                     <th>アクション</th>
                     <th>カラー</th>
+                    <th>カメラ画像確認</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -120,6 +135,7 @@
                             @endforeach
                         </td>
                         <td><input disabled type="color" value = "{{$rule->color}}"></td>
+                        <td><img width="100px" src="{{$rule->img}}"/></td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -146,6 +162,10 @@
 <!-- -->
 
 <style>
+    .textarea{
+        max-width: 1200px;
+        width:100%;
+    }
 </style>
 <script>
     function selectRule(){

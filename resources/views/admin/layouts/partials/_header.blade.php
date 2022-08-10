@@ -49,7 +49,7 @@
                             </li>
                             <li><h2>現場設定</h2>
                                 <ul>
-                                    <li><a href="{{route('admin.location')}}">現場名一覧</a></li>
+                                    <li><a href="{{route('admin.location')}}">設置エリア一覧</a></li>
                                 </ul>
                             </li>
                             <li><h2>カメラ設定</h2>

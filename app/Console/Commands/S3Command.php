@@ -115,7 +115,6 @@ class S3Command extends Command
             ->where('status', '!=', 3)
             ->orderByDesc('updated_at')->limit(10)->get();
         $safie_service = new SafieApiService($contract_no);
-        $this->reqeuestToAI($device_id, $id_camera);
         foreach ($data as $item) {
             Log::info('メディアファイル 作成要求取得ーーーー');
             $media_status = $safie_service->getMediaFileStatus($device_id, $item->request_id);
@@ -139,6 +138,7 @@ class S3Command extends Command
                         //request rule data to AI--------
                         $aws_url = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/';
                         $movie_path = $aws_url.$device_id.'/'.$start_date.'/'.$file_name;
+                        $this->reqeuestToAI($device_id, $id_camera, $movie_path);
                         //-------------------------------
                     }
                 }
@@ -164,8 +164,8 @@ class S3Command extends Command
                 if (!isset($params['movie_info'])) {
                     $params['movie_info'] = [];
                 }
-                // $params['movie_info']['movie_path'] = $movie_path;
-                $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_danger/20220311/20220311100323_20220311100822.mp4';
+                $params['movie_info']['movie_path'] = $movie_path;
+                // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_danger/20220311/20220311100323_20220311100822.mp4';
                 if (!isset($params['rect_info'])) {
                     $params['rect_info'] = [];
                 }
@@ -200,8 +200,8 @@ class S3Command extends Command
                     if (!isset($params['movie_info'])) {
                         $params['movie_info'] = [];
                     }
-                    // $params['movie_info']['movie_path'] = $movie_path;
-                    $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_pit/20220707/20220707153430_20220707153455.mp4';
+                    $params['movie_info']['movie_path'] = $movie_path;
+                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_pit/20220707/20220707153430_20220707153455.mp4';
                     if (!isset($params['rect_info'])) {
                         $params['rect_info'] = [];
                     }
@@ -230,8 +230,8 @@ class S3Command extends Command
                     if (!isset($params['movie_info'])) {
                         $params['movie_info'] = [];
                     }
-                    // $params['movie_info']['movie_path'] = $movie_path;
-                    $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_shelf/20220707/20220707153430_20220707153455.mp4';
+                    $params['movie_info']['movie_path'] = $movie_path;
+                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_shelf/20220707/20220707153430_20220707153455.mp4';
                     if (!isset($params['rect_info'])) {
                         $params['rect_info'] = [];
                     }
@@ -261,8 +261,8 @@ class S3Command extends Command
                     if (!isset($params['movie_info'])) {
                         $params['movie_info'] = [];
                     }
-                    // $params['movie_info']['movie_path'] = $movie_path;
-                    $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_thief/20220311/20220311100323_20220311100346.mp4';
+                    $params['movie_info']['movie_path'] = $movie_path;
+                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_thief/20220311/20220311100323_20220311100346.mp4';
                     if (!isset($params['rect_info'])) {
                         $params['rect_info'] = [];
                     }

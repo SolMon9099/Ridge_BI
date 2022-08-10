@@ -232,7 +232,7 @@
                         <thead>
                             <tr>
                                 <th class="w10"></th>
-                                <th>現場名</th>
+                                <th>設置エリア</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -254,7 +254,7 @@
                         <thead>
                             <tr>
                                 <th class="w10"></th>
-                                <th>現場名</th>
+                                <th>設置エリア</th>
                             </tr>
                         </thead>
                         <tbody>

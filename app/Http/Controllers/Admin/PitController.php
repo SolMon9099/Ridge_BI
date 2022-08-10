@@ -186,6 +186,7 @@ class PitController extends AdminController
         }
         $access_token = '';
         $device_id = '';
+        $camera_imgs = [];
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $camera->id)
@@ -194,15 +195,18 @@ class PitController extends AdminController
             if ($map_data != null) {
                 $camera->floor_number = $map_data->floor_number;
             }
-            if ($device_id == '') {
-                $device_id = $camera->camera_id;
-            }
-            if ($access_token == '' && $camera->contract_no != null && $camera->contract_no != '') {
-                $safie_service = new SafieApiService($camera->contract_no);
+            $safie_service = new SafieApiService($camera->contract_no);
+            if ($access_token == '') {
                 if (isset($safie_service->access_token)) {
                     $access_token = $safie_service->access_token;
                 }
             }
+
+            $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+            if ($camera_image_data != null) {
+                $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            }
+            $camera->img = $camera_image_data;
         }
 
         return view('admin.pit.detail')->with([
@@ -223,6 +227,7 @@ class PitController extends AdminController
             $all_data[date('Y-m-d', strtotime($item->starttime))][] = $item;
         }
         $cameras = PitService::getAllCameras();
+        $camera_imgs = [];
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $camera->id)
@@ -231,6 +236,19 @@ class PitController extends AdminController
             if ($map_data != null) {
                 $camera->floor_number = $map_data->floor_number;
             }
+            if ($camera->contract_no == null) {
+                continue;
+            }
+            $safie_service = new SafieApiService($camera->contract_no);
+
+            if (!isset($camera_imgs[$camera->camera_id])) {
+                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                if ($camera_image_data != null) {
+                    $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+                }
+                $camera_imgs[$camera->camera_id] = $camera_image_data;
+            }
+            $camera->img = $camera_imgs[$camera->camera_id];
         }
 
         return view('admin.pit.past_analysis')->with([

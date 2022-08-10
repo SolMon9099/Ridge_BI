@@ -83,6 +83,24 @@ class LocationDrawingService
         return $drawings->with('location');
     }
 
+    public static function getDrawingDataObject($locations)
+    {
+        $res = [];
+        if ($locations == null || count($locations) == 0) {
+            return $res;
+        }
+        $location_ids = array_keys($locations);
+        $drawings = LocationDrawing::query()->whereIn('location_id', $location_ids)->get()->all();
+        foreach ($drawings as $drawing_item) {
+            if (!isset($res[$drawing_item->location_id])) {
+                $res[$drawing_item->location_id] = [];
+            }
+            $res[$drawing_item->location_id][$drawing_item->id] = $drawing_item;
+        }
+
+        return $res;
+    }
+
     public static function getDataByLocation($location_id)
     {
         $drawings = LocationDrawing::query()->where('location_id', $location_id);

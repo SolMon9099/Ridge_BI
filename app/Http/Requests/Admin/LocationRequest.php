@@ -40,9 +40,9 @@ class LocationRequest extends FormRequest
             // $rules['owners.*'] = ['required', 'max:150'];
             // $rules['managers.*'] = ['required', 'max:150'];
             if ($this->action == 'admin.location.store') {
-                $rules['code'] = ['required', 'max:150', 'unique:locations,code,NULL,id,deleted_at,NULL'];
+                // $rules['code'] = ['required', 'max:150', 'unique:locations,code,NULL,id,deleted_at,NULL'];
             } elseif ($this->action == 'admin.location.update') {
-                $rules['code'] = ['required', 'max:150', "unique:locations,code,{$this->p_request->id},id,deleted_at,NULL"];
+                // $rules['code'] = ['required', 'max:150', "unique:locations,code,{$this->p_request->id},id,deleted_at,NULL"];
             }
         }
 
@@ -53,7 +53,7 @@ class LocationRequest extends FormRequest
     {
         $attributes = parent::attributes();
         $attributes['code'] = '現場コード';
-        $attributes['name'] = '現場名';
+        $attributes['name'] = '設置エリア';
         // $attributes['owners.*'] = '現場責任者';
         // $attributes['managers.*'] = '現場担当者';
         return $attributes;
@@ -62,9 +62,9 @@ class LocationRequest extends FormRequest
     public function messages()
     {
         $messages = [];
-        $messages['code.required'] = '現場コードを入力してください。';
-        $messages['code.unique'] = 'すでに登録された現場コードです。';
-        $messages['name.required'] = '現場名を入力してください。';
+        // $messages['code.required'] = '現場コードを入力してください。';
+        // $messages['code.unique'] = 'すでに登録された現場コードです。';
+        $messages['name.required'] = '設置エリアを入力してください。';
         // $messages["owners.*.required"] = "現場責任者を入力してください。";
         // $messages["managers.*.required"] = "現場担当者を入力してください。";
         return $messages;

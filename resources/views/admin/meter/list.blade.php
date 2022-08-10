@@ -58,7 +58,7 @@
                   <tr>
                     <th>検知日時</th>
                     <th>カメラNo</th>
-                    <th>現場名</th>
+                    <th>設置エリア</th>
                     <th>設置フロア</th>
                     <th>設置場所</th>
                     <th>アクション</th>
@@ -87,15 +87,15 @@
                 </tbody>
               </table>
             </div>
-        
-          
+
+
 
         <!--
         <div class="tour-content mt25">
           <div class="float-l pager"><a href="">＜</a><span class="current">1</span><a href="">2</a><a href="">3</a><a href="">4</a><a href="">5</a><a href="">＞</a></div>
         </div>
 -->
-        
+
       </form>
     </div>
   </div>

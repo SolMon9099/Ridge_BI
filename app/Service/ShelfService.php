@@ -5,7 +5,6 @@ namespace App\Service;
 use App\Models\ShelfDetectionRule;
 use App\Models\ShelfDetection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ShelfService
 {
@@ -29,17 +28,16 @@ class ShelfService
     public static function saveData($params)
     {
         $camera_id = $params['camera_id'];
-        $points_data = $params['points_data'];
-        $points_data = json_decode($points_data);
         $hour = $params['hour'];
         $mins = $params['mins'];
-        DB::table('shelf_detection_rules')->where('camera_id', $camera_id)->delete();
-        foreach ($points_data as $point) {
-            if (is_array($point->positions) && count($point->positions) == 4) {
+        $rule_data = json_decode($params['rule_data']);
+        ShelfDetectionRule::query()->where('camera_id', $camera_id)->delete();
+        foreach ($rule_data as $rule) {
+            if (is_array($rule->points)) {
                 $new_rule = new ShelfDetectionRule();
-                $new_rule->color = $point->color;
+                $new_rule->color = $rule->color;
                 $new_rule->camera_id = $camera_id;
-                $new_rule->points = json_encode($point->positions);
+                $new_rule->points = json_encode($rule->points);
                 $new_rule->hour = $hour;
                 $new_rule->mins = $mins;
 

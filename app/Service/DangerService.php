@@ -6,7 +6,6 @@ use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
 use App\Models\DangerAreaDetection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class DangerService
 {
@@ -33,7 +32,7 @@ class DangerService
         $camera_id = $params['camera_id'];
         $rule_data = (array) json_decode($params['rule_data']);
         if (count($rule_data) > 0) {
-            DB::table('danger_area_detection_rules')->where('camera_id', $camera_id)->delete();
+            DangerAreaDetectionRule::query()->where('camera_id', $camera_id)->delete();
             foreach ($rule_data as $rule_item) {
                 $new_Danger = new DangerAreaDetectionRule();
                 $new_Danger->action_id = json_encode($rule_item->action_id);

@@ -297,7 +297,7 @@
                 ticks: {
                     suggestedMax: max_y + 2,
                     suggestedMin: 0,
-                    stepSize: 1,
+                    stepSize: parseInt((max_y + 2)/10) + 1,
                     callback: function(value, index, values){
                     return  value +  '回'
                     }
@@ -306,85 +306,5 @@
             },
         }
     });
-
-    // var ctx2 = document.getElementById("myLineChart2");
-    // var myLineChart2 = new Chart(ctx2, {
-    //     type: 'line',
-    //     data: {
-    //         labels: ['5/1', '5/2', '5/3', '5/4', '5/5', '5/6', '5/7'],
-    //         datasets: [
-    //             {
-    //             label: 'A',
-    //             data: [35, 34, 37, 35, 34, 35, 34, 25],
-    //             borderColor: "#42b688",
-    //             backgroundColor: "rgba(0,0,0,0)"
-    //             },
-    //             {
-    //             label: 'B',
-    //             data: [25, 27, 27, 25, 26, 27, 25, 21],
-    //             borderColor: "#42539a",
-    //             backgroundColor: "rgba(0,0,0,0)"
-    //             }
-    //         ],
-    //     },
-    //     options: {
-    //     title: {
-    //         display: true,
-    //         text: 'NGアクション毎の回数'
-    //     },
-    //     scales: {
-    //         yAxes: [{
-    //         ticks: {
-    //             suggestedMax: 40,
-    //             suggestedMin: 0,
-    //             stepSize: 10,
-    //             callback: function(value, index, values){
-    //             return  value +  '回'
-    //             }
-    //         }
-    //         }]
-    //     },
-    //     }
-    // });
-
-	// var ctx3 = document.getElementById("myLineChart3");
-    // var myLineChart3 = new Chart(ctx3, {
-    //     type: 'line',
-    //     data: {
-    //         labels: ['5/1', '5/2', '5/3', '5/4', '5/5', '5/6', '5/7'],
-    //         datasets: [
-    //             {
-    //                 label: 'A',
-    //                 data: [35, 34, 37, 35, 34, 35, 34, 25],
-    //                 borderColor: "#42b688",
-    //                 backgroundColor: "rgba(0,0,0,0)"
-    //             },
-    //             {
-    //                 label: 'B',
-    //                 data: [25, 27, 27, 25, 26, 27, 25, 21],
-    //                 borderColor: "#42539a",
-    //                 backgroundColor: "rgba(0,0,0,0)"
-    //             }
-    //         ],
-    //     },
-    //     options: {
-    //         title: {
-    //             display: true,
-    //             text: 'NGアクション毎の回数'
-    //         },
-    //         scales: {
-    //             yAxes: [{
-    //                 ticks: {
-    //                     suggestedMax: 40,
-    //                     suggestedMin: 0,
-    //                     stepSize: 10,
-    //                     callback: function(value, index, values){
-    //                     return  value +  '回'
-    //                     }
-    //                 }
-    //             }]
-    //         },
-    //     }
-    // });
   </script>
   @endsection

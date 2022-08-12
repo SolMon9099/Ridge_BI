@@ -66,10 +66,8 @@
                         <td>{{$item->floor_number}}</td>
                         <td>{{$item->installation_position}}</td>
                         <td>
-                            @if (isset($item->action_id))
-                            @foreach (json_decode($item->action_id) as $action_code)
-                                <div>{{config('const.action')[$action_code]}}</div>
-                            @endforeach
+                            @if (isset($item->detection_action_id) && $item->detection_action_id > 0)
+                                <div>{{config('const.action')[$item->detection_action_id]}}</div>
                             @endif
                         </td>
                     </tr>

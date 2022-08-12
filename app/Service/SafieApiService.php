@@ -398,11 +398,6 @@ class SafieApiService
             return $response_return;
         } else {
             echo 'HTTP code: '.$httpcode;
-            if ($httpcode == 401) {
-                if (isset($this->refresh_token) && $this->refresh_token != '') {
-                    $this->refreshToken($this->refresh_token);
-                }
-            }
 
             return null;
         }
@@ -459,13 +454,11 @@ class SafieApiService
             }
         } else {
             echo 'HTTP code: '.$httpcode;
-            if ($httpcode == 401) {
-                if (isset($this->refresh_token) && $this->refresh_token != '') {
-                    $this->refreshToken($this->refresh_token);
-                }
+            if ($httpcode == 404) {
+                return 'not_found';
+            } else {
+                return null;
             }
-
-            return null;
         }
     }
 

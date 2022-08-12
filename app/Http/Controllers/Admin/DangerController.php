@@ -185,10 +185,8 @@ class DangerController extends AdminController
         $danger_detections = DangerService::searchDetections($request)->get()->all();
         $all_data = [];
         foreach ($danger_detections as $item) {
-            if ($item->action_id != null) {
-                foreach (json_decode($item->action_id) as $action_code) {
-                    $all_data[date('Y-m-d', strtotime($item->starttime))][$action_code][] = $item;
-                }
+            if ($item->detection_action_id > 0) {
+                $all_data[date('Y-m-d', strtotime($item->starttime))][$item->detection_action_id][] = $item;
             }
         }
         $rules = DangerService::doSearch($request)->get()->all();
@@ -251,7 +249,9 @@ class DangerController extends AdminController
         $danger_detections = DangerService::searchDetections($request)->get()->all();
         $all_data = [];
         foreach ($danger_detections as $item) {
-            $all_data[date('Y-m-d', strtotime($item->starttime))][$item->action_id][] = $item;
+            if ($item->detection_action_id > 0) {
+                $all_data[date('Y-m-d', strtotime($item->starttime))][$item->detection_action_id][] = $item;
+            }
         }
         $rules = DangerService::doSearch($request)->get()->all();
         $cameras = DangerService::getAllCameras();

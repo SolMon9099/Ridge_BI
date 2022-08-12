@@ -225,35 +225,41 @@ header{
 
 }
 #header h1 {
-  padding:20px 10px 10px 30px;
+    padding:20px 10px 10px 30px;
 	width:150px;
 	box-sizing: border-box;
 }
+@media only screen and (min-width:769px) {
+    header{
+        display: block;
+    }
+}
+
 @media only screen and (max-width:768px) {
 	header{
 		display: none;
-		    background:#0062de;
-    min-height: auto;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    top: 56px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-y: auto;
-    box-shadow: none;
-    z-index: 9999999;
+		background:#0062de;
+        min-height: auto;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        top: 56px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow-y: auto;
+        box-shadow: none;
+        z-index: 9999999;
 	}
 
-  h1.logo {
-    width: 51px;
-    position: fixed;
-    left: 50px;
-    top: 0;
-    z-index: 9999;
-    padding: 5px 5px 1px 5px;
-  }
+    h1.logo {
+        width: 51px;
+        position: fixed;
+        left: 50px;
+        top: 0;
+        z-index: 9999;
+        padding: 5px 5px 1px 5px;
+    }
   h1.logo img {
     width: 100%;
   }
@@ -432,7 +438,8 @@ input[type=text], input[type=password], input[type=number] {
   z-index: 100;
   top: 100%;
   left: 15px;
-	width: 8vw;
+  /* width: 8vw; */
+  width:auto;
   margin: 0;
   padding: 0;
 }
@@ -460,7 +467,8 @@ input[type=text], input[type=password], input[type=number] {
 }
 #dropmenu li ul li {
   overflow: hidden;
-  width: 170%;
+  /* width: 170%; */
+  width:auto;
   height: 0;
   color: #fff;
   transition: .2s;
@@ -1162,6 +1170,7 @@ p.other-btn {
 @media only screen and (max-width:768px) {
   #r-content h2.title + p {
     font-size: 11px;
+    margin-top:10px;
   }
   #r-content h2.title {
     font-size: 16px;
@@ -4978,7 +4987,7 @@ ul.camera-list{
 	flex-wrap:wrap;
 }
 ul.camera-list li{
-	width:25%;
+	width:23%;
 	margin-right: 1.25%;
 	margin-bottom: 1.25%;
 }

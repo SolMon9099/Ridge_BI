@@ -41,7 +41,7 @@
                         <th>設置場所</th>
                         <th>ハンガーの色</th>
                         <th>カラー</th>
-                        <th>検知履歴</th>
+                        {{-- <th>検知履歴</th> --}}
                         <th>削除</th>
                     </tr>
                 </thead>
@@ -55,9 +55,9 @@
                             <td>{{$thief->installation_position}}</td>
                             <td><input disabled type="color" value = "{{substr($thief->hanger, 0, 7)}}"/></td>
                             <td><input disabled type="color" value = "{{$thief->color}}"/></td>
-                            <td>
+                            {{-- <td>
                                 <button type="button" class="history">履歴表示</button>
-                            </td>
+                            </td> --}}
                             <td>
                                 @if (!$super_admin_flag)
                                     <button type="button" class="delete_thief_rules history" delete_index="{{ $thief->id }}">削除</button>

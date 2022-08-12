@@ -20,7 +20,7 @@
             <div id="r-head-right">
                 <ul>
                     <li>
-                        <div style="color:#999; padding-top:7px;">{{$login_user->name.$suffix}}</div>
+                        <div class="login-user-name">{{$login_user->name.$suffix}}</div>
                     </li>
                     <li>
                         <button type="button" class="logout">
@@ -88,3 +88,14 @@
         @endforeach
       </ul>
 </header>
+<style>
+    .login-user-name{
+        color:#999;
+        padding-top:7px;
+    }
+    @media only screen and (max-width:768px) {
+        .login-user-name{
+            display: none;
+        }
+    }
+</style>

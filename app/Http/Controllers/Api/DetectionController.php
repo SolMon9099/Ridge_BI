@@ -43,8 +43,14 @@ class DetectionController extends Controller
 
             return ['error' => '検知開始日時がありません。'];
         }
+        if (!(isset($request['analyze_result']['action_id']) && $request['analyze_result']['action_id'] > 0)) {
+            Log::info('アクションデータがありません。-------------');
+
+            return ['error' => 'アクションデータがありません。'];
+        }
         $rule_id = $request['analyze_result']['rect_id'];
         Log::info('rule id = '.$rule_id);
+        $detection_action_id = $request['analyze_result']['action_id'];
         $danger_service = new DangerService();
         $camera_data = $danger_service->getCameraByRuleID($rule_id);
         if ($camera_data == null) {
@@ -82,6 +88,7 @@ class DetectionController extends Controller
                 'camera_id' => $camera_data->id,
                 'contract_no' => $camera_data->contract_no,
                 'rule_id' => $rule_id,
+                'detection_action_id' => $detection_action_id,
                 'type' => 'danger_area',
                 'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
             ];

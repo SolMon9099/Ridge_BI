@@ -36,7 +36,7 @@ class AICommand extends Command
                 if (isset($file_content->request_id) && $file_content->request_id > 0) {
                     $safie_service = new SafieApiService($file_content->contract_no);
                     $media_status = $safie_service->getMediaFileStatus($file_content->camera_no, $file_content->request_id);
-                    if ($media_status != null) {
+                    if ($media_status != null && isset($media_status['state'])) {
                         Log::info($media_status);
                         if ($media_status['state'] !== 'AVAILABLE') {
                             continue;
@@ -44,6 +44,10 @@ class AICommand extends Command
                         if ($media_status['state'] == 'AVAILABLE') {
                             $video_data = $safie_service->downloadMediaFile($media_status['url']);
                             if ($video_data == null) {
+                                continue;
+                            }
+                            if ($video_data == 'not_found') {
+                                Storage::disk('temp')->delete($file);
                                 continue;
                             }
                             Log::info('video ok~~~~~~~');
@@ -56,6 +60,9 @@ class AICommand extends Command
                                 case 'danger_area':
                                     $folder_name = 'danger';
                                     $detection_model = new DangerAreaDetection();
+                                    if (isset($file_content->detection_action_id)) {
+                                        $detection_model->detection_action_id = $file_content->detection_action_id;
+                                    }
                                     break;
                                 case 'shelf':
                                     $folder_name = 'shelf';
@@ -91,6 +98,9 @@ class AICommand extends Command
                             $safie_service->deleteMediaFile($file_content->camera_no, $file_content->request_id);
                             Storage::disk('temp')->delete($file);
                         }
+                    }
+                    if ($media_status == 'not_found') {
+                        Storage::disk('temp')->delete($file);
                     }
                 }
             }

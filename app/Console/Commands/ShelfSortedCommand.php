@@ -31,9 +31,9 @@ class ShelfSortedCommand extends Command
 
         Log::info('定時撮影チェック開始ーーーーーー');
         $shelf_detection_rules = ShelfDetectionRule::select('shelf_detection_rules.*', 'cameras.camera_id as camera_no', 'cameras.contract_no')
-            ->leftJoin('cameras', 'cameras.id', 'shelf_detection_rules.camera_id')->distinct('shelf_detection_rules.camera_id')->get()->all();
+            ->leftJoin('cameras', 'cameras.id', 'shelf_detection_rules.camera_id')->get()->unique('camera_no');
         if (count($shelf_detection_rules) > 0) {
-            $now_hour = (int) date('H') + 9;
+            $now_hour = (int) date('H');
             if ($now_hour > 23) {
                 $now_hour = $now_hour - 24;
             }

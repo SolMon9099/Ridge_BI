@@ -113,19 +113,19 @@ class S3Command extends Command
             ->where('contract_no', $contract_no)
             ->where('status', '!=', 2)
             ->where('status', '!=', 3)
-            ->orderByDesc('updated_at')->limit(10)->get();
+            ->orderByDesc('updated_at')->get();
         $safie_service = new SafieApiService($contract_no);
         foreach ($data as $item) {
             Log::info('メディアファイル 作成要求取得ーーーー');
             $media_status = $safie_service->getMediaFileStatus($device_id, $item->request_id);
-            if ($media_status != null) {
+            if ($media_status != null && isset($media_status['state'])) {
                 if ($media_status['state'] == 'AVAILABLE') {
                     if ($item->status == 0) {
                         $item->status = 1;
                         $item->save();
                     }
                     $video_data = $safie_service->downloadMediaFile($media_status['url']);
-                    if ($video_data != null) {
+                    if ($video_data != null && $video_data != 'not_found') {
                         Log::info('メディアファイル ダウンロード成功ーーーー');
                         $start_time = $item->start_time;
                         $end_time = $item->end_time;
@@ -141,7 +141,13 @@ class S3Command extends Command
                         $this->reqeuestToAI($device_id, $id_camera, $movie_path);
                         //-------------------------------
                     }
+                    if ($video_data == 'not_found') {
+                        $item->delete();
+                    }
                 }
+            }
+            if ($media_status == 'not_found') {
+                $item->delete();
             }
         }
     }
@@ -171,9 +177,9 @@ class S3Command extends Command
                 }
 
                 $params['rect_info']['rect_id'] = (string) $rule->id;
-                // $params['rect_info']['rect_point_array'] = json_decode($rule->points);
-                $sample_point_data = '[{"x": 1041,"y": 238,"id": 0},{"x": 1001,"y": 433,"id": 1},{"x": 581,"y": 231,"id": 2},{"x": 707,"y": 114,"id": 3}]';
-                $params['rect_info']['rect_point_array'] = json_decode($sample_point_data);
+                $params['rect_info']['rect_point_array'] = json_decode($rule->points);
+                // $sample_point_data = '[{"x": 1041,"y": 238,"id": 0},{"x": 1001,"y": 433,"id": 1},{"x": 581,"y": 231,"id": 2},{"x": 707,"y": 114,"id": 3}]';
+                // $params['rect_info']['rect_point_array'] = json_decode($sample_point_data);
                 $action_data = [];
                 foreach (json_decode($rule->action_id) as $action_code) {
                     $action_data[] = (int) $action_code;

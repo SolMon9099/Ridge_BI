@@ -20,7 +20,7 @@
     @include('admin.layouts.flash-message')
     <div class="scroll">
         <h3>検知設定</h3>
-        <div style="padding-left:15px;display:flex;">
+        <div class="setting-head">
             <div id="rule_items">
                 <p class="close-items"><a class="close-icon">×</a></p>
                 <div class="radio-area">
@@ -28,20 +28,21 @@
                     <label for="radio-rect" class="radio-label radio-label-rect">四角形</label>
                     <input id="radio-polygon" type="radio" value="1">
                     <label for="radio-polygon" class="radio-label radio-label-polygon">多角形</label>
-                    <button type="button" class="draw-btn disabled-btn">矩形描く</button>
                 </div>
                 <div class="title-div">カラー</div>
-                <div class="content-div"><input type="color" class="color" value=""/></div>
+                <div class="content-div"><input type="color" class="color" value=""/><button type="button" class="draw-btn disabled-btn">矩形描く</button></div>
                 <div class="title-div">アクション</div>
                 <div class="content-div action-div">
                     @foreach($action_options as $id => $action)
+                        <div>
                             <input value={{$id}} type="checkbox" id="{{'action_'.$id}}">
                             <label class="custom-style" for="{{'action_'.$id}}"></label>{{$action}}
+                        </div>
                     @endforeach
                 </div>
                 <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
             </div>
-            <div id="rule_item_area" style="display: flex;">
+            <div id="rule_item_area">
                 @foreach ($rules as $index=>$rule)
                 <div class="rule_items" data-index = {{$index}}>
                     <p class="close-items"><a class="close-icon" onclick="removeFigure({{$index}})">×</a></p>
@@ -61,27 +62,32 @@
                                 id={{"radio-polygon_".$index}} name={{'figure_type_'.$index}} type="radio" value="1" onchange="changeFigure(this, '{{$index}}')" checked>
                             <label for={{"radio-polygon_".$index}} class="radio-label">多角形</label>
                         @endif
-                        <button type="button" class="draw-btn disabled-btn">矩形描く</button>
+
                     </div>
                     <div class="title-div">カラー</div>
-                    <div class="content-div"><input onchange="changeColor(this, '{{$index}}')" type="color" class="color" value="{{isset($rule->color) ? $rule->color:'#000000'}}"/></div>
-                    <div class="title-div">アクション</div>
                     <div class="content-div">
-                        @foreach($action_options as $id => $action)
-                            @if (in_array($id, $rule->action_id))
-                                <input value={{$id}} type="checkbox" id="{{$index.'_action_'.$id}}" checked>
-                            @else
-                                <input value={{$id}} type="checkbox" id="{{$index.'_action_'.$id}}">
-                            @endif
-                            <label onclick="changeActions({{$index.' ,'.$id}})" class="custom-style" for="{{$index.'_action_'.$id}}"></label>{{$action}}
-                        @endforeach
+                        <input onchange="changeColor(this, '{{$index}}')" type="color" class="color" value="{{isset($rule->color) ? $rule->color:'#000000'}}"/>
+                        <button type="button" class="draw-btn disabled-btn">矩形描く</button>
+                    </div>
+                    <div class="title-div">アクション</div>
+                    <div class="content-div action-div">
+                            @foreach($action_options as $id => $action)
+                            <div>
+                                @if (in_array($id, $rule->action_id))
+                                    <input value={{$id}} type="checkbox" id="{{$index.'_action_'.$id}}" checked>
+                                @else
+                                    <input value={{$id}} type="checkbox" id="{{$index.'_action_'.$id}}">
+                                @endif
+                                <label onclick="changeActions({{$index.' ,'.$id}})" class="custom-style" for="{{$index.'_action_'.$id}}"></label>{{$action}}
+                            </div>
+                            @endforeach
                     </div>
                     <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
                 </div>
                 @endforeach
             </div>
 
-            <div style="position: relative;margin-top:45px;">
+            <div class="add-figure-area">
                 <button type="button" onclick="addNewFigure()" class="{{count($rules) < $max_figure_numbers ? 'draw-btn add-btn' : 'disabled-btn draw-btn add-btn' }}">矩形を追加</button>
                 <div class="balloon_danger">
                     <p>画像内をクリックし矩形を選択してください。</p>
@@ -130,6 +136,20 @@
 </div>
 <!-- -->
 <style>
+    .setting-head{
+        padding-left:15px;
+        display:flex;
+    }
+    .add-figure-area{
+        position: relative;
+        margin-top:45px;
+    }
+    .action-div{
+        display: flex;
+    }
+    .action-div > div{
+        white-space: nowrap;
+    }
     .clear-btn{
         margin:0;
         margin-right:15px;
@@ -168,7 +188,7 @@
     }
     .draw-btn{
         background: linear-gradient(-135deg, #3178dd, #3178dd);
-        font-size: 14px;
+        font-size: 13px;
         color: #FFF;
         border: none;
         border-radius: 50px;
@@ -181,6 +201,7 @@
     }
     .add-btn{
         background: #CC0000;
+        white-space: nowrap;
     }
     #rule_items{
         display: none;
@@ -189,10 +210,12 @@
         margin-bottom: 5px;
         position: relative;
         padding-top:7px;
-        margin-right: 50px;
+        margin-right: 30px;
+        border-right: 1px solid gray;
     }
     #rule_item_area{
         font-size: 12px;
+        display: flex;
     }
     .custom-style{
         padding-top: 3px;
@@ -236,7 +259,7 @@
     }
     .close-items{
         position: absolute;
-        right:-15px;
+        right:0px;
         top:-5px;
     }
     .close-icon{
@@ -244,34 +267,32 @@
         font-weight: bold;
         cursor: pointer;
     }
-</style>
-<script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
-<script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
-
-<script>
-    let safieStreamingPlayerElement;
-    let safieStreamingPlayer;
-    function load() {
-        safieStreamingPlayerElement = document.querySelector('safie-streaming-player');
-        if(safieStreamingPlayerElement != undefined && safieStreamingPlayerElement != null){
-            safieStreamingPlayer = safieStreamingPlayerElement.instance;
-            safieStreamingPlayer.on('error', (error) => {
-                console.error(error);
-            });
-            // 初期化
-            safieStreamingPlayer.defaultProperties = {
-                defaultAccessToken: '<?php echo $access_token;?>',
-                defaultDeviceId: '<?php echo $device_id;?>',
-            };
+    @media only screen and (max-width:768px) {
+        .btns{
+            display: flex;
+        }
+        .clear-btn{
+            padding:15px 60px;
+        }
+        .save-btn{
+            padding:15px 60px;
+        }
+        #rule_item_area{
+            display: block;
+        }
+        .rule_items{
+            border-bottom: 1px solid gray;
+            border-right:none;
+        }
+        .setting-head{
+            display:block;
+        }
+        .add-figure-area{
+            margin-top:10px;
         }
     }
-    function play() {
-        safieStreamingPlayer.play();
-    }
-    function pause() {
-        safieStreamingPlayer.pause();
-    }
-</script>
+</style>
+<script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 
 <script>
     var max_figure_numbers = "<?php echo $max_figure_numbers;?>";
@@ -507,6 +528,7 @@
                 circle_item.destroy();
             }
         })
+        $('.add-btn').removeClass('disabled-btn');
     }
 
     function addNewFigure(){
@@ -541,11 +563,6 @@
         $('label', $('.action-div', template_item)).each(function(){
             $(this).attr('for', unique_rule_id+'_'+$(this).attr('for'));
         });
-        // rules.push({
-        //     points:[],
-        //     color:'#000000',
-        //     action_id:[]
-        // });
         rules_object[unique_rule_id] = {
             points:[],
             color:'#000000',
@@ -568,7 +585,8 @@
                 if (circle_item.attrs.id.includes(rule_index + '_')){
                     circle_item.destroy();
                 }
-            })
+            });
+            $('.add-btn').removeClass('disabled-btn');
         });
         $('input', $('.radio-area', template_item)).change(function(){
             if ($(this).val() == 0){

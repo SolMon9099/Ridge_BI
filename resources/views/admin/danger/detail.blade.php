@@ -80,10 +80,8 @@
                             <td>{{$item->floor_number}}</td>
                             <td>{{$item->installation_position}}</td>
                             <td style="width:10%;">
-                                @if (isset($item->action_id))
-                                @foreach (json_decode($item->action_id) as $action_code)
-                                    <div>{{config('const.action')[$action_code]}}</div>
-                                @endforeach
+                                @if (isset($item->detection_action_id) && $item->detection_action_id > 0)
+                                    <div>{{config('const.action')[$item->detection_action_id]}}</div>
                                 @endif
                             </td>
                             <td><a class="move-href">検知リスト</a></td>
@@ -268,7 +266,7 @@
                     ticks: {
                         suggestedMax: max_y + 2,
                         suggestedMin: 0,
-                        stepSize: 1,
+                        stepSize: parseInt((max_y + 2)/5) + 1,
                         fontSize: 30,
                         callback: function(value, index, values){
                         return  value +  '回'

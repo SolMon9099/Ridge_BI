@@ -84,7 +84,7 @@
             ])->links('vendor.pagination.admin-pagination') }}
         <ul class="camera-list">
         @foreach($cameras as $camera)
-            <li>
+            <li class="camera-item">
                 <div class="pic"><img src="{{ $camera->img }}"></div>
                 <div class="text">
                 <button style="background:transparent;border:none;" class="edit2" onclick="location.href='{{route('admin.camera.edit', ['camera' => $camera->id])}}'">
@@ -121,5 +121,19 @@
             ])->links('vendor.pagination.admin-pagination') }}
     </div>
 </div>
+
+<style>
+    @media only screen and (max-width:768px) {
+        .camera-item{
+            width: 90%!important;
+            margin-left: auto;
+            margin-right: !important;
+        }
+    }
+    .radio-list{
+        margin-bottom: 0!important;
+        margin-left: 15px!important;
+    }
+</style>
 
 @endsection

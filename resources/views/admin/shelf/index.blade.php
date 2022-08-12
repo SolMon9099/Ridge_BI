@@ -41,7 +41,7 @@
                         <th>設置場所</th>
                         <th>カラー</th>
                         <th>定時撮影時刻</th>
-                        <th>検知履歴</th>
+                        {{-- <th>検知履歴</th> --}}
                         <th>削除</th>
                     </tr>
                 </thead>
@@ -55,9 +55,9 @@
                             <td>{{$shelf->installation_position}}</td>
                             <td><input disabled type="color" value = "{{$shelf->color}}"/></td>
                             <td>{{$shelf->hour.':'.$shelf->mins}}</td>
-                            <td>
+                            {{-- <td>
                                 <button type="button" class="history">履歴表示</button>
-                            </td>
+                            </td> --}}
                             <td>
                                 @if (!$super_admin_flag)
                                     <button type="button" class="delete_shelf_rules history" delete_index="{{ $shelf->id }}">削除</button>

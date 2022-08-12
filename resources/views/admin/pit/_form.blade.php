@@ -17,7 +17,7 @@
     {{-- @include('admin.layouts.flash-message') --}}
     <div class="scroll">
         <h2>検知設定</h2>
-        <div style="display: flex;">
+        <div class="setting-head">
             <div style="margin-right:30px;">
                 <label>ピット内人数：</label>
                 <input name="min_members" type="number" inputmode="numeric" pattern="\d*" max='10' min='0' class='members_input'
@@ -135,6 +135,23 @@
         background: white!important;
         width:60px!important;
     }
+    .setting-head{
+        display: flex;
+    }
+    @media only screen and (max-width:768px) {
+        .btns{
+            display: flex;
+        }
+        .clear-btn{
+            padding:15px 60px;
+        }
+        .save-btn{
+            padding:15px 60px;
+        }
+        .setting-head{
+            display: block;
+        }
+    }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
@@ -242,8 +259,8 @@
                 }
             }
         } else {
-            var x_delta = expands * x_diff/Math.sqrt(Math.pow(x_diff, 2) + Math.pow(y_diff,2));
-            var y_delta = expands * y_diff/Math.sqrt(Math.pow(x_diff, 2) + Math.pow(y_diff,2));
+            var x_delta = parseInt(expands * x_diff/Math.sqrt(Math.pow(x_diff, 2) + Math.pow(y_diff,2)));
+            var y_delta = parseInt(expands * y_diff/Math.sqrt(Math.pow(x_diff, 2) + Math.pow(y_diff,2)));
             if (point1.x < point2.x){
                 res[0].x = Math.max(0, point1.x - x_delta);
                 res[1].x = Math.min(1280, point2.x + x_delta);

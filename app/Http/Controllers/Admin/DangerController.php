@@ -179,6 +179,7 @@ class DangerController extends AdminController
 
     public function detail(Request $request)
     {
+        $rules = DangerService::doSearch($request)->orderByDesc('danger_area_detection_rules.id')->get()->all();
         $cameras = DangerService::getAllCameras();
         $request['starttime'] = date('Y-m-d');
         $request['endtime'] = date('Y-m-d');
@@ -189,7 +190,6 @@ class DangerController extends AdminController
                 $all_data[date('Y-m-d', strtotime($item->starttime))][$item->detection_action_id][] = $item;
             }
         }
-        $rules = DangerService::doSearch($request)->get()->all();
         $access_token = '';
         $camera_imgs = [];
         foreach ($cameras as $camera) {

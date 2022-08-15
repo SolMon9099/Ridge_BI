@@ -22,6 +22,12 @@ class PitService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $pit_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
+        if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
+            $pit_rules->whereIn('pit_detection_rules.camera_id', $params['selected_cameras']);
+        }
+        if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+            $pit_rules->where('pit_detection_rules.camera_id', $params['selected_camera']);
+        }
 
         return $pit_rules;
     }
@@ -136,7 +142,10 @@ class PitService
             }
         }
         if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
-            $query->whereIn('pit_detections.camera_id', $params['selected_cameras']);
+            $query->whereIn('pit_detection_rules.camera_id', $params['selected_cameras']);
+        }
+        if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+            $query->where('pit_detection_rules.camera_id', $params['selected_camera']);
         }
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);

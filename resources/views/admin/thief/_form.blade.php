@@ -255,8 +255,21 @@
         max-width: 180px
     }
     .selected{
-        box-shadow: inset -10px -10px 15px rgba(255, 255, 255, 0.5), inset 10px 10px 15px rgba(70, 70, 70, 0.12);
+        /* box-shadow: inset -10px -10px 15px rgba(255, 255, 255, 0.5), inset 10px 10px 15px rgba(70, 70, 70, 0.12); */
+        box-shadow: inset -10px -10px 15px transparent, inset 10px 10px 15px transparent;
         border: 1px solid gray;
+    }
+    .img-magnifier-glass {
+        position: absolute;
+        border: 3px solid #000;
+        border-radius: 50%;
+        /* cursor: none; */
+        cursor:url({{ asset('assets/admin/img/bxs-eyedropper.cur') }}), default;
+
+        z-index: 10;
+        /*Set the size of the magnifier glass:*/
+        width: 100px;
+        height: 100px;
     }
     @media only screen and (max-width:768px) {
         .btns{
@@ -309,6 +322,62 @@
             unique_rule_id++;
         }
     })
+
+    function magnify(imgID, zoom) {
+        var img, glass, w, h, bw;
+        img = document.getElementById(imgID);
+        /*create magnifier glass:*/
+        glass = document.createElement("DIV");
+        glass.setAttribute("class", "img-magnifier-glass");
+        /*insert magnifier glass:*/
+        img.parentElement.insertBefore(glass, img);
+        /*set background properties for the magnifier glass:*/
+        // glass.style.backgroundImage = "url('" + img.src + "')";
+        glass.style.backgroundImage = "url('" + camera_image_data + "')";
+        glass.style.backgroundRepeat = "no-repeat";
+        glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
+        bw = 3;
+        w = glass.offsetWidth / 2;
+        h = glass.offsetHeight / 2;
+        /*execute a function when someone moves the magnifier glass over the image:*/
+        glass.addEventListener("mousemove", moveMagnifier);
+        img.addEventListener("mousemove", moveMagnifier);
+        /*and also for touch screens:*/
+        glass.addEventListener("touchmove", moveMagnifier);
+        img.addEventListener("touchmove", moveMagnifier);
+        function moveMagnifier(e) {
+            var pos, x, y;
+            /*prevent any other actions that may occur when moving over the image*/
+            e.preventDefault();
+            /*get the cursor's x and y positions:*/
+            pos = getCursorPos(e);
+            x = pos.x;
+            y = pos.y;
+            /*prevent the magnifier glass from being positioned outside the image:*/
+            if (x > img.width - (w / zoom)) {x = img.width - (w / zoom);}
+            if (x < w / zoom) {x = w / zoom;}
+            if (y > img.height - (h / zoom)) {y = img.height - (h / zoom);}
+            if (y < h / zoom) {y = h / zoom;}
+            /*set the position of the magnifier glass:*/
+            glass.style.left = (x - w) + "px";
+            glass.style.top = (y - h) + "px";
+            /*display what the magnifier glass "sees":*/
+            glass.style.backgroundPosition = "-" + ((x * zoom) - w + bw) + "px -" + ((y * zoom) - h + bw) + "px";
+        }
+        function getCursorPos(e) {
+            var a, x = 0, y = 0;
+            e = e || window.event;
+            /*get the x and y positions of the image:*/
+            a = img.getBoundingClientRect();
+            /*calculate the cursor's x and y coordinates, relative to the image:*/
+            x = e.pageX - a.left;
+            y = e.pageY - a.top;
+            /*consider any page scrolling:*/
+            x = x - window.pageXOffset;
+            y = y - window.pageYOffset;
+            return {x : x, y : y};
+        }
+    }
 
     function isLeft(p0, a, b) {
         return (a.x-p0.x)*(b.y-p0.y) - (b.x-p0.x)*(a.y-p0.y);
@@ -412,6 +481,7 @@
     }
 
     function switchHanger(e, rule_index){
+        $('.img-magnifier-glass').remove();
         if (checked_hanger_flag == true || selected_rule_index === rule_index){
             checked_hanger_flag = !checked_hanger_flag;
         }
@@ -421,6 +491,7 @@
             selected_rule_index = rule_index;
             $('.hanger-area').removeClass('selected');
             $('.hanger-area', $('[data-index="'+ rule_index + '"]')).addClass('selected');
+            magnify('canvas-container2', 3);
         } else {
             $('canvas').attr('id', '');
             selected_rule_index = null;
@@ -444,7 +515,6 @@
     }
 
     function removeFigure(rule_index){
-        delete rules_object[rule_index];
         $('[data-index="'+ rule_index + '"]').remove();
         layer.find('Line').map(line_item => {
             if (line_item.attrs.id == rule_index){
@@ -457,11 +527,19 @@
             }
         })
         $('.add-btn').removeClass('disabled-btn');
+
+        if (rule_index == Math.max(...Object.keys(rules_object))){
+            $('.balloon_danger').hide();
+            enable_add_figure_flag = true;
+        }
+
         if (parseInt(selected_rule_index) === parseInt(rule_index)){
             checked_hanger_flag = true;
             selected_rule_index = null;
             $('canvas').attr('id', '');
+            $('.img-magnifier-glass').remove();
         }
+        delete rules_object[rule_index];
     }
 
     function addNewFigure(){
@@ -501,7 +579,6 @@
         selected_figure = 'rect';
         $('.close-icon', template_item).click(function(){
             var rule_index = template_item.attr('data-index');
-            delete rules_object[rule_index];
             $('[data-index="'+ rule_index + '"]').remove();
             layer.find('Line').map(line_item => {
                 if (line_item.attrs.id == rule_index){
@@ -514,11 +591,17 @@
                 }
             });
             $('.add-btn').removeClass('disabled-btn');
+            if (rule_index == Math.max(...Object.keys(rules_object))){
+                $('.balloon_danger').hide();
+                enable_add_figure_flag = true;
+            }
             if (parseInt(selected_rule_index) === parseInt(rule_index)){
                 checked_hanger_flag = true;
                 selected_rule_index = null;
                 $('canvas').attr('id', '');
+                $('.img-magnifier-glass').remove();
             }
+            delete rules_object[rule_index];
         });
         $('input', $('.radio-area', template_item)).change(function(){
             if ($(this).val() == 0){
@@ -592,7 +675,14 @@
             if (checked_hanger_flag != true && selected_rule_index != null){
                 var canvas = document.getElementsByTagName('canvas')[0];
                 var ctx = canvas.getContext('2d');
-                var imgData = ctx.getImageData(e.evt.offsetX, e.evt.offsetY, 1, 1);
+                var glass = $('.img-magnifier-glass');
+                var x_pos = glass.position().left + e.evt.offsetX;
+                var y_pos = glass.position().top + e.evt.offsetY + 8;
+                if (x_pos < 0) x_pos = 0;
+                if (y_pos < 0) y_pos = 0;
+                if (x_pos > 1280) x_pos = 1280;
+                if (y_pos > 720) y_pos = 720;
+                var imgData = ctx.getImageData(parseInt(x_pos), parseInt(y_pos), 1, 1);
                 var rgba = imgData.data;
                 hanger = "#" + parseInt(rgba[0]).toString(16) + parseInt(rgba[1]).toString(16) + parseInt(rgba[2]).toString(16) + parseInt(rgba[3]).toString(16);
 
@@ -614,7 +704,19 @@
             }
         })
         stage.on('mousemove', function(e){
-            document.getElementById("debug").innerHTML = `X座標${e.evt.offsetX}:Y座標${e.evt.offsetY}`;
+            if (checked_hanger_flag != true && selected_rule_index != null){
+                var glass = $('.img-magnifier-glass');
+                var x_pos = glass.position().left + e.evt.offsetX;
+                var y_pos = glass.position().top + e.evt.offsetY + 8;
+                if (x_pos < 0) x_pos = 0;
+                if (y_pos < 0) y_pos = 0;
+                if (x_pos > 1280) x_pos = 1280;
+                if (y_pos > 720) y_pos = 720;
+                document.getElementById("debug").innerHTML = `X座標${parseInt(x_pos)}:Y座標${parseInt(y_pos)}`;
+            } else {
+                document.getElementById("debug").innerHTML = `X座標${e.evt.offsetX}:Y座標${e.evt.offsetY}`;
+            }
+
         })
     }
 
@@ -631,7 +733,8 @@
         $('.balloon_danger').hide();
         enable_add_figure_flag = true;
         checked_hanger_flag = true;
-        // rules = [];
+        $('canvas').attr('id', '');
+        $('.img-magnifier-glass').remove();
         rules_object = {};
     }
 

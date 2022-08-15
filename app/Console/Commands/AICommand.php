@@ -61,7 +61,7 @@ class AICommand extends Command
                                     $folder_name = 'danger';
                                     $detection_model = new DangerAreaDetection();
                                     if (isset($file_content->detection_action_id)) {
-                                        $detection_model->detection_action_id = $file_content->detection_action_id;
+                                        $detection_model->detection_action_id = (int) $file_content->detection_action_id;
                                     }
                                     break;
                                 case 'shelf':
@@ -72,10 +72,10 @@ class AICommand extends Command
                                     $folder_name = 'pit';
                                     $detection_model = new PitDetection();
                                     if (isset($file_content->nb_exit)) {
-                                        $detection_model->nb_exit = $file_content->nb_exit;
+                                        $detection_model->nb_exit = (int) $file_content->nb_exit;
                                     }
                                     if (isset($file_content->nb_entry)) {
-                                        $detection_model->nb_entry = $file_content->nb_entry;
+                                        $detection_model->nb_entry = (int) $file_content->nb_entry;
                                     }
                                     break;
                                 case 'thief':

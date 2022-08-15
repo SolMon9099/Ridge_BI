@@ -23,6 +23,12 @@ class DangerService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $danger_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
+        if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
+            $danger_rules->whereIn('danger_area_detection_rules.camera_id', $params['selected_cameras']);
+        }
+        if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+            $danger_rules->where('danger_area_detection_rules.camera_id', $params['selected_camera']);
+        }
 
         return $danger_rules;
     }
@@ -119,6 +125,9 @@ class DangerService
         }
         if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
             $query->whereIn('danger_area_detections.camera_id', $params['selected_cameras']);
+        }
+        if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+            $query->where('danger_area_detections.camera_id', $params['selected_camera']);
         }
         if (isset($params['selected_actions']) && is_array($params['selected_actions']) && count($params['selected_actions']) > 0) {
             $query->whereIn('danger_area_detection_rules.action_id', $params['selected_actions']);

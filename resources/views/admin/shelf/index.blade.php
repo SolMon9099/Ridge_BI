@@ -54,7 +54,7 @@
                             <td>{{$shelf->floor_number}}</td>
                             <td>{{$shelf->installation_position}}</td>
                             <td><input disabled type="color" value = "{{$shelf->color}}"/></td>
-                            <td>{{$shelf->hour.':'.$shelf->mins}}</td>
+                            <td>{{$shelf->hour.':'.($shelf->mins<10?'0'.$shelf->mins:$shelf->mins)}}</td>
                             {{-- <td>
                                 <button type="button" class="history">履歴表示</button>
                             </td> --}}

@@ -30,7 +30,9 @@
                                 <h4>カメラ</h4>
                             </li>
                             <li><a data-target="camera" class="modal-open setting">選択する</a></li>
-                            <li><p></p></li>
+                            @if($selected_rule != null)
+                                <li><p>{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -84,7 +86,7 @@
                                     <div>{{config('const.action')[$item->detection_action_id]}}</div>
                                 @endif
                             </td>
-                            <td><a class="move-href">検知リスト</a></td>
+                            <td><a class="move-href" href="{{route("admin.danger.list")}}">検知リスト</a></td>
                         </tr>
                         </table>
                     </div>
@@ -127,18 +129,21 @@
                         </thead>
                         <tbody>
                         <?php
-                            $selected_camera_ids = old('selected_cameras', (isset($request) && $request->has('selected_cameras'))?$request->selected_cameras:[]);
+                            $selected_camera = old('selected_camera', (isset($request) && $request['selected_camera'] > 0)?$request['selected_camera']:null);
+                            if ($selected_camera == null && $selected_rule != null){
+                                $selected_camera = $selected_rule->camera_id;
+                            }
                         ?>
                         @foreach ($cameras as $camera)
                         <tr>
                             <td class="stick-t">
                                 <div class="checkbtn-wrap">
-                                    @if (in_array($camera->id, $selected_camera_ids))
-                                        <input name="selected_cameras[]" value = '{{$camera->id}}' type="checkbox" id="{{'camera'.$camera->id}}}}" checked>
+                                    @if ((int)$camera->id == (int)$selected_camera)
+                                        <input name="selected_cameras[]" value = '{{$camera->id}}' type="radio" id="{{'camera'.$camera->id}}" checked>
                                     @else
-                                        <input name="selected_cameras[]" value = '{{$camera->id}}' type="checkbox" id="{{'camera'.$camera->id}}}}">
+                                        <input name="selected_cameras[]" value = '{{$camera->id}}' type="radio" id="{{'camera'.$camera->id}}">
                                     @endif
-                                    <label class="custom-style" for="{{'camera'.$camera->id}}}}"></label>
+                                    <label class="" for="{{'camera'.$camera->id}}"></label>
                                 </div>
                             </td>
                             <td>{{$camera->camera_id}}</td>
@@ -230,7 +235,6 @@
             }
         })
     }
-    console.log('total', totals_by_action);
 
     var datasets = [];
     Object.keys(totals_by_action).map(action_id => {
@@ -241,7 +245,6 @@
             backgroundColor:'white'
         })
     });
-    console.log('datasets', datasets);
 
     var ctx = document.getElementById("myLineChart1");
     var myLineChart = new Chart(ctx, {

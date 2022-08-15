@@ -444,7 +444,6 @@
     }
 
     function removeFigure(rule_index){
-        delete rules_object[rule_index];
         $('[data-index="'+ rule_index + '"]').remove();
         layer.find('Line').map(line_item => {
             if (line_item.attrs.id == rule_index){
@@ -457,6 +456,12 @@
             }
         })
         $('.add-btn').removeClass('disabled-btn');
+        if (rule_index == Math.max(...Object.keys(rules_object))){
+            $('.balloon_danger').hide();
+            enable_add_figure_flag = true;
+        }
+
+        delete rules_object[rule_index];
     }
 
     function drawingStage(){
@@ -571,7 +576,6 @@
         selected_figure = 'rect';
         $('.close-icon', template_item).click(function(){
             var rule_index = template_item.attr('data-index');
-            delete rules_object[rule_index];
             $('[data-index="'+ rule_index + '"]').remove();
             layer.find('Line').map(line_item => {
                 if (line_item.attrs.id == rule_index){
@@ -584,6 +588,11 @@
                 }
             });
             $('.add-btn').removeClass('disabled-btn');
+            if (rule_index == Math.max(...Object.keys(rules_object))){
+                $('.balloon_danger').hide();
+                enable_add_figure_flag = true;
+            }
+            delete rules_object[rule_index];
         });
         $('input', $('.radio-area', template_item)).change(function(){
             if ($(this).val() == 0){

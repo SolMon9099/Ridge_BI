@@ -183,21 +183,8 @@ class PitController extends AdminController
         }
 
         $pit_detections = PitService::searchDetections($request, true)->get()->all();
-        $all_data = [];
-        foreach ($pit_detections as $item) {
-            $all_data[date('Y-m-d', strtotime($item->starttime))][] = $item;
-        }
         $cameras = PitService::getAllCameras();
 
-        // foreach ($rules as $rule) {
-        //     $map_data = CameraMappingDetail::select('drawing.floor_number')
-        //         ->where('camera_id', $rule->camera_id)
-        //         ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
-        //         ->whereNull('drawing.deleted_at')->get()->first();
-        //     if ($map_data != null) {
-        //         $rule->floor_number = $map_data->floor_number;
-        //     }
-        // }
         $access_token = '';
         $camera_imgs = [];
         foreach ($cameras as $camera) {
@@ -226,7 +213,7 @@ class PitController extends AdminController
         }
 
         return view('admin.pit.detail')->with([
-            'all_data' => json_encode($all_data),
+            'pit_detections' => $pit_detections,
             'request' => $request,
             'selected_rule' => $selected_rule,
             'cameras' => $cameras,
@@ -289,14 +276,10 @@ class PitController extends AdminController
         ]);
     }
 
-    public function ajaxUploadFile(Request $request)
+    public function ajaxGetData(Request $request)
     {
-        $download_file = $request->file('vfile');
-        request()->validate([
-            'vfile' => 'mimes:jpg,jpeg,png,bmp,tiff|max:10240',
-        ]);
-        $new_filename = 'drawing_'.date('YmdHis').'.'.$download_file->getClientOriginalExtension();
-        $path = $request->file('vfile')->storeAs('public/temp', $new_filename);
-        exit($new_filename);
+        $pit_detections = PitService::searchDetections($request, true)->get()->all();
+
+        return $pit_detections;
     }
 }

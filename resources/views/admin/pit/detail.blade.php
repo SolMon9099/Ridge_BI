@@ -2,12 +2,8 @@
 
 @section('content')
 <?php
-    // $selected_rule = null;
-    // foreach ($rules as $rule) {
-    //     if ($rule->red_points != null && $rule->red_points != '') $rule->red_points = json_decode($rule->red_points);
-    //     if ($rule->blue_points != null && $rule->blue_points != '') $rule->blue_points = json_decode($rule->blue_points);
-    //     $selected_rule = $rule;
-    // }
+    $total_data = array();
+    $sum = 0;
 ?>
 <form action="{{route('admin.pit.detail')}}" method="get" name="form1" id="form1">
 @csrf
@@ -92,7 +88,21 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    @foreach ($pit_detections as $item)
+                                        @if($item->nb_entry != $item->nb_exit)
+                                        <?php
+                                            $sum += ($item->nb_entry - $item->nb_exit);
+                                            $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
+                                        ?>
+                                        <tr>
+                                            <td>{{date('H:i:s', strtotime($item->starttime))}}</td>
+                                            <td>{{$item->nb_entry > $item->nb_exit ? '入場' : '退場'}} </td>
+                                            <td><span class="{{$item->nb_entry > $item->nb_exit ? 'f-red' : 'f-blue'}}">{{$item->nb_entry - $item->nb_exit}}</span></td>
+                                            <td>{{$sum}}</td>
+                                        </tr>
+                                        @endif
+                                    @endforeach
+                                    {{-- <tr>
                                         <td>9:05:25</td>
                                         <td>入場</td>
                                         <td><span class="f-red">+1</span></td>
@@ -139,7 +149,7 @@
                                         <td>退場</td>
                                         <td><span class="f-blue">-1</span></td>
                                         <td>0</td>
-                                    </tr>
+                                    </tr> --}}
                                 </tbody>
                             </table>
                         </div>
@@ -223,25 +233,34 @@
     }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
+<script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <script>
     var ctx = document.getElementById("myLineChart1");
-    var time_labels = ['09:05:25', '09:22:12', '11:23:17', '12:33:41', '14:25:32', '15:31:45', '18:23:14', '19:47:51'];
-    var y_data = [1,2,1,0,1,0,1,0];
-    for(var i = 0; i<time_labels.length; i++){
-        time_labels[i] = new Date('2022-07-12 ' + time_labels[i]);
-    }
-    time_labels.unshift(new Date('2022-07-12 08:00:00'));
-    time_labels.push(new Date('2022-07-12 20:00:00'));
+    var time_labels = [];
+    var y_data = [];
+    var total_data = <?php echo json_encode($total_data);?>;
+    Object.keys(total_data).map(time => {
+        time_labels.push(new Date(time));
+        y_data.push(total_data[time]);
+    });
+
+    // var time_labels = ['09:05:25', '09:22:12', '11:23:17', '12:33:41', '14:25:32', '15:31:45', '18:23:14', '19:47:51'];
+    // var y_data = [1,2,1,0,1,0,1,0];
+    // for(var i = 0; i<time_labels.length; i++){
+    //     time_labels[i] = new Date('2022-07-12 ' + time_labels[i]);
+    // }
+    var min_time = new Date();
+    min_time.setHours(8);
+    min_time.setMinutes(0);
+    min_time.setSeconds(0);
+    var max_time = new Date();
+    max_time.setHours(20);
+    max_time.setMinutes(0);
+    max_time.setSeconds(0);
+    time_labels.unshift(min_time);
+    time_labels.push(max_time);
     y_data.unshift(null);
     y_data.push(null);
-    // var min_time = new Date();
-    // min_time.setHours(8);
-    // min_time.setMinutes(0);
-    // min_time.setSeconds(0);
-    // var max_time = new Date();
-    // max_time.setHours(20);
-    // max_time.setMinutes(0);
-    // max_time.setSeconds(0);
 
     function drawGraph(x_data, y_data){
         var myLineChart = new Chart(ctx, {
@@ -309,11 +328,23 @@
 
     drawGraph(time_labels, y_data);
     setInterval(() => {
-        for (var i = 0; i < y_data.length; i++){
-            y_data[i] = Math.floor(Math.random() * 5);
-        }
-        drawGraph(time_labels, y_data);
-    }, 100000);
+        // for (var i = 0; i < y_data.length; i++){
+        //     y_data[i] = Math.floor(Math.random() * 5);
+        // }
+        // $.ajax({
+        //     type:'GET',
+        //     url:'{{ route("admin.pit.ajaxGetData") }}',
+        //     data:{
+        //         selected_camera:<?php echo $selected_camera;?>,
+        //     }
+        // }).then(
+        //     function(res){
+
+        //     }
+        // )
+        // drawGraph(time_labels, y_data);
+        $('#form1').submit();
+    }, 30000);
 </script>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>

@@ -5,6 +5,7 @@ namespace App\Service;
 use Illuminate\Support\Facades\Log;
 use KubAT\PhpSimple\HtmlDomParser;
 use App\Models\Token;
+use App\Models\MediaRequestHistory;
 
 class SafieApiService
 {
@@ -272,7 +273,7 @@ class SafieApiService
     }
 
     //メディアファイル 作成要求
-    public function makeMediaFile($device_id = null, $start = null, $end = null)
+    public function makeMediaFile($device_id = null, $start = null, $end = null, $request_resource = null)
     {
         $device_id = $device_id != null ? $device_id : $this->device_id;
         $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests', $device_id);
@@ -282,16 +283,30 @@ class SafieApiService
         ];
         $params['start'] = $start;
         $params['end'] = $end;
-        $response = $this->sendPostApi($url, $header, $params, 'json');
-        if ($response != null) {
-            if (isset($response['request_id'])) {
-                return $response['request_id'];
-            }
+        $response = $this->sendPostwithHttpCode($url, $header, $params, 'json');
+        $res = null;
 
-            return null;
+        if (isset($response['http_code'])) {
+            if ($response['http_code'] == 200) {
+                if (isset($response['response_data']) && isset($response['response_data']['request_id'])) {
+                    $res = $response['response_data']['request_id'];
+                }
+            }
+            $model = new MediaRequestHistory();
+            $model->device_id = $device_id;
+            $model->request_resource = $request_resource;
+            $model->http_code = $response['http_code'];
+            $model->start_time = date('Y-m-d H:i:s', strtotime($start));
+            $model->end_time = date('Y-m-d H:i:s', strtotime($end));
+            $model->time_diff = (int) ((strtotime($end) - strtotime($start)) / 60);
+            $model->request_id = $res;
+            if ($response['http_code'] == 200) {
+                $model->status = 1;
+            }
+            $model->save();
         }
 
-        return $response;
+        return $res;
     }
 
     //メディアファイル 作成要求取得
@@ -325,6 +340,10 @@ class SafieApiService
             'Content-Type: application/json',
         ];
         $response = $this->sendDeleteApi($url, $header);
+        if ($response == 200 || $response == 404) {
+            MediaRequestHistory::query()->where('device_id', $device_id)->where('request_id', $request_id)
+                ->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
+        }
 
         return $response;
     }
@@ -356,6 +375,47 @@ class SafieApiService
         return $response;
     }
 
+    public function sendPostwithHttpCode($url, $header = null, $data = null, $request_type = 'query')
+    {
+        Log::info('【Start Post Api】url:'.$url);
+
+        $curl = curl_init($url);
+        //POSTで送信
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_HEADER, true);
+
+        if ($header) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+        }
+
+        if ($data) {
+            switch ($request_type) {
+                case 'query':
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+                    break;
+                case 'json':
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                    break;
+            }
+        }
+
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('httpcode = '.$httpcode);
+        curl_close($curl);
+        Log::info('【Finish Post Api】url:'.$url);
+        if ($httpcode == 200) {
+            $response_edit = strstr($response, '{');
+            $response_return = json_decode($response_edit, true);
+
+            return ['response_data' => $response_return, 'http_code' => $httpcode];
+        } else {
+            return ['response_data' => null, 'http_code' => $httpcode];
+        }
+    }
+
     public function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
     {
         Log::info('【Start Post Api】url:'.$url);
@@ -380,25 +440,19 @@ class SafieApiService
             }
         }
 
-        // if ($xform) {
-        //     curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
-        // }
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
         $response = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         Log::info('httpcode = '.$httpcode);
         curl_close($curl);
+        Log::info('【Finish Post Api】url:'.$url);
         if ($httpcode == 200) {
             $response_edit = strstr($response, '{');
             $response_return = json_decode($response_edit, true);
 
-            Log::info('【Finish Post Api】url:'.$url);
-
             return $response_return;
         } else {
-            echo 'HTTP code: '.$httpcode;
-
             return null;
         }
     }

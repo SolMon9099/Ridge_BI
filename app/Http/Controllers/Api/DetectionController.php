@@ -77,7 +77,7 @@ class DetectionController extends Controller
         Log::info('record enddatetime = '.$record_end_time);
 
         $safie_service = new SafieApiService($camera_data->contract_no);
-        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time);
+        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '危険エリア侵入検知');
         Log::info('request_id = '.$request_id);
         if ($request_id > 0) {
             $temp_save_data = [
@@ -156,7 +156,7 @@ class DetectionController extends Controller
         Log::info('record enddatetime = '.$record_end_time);
 
         $safie_service = new SafieApiService($camera_data->contract_no);
-        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time);
+        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '棚乱れ検知');
         Log::info('request_id = '.$request_id);
         if ($request_id > 0) {
             $temp_save_data = [
@@ -242,7 +242,7 @@ class DetectionController extends Controller
         Log::info('record enddatetime = '.$record_end_time);
 
         $safie_service = new SafieApiService($camera_data->contract_no);
-        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time);
+        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, 'ピット入退場検知');
         Log::info('request_id = '.$request_id);
         if ($request_id > 0) {
             $temp_save_data = [
@@ -323,7 +323,7 @@ class DetectionController extends Controller
         Log::info('record enddatetime = '.$record_end_time);
 
         $safie_service = new SafieApiService($camera_data->contract_no);
-        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time);
+        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '大量盗難検知');
         Log::info('request_id = '.$request_id);
         if ($request_id > 0) {
             $temp_save_data = [

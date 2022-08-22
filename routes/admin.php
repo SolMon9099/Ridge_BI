@@ -85,6 +85,7 @@ Route::group(['middleware' => 'auth:admin'], function () {
         Route::post('/store', 'PitController@store')->name('admin.pit.store');
         Route::put('/update/{pit}', 'PitController@update')->name('admin.pit.update');
         Route::delete('/delete/{pit}', 'PitController@delete')->name('admin.pit.delete');
+        Route::get('/ajaxGetData', 'PitController@ajaxGetData')->name('admin.pit.ajaxGetData');
     });
 
     Route::group(['prefix' => 'danger'], function () {

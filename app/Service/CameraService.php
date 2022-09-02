@@ -4,6 +4,10 @@ namespace App\Service;
 
 use App\Models\Camera;
 use App\Models\CameraMappingDetail;
+use App\Models\PitDetectionRule;
+use App\Models\DangerAreaDetectionRule;
+use App\Models\ShelfDetectionRule;
+use App\Models\ThiefDetectionRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -124,7 +128,11 @@ class CameraService
     {
         if (is_object($cur_Camera)) {
             $cur_Camera->delete();
-            DB::table('camera_mapping_details')->where('camera_id', $cur_Camera->id)->delete();
+            CameraMappingDetail::query()->where('camera_id', $cur_Camera->id)->delete();
+            PitDetectionRule::query()->where('camera_id', $cur_Camera->id)->delete();
+            DangerAreaDetectionRule::query()->where('camera_id', $cur_Camera->id)->delete();
+            ShelfDetectionRule::query()->where('camera_id', $cur_Camera->id)->delete();
+            ThiefDetectionRule::query()->where('camera_id', $cur_Camera->id)->delete();
 
             return true;
         } else {

@@ -75,7 +75,7 @@
     <ul class="nav" id="dropmenu">
         @foreach (config('const.header_menus') as $code => $header_name)
         @if ($super_admin_flag || in_array($code, $headers))
-            <li><a href="#">{{$header_name}}</a>
+            <li class="{{config('const.header_menu_classes')[$code]}}"><a href="#">{{$header_name}}</a>
             <ul>
             @foreach (config('const.pages')[$header_name] as $item)
                 <?php $page_id = $item['id']; $url = config('const.page_route_names')[$page_id];?>
@@ -86,7 +86,7 @@
             </ul>
         @endif
         @endforeach
-      </ul>
+    </ul>
 </header>
 <style>
     .login-user-name{

@@ -54,7 +54,7 @@
                     <td>{{$admin->email}}</td>
                     <td>{{$admin->is_enabled ? "有効":"無効"}}</td>
                     <td>
-                        @if ($admin->id !== 1)
+                        @if ($admin->id !== 1 && $admin->id != Auth::guard('admin')->user()->id)
                             <button type="button" class="delete_accounts history" delete_index="{{ $admin->id }}">削除</button>
                             <form id="frm_delete_{{ $admin->id }}" action="{{ route('admin.account.delete', ['admin'=> $admin->id]) }}" method="POST" style="display: none;">
                                 @csrf

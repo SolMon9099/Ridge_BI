@@ -32,7 +32,7 @@
                         </li>
                         <li><a data-target="camera" class="modal-open setting">選択する</a></li>
                         @if(isset($selected_rule))
-                            <li><p>{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
+                            <li><p class="selected-camera">{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
                         @endif
                     </ul>
                     </div>

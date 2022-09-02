@@ -47,7 +47,8 @@ class AccountRequest extends FormRequest
                 $rules['email'] = ['required', 'email', 'max:150', 'unique:admins,email,NULL,id,deleted_at,NULL'];
                 $rules['contract_no'] = ['required', 'max:32'];
                 if ($super_admin_flag) {
-                    $rules['safie_user_name'] = ['nullable', 'max:64', 'unique:admins,safie_user_name,NULL,id,deleted_at,NULL,is_main_admin,1'];
+                    // $rules['safie_user_name'] = ['nullable', 'max:64', 'unique:admins,safie_user_name,NULL,id,deleted_at,NULL,is_main_admin,1'];
+                    $rules['safie_user_name'] = ['nullable', 'max:64'];
                     // $rules['safie_client_id'] = ['nullable', 'max:64', 'unique:admins,safie_client_id,NULL,id,deleted_at,NULL,is_main_admin,1'];
                     $rules['safie_client_id'] = ['nullable', 'max:64'];
                     // $rules['safie_client_secret'] = ['nullable', 'max:64', 'unique:admins,safie_client_secret,NULL,id,deleted_at,NULL,is_main_admin,1'];
@@ -60,7 +61,8 @@ class AccountRequest extends FormRequest
                 if ($this->p_request->admin->authority_id != config('const.super_admin_code')) {
                     if ($super_admin_flag) {
                         $rules['contract_no'] = ['required', 'max:32', "unique:admins,contract_no,{$this->p_request->id},id,deleted_at,NULL,is_main_admin,1"];
-                        $rules['safie_user_name'] = ['nullable', 'max:64', "unique:admins,safie_user_name,{$this->p_request->id},id,deleted_at,NULL,is_main_admin,1"];
+                        // $rules['safie_user_name'] = ['nullable', 'max:64', "unique:admins,safie_user_name,{$this->p_request->id},id,deleted_at,NULL,is_main_admin,1"];
+                        $rules['safie_user_name'] = ['nullable', 'max:64'];
                         // $rules['safie_client_id'] = ['nullable', 'max:64', "unique:admins,safie_client_id,{$this->p_request->id},id,deleted_at,NULL,is_main_admin,1"];
                         $rules['safie_client_id'] = ['nullable', 'max:64'];
                         // $rules['safie_client_secret'] = ['nullable', 'max:64', "unique:admins,safie_client_secret,{$this->p_request->id},id,deleted_at,NULL,is_main_admin,1"];

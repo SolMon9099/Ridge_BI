@@ -183,11 +183,16 @@ class DangerController extends AdminController
         $cameras = DangerService::getAllCameras();
         $request['starttime'] = date('Y-m-d');
         $request['endtime'] = date('Y-m-d');
+        if (!isset($request['selected_cameras'])) {
+            if (count($rules) > 0) {
+                $request['selected_cameras'] = [$rules[count($rules) - 1]->camera_id];
+            }
+        }
         $danger_detections = DangerService::searchDetections($request)->get()->all();
         $all_data = [];
         foreach ($danger_detections as $item) {
             if ($item->detection_action_id > 0) {
-                $all_data[date('Y-m-d', strtotime($item->starttime))][$item->detection_action_id][] = $item;
+                $all_data[date('H:i', strtotime($item->starttime))][$item->detection_action_id][] = $item;
             }
         }
         $access_token = '';

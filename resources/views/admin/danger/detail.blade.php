@@ -31,7 +31,7 @@
                             </li>
                             <li><a data-target="camera" class="modal-open setting">選択する</a></li>
                             @if($selected_rule != null)
-                                <li><p>{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
+                                <li><p class="selected-camera">{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
                             @endif
                         </ul>
                     </div>
@@ -44,7 +44,7 @@
                         <div id="image-container" onclick="location.href='{{route('admin.danger.edit', ['danger' => $selected_rule->id])}}'"></div>
                     @endif
                     <div style="display: flex;width:100%;margin-bottom:30px;" class="mainbody">
-                        <div class='video-show' style="width:50%;">
+                        <div class='video-show' style="width:54%;">
                             @if(isset($selected_rule))
                             <div class="streaming-video" style="height:360px;width:640px;">
                                 <safie-streaming-player></safie-streaming-player>
@@ -73,40 +73,51 @@
                         <a data-target="movie0000" onclick="videoPlay('{{$video_path}}')" class="modal-open setting2 play">
                             <img src="{{$thumb_path}}"/>
                         </a>
+                        <div class="cap">
+                            <time>{{date('Y/m/d H:i', strtotime($item->starttime))}}</time>
+                        </div>
                     </div>
                     <div class="text">
-                        <time>{{date('Y/m/d H:i', strtotime($item->starttime))}}</time>
-                        <table>
-                        <tr>
-                            <td>{{$item->location_name}}</td>
-                            <td>{{$item->floor_number}}</td>
-                            <td>{{$item->installation_position}}</td>
-                            <td style="width:10%;">
-                                @if (isset($item->detection_action_id) && $item->detection_action_id > 0)
-                                    <div>{{config('const.action')[$item->detection_action_id]}}</div>
-                                @endif
-                            </td>
-                            <td><a class="move-href" href="{{route("admin.danger.list")}}">検知リスト</a></td>
-                        </tr>
-                        </table>
+                        <p class="camera-id">カメラID:{{$item->camera_no}}</p>
+                        <ul class="pit-list">
+                            <li>
+                                <h2 class="icon-map">設置場所</h2>
+                                <dl>
+                                    <dt>設置エリア</dt>
+                                    <dd>{{$item->location_name}}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>設置フロア</dt>
+                                    <dd>{{$item->floor_number}}</dd>
+                                </dl>
+                                <dl>
+                                    <dt>設置場所</dt>
+                                    <dd>{{$item->installation_position}}</dd>
+                                </dl>
+                            </li>
+                            <li>
+                                <h2 class="icon-condition">検知条件</h2>
+                                <dl>
+                                    <dt><p>{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action_cond_statement')[$item->detection_action_id] : ''}}</p></dt>
+                                    <dd>1人</dd>
+                                </dl>
+                            </li>
+                            <li>
+                                <h2 class="icon-content">検知内容</h2>
+                                <p>{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action_statement')[$item->detection_action_id] : ''}}</p>
+                            </li>
+                            <li>
+                                <h2 class="icon-rule">ルール</h2>
+                                <dl>
+                                    <dt>{{$item->detection_action_id}}</dt>
+                                    <dd>{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action')[$item->detection_action_id] : ''}}</dd>
+                                </dl>
+                            </li>
+                            <li><a class="move-href" href="{{route("admin.danger.list")}}">検知リスト</a></li>
+                        </ul>
                     </div>
                 </li>
                 @endforeach
-                {{-- <li>
-                    <div class="movie"><a data-target="movie0000" class="modal-open  setting2 play"><img src="{{ asset('assets/admin/img/samplepic.svg') }}"></a></div>
-                    <div class="text">
-                        <time>2022/8/9 11:00</time>
-                        <table>
-                            <tr>
-                                <td>（仮称）ＧＳプロジェクト新築工事</td>
-                                <td>3階</td>
-                                <td>トイレ横の資材置き場</td>
-                                <td style="width:10%;">侵入する</td>
-                                <td><a class="move-href">検知リスト</a></td>
-                            </tr>
-                        </table>
-                    </div>
-                </li> --}}
             </ul>
         </div>
     </div>
@@ -165,9 +176,21 @@
     </div>
     <!-- -->
 </form>
+<!--MODAL -->
+<div id="movie0000" class="modal-content">
+    <div class="textarea">
+        <div class="v">
+            <video id = 'video-container' src = '' type= 'video/mp4' controls>
+            </video>
+        </div>
+    </div>
+    <p class="closemodal"><a class="modal-close">×</a></p>
+</div>
+<!-- -->
+
 <style>
     #myLineChart1{
-        width:50%!important;
+        width:46%!important;
         height: 400px!important;
         cursor: pointer;
     }
@@ -192,47 +215,79 @@
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
 <script>
 
-    function search(){
-        $('#form1').submit();
+    function timeFormat(value){
+        var res = value.toString();
+        if (value < 10) res = '0' + value.toString();
+        return res;
     }
 
-    function setSelectedSearchOption(value){
-        $('#selected_search_option').val(value);
+    function videoPlay(path){
+        var video = document.getElementById('video-container');
+        video.pause();
+        $('#video-container').attr('src', path);
+        video.play();
     }
 
-    var all_data = <?php echo $all_data;?>;
-    var actions = <?php echo json_encode(config('const.action'));?>;
-    var date_labels = [];
-    var totals_by_action = {};
     var color_set = {
         1:'red',
         2:'#42b688',
         3:'#42539a',
         4:'black',
     }
+
+    var all_data = <?php echo $all_data;?>;
+    var actions = <?php echo json_encode(config('const.action'));?>;
+
+    var now = new Date();
+    var min_time = new Date();
+    var max_time = new Date();
+
+    max_time.setHours(now.getHours() + 1);
+    max_time.setMinutes(0);
+    max_time.setSeconds(0);
+
+    min_time.setHours((now.getHours() - 2 < 0 ? 0 : now.getHours() -2));
+    min_time.setMinutes(0);
+    min_time.setSeconds(0);
+
+    var cur_time = new Date();
+    cur_time.setHours(min_time.getHours());
+    cur_time.setMinutes(0);
+    cur_time.setSeconds(0);
+
+    var date_labels = [];
+
+    var totals_by_action = {};
+
     Object.keys(actions).map(id => {
         totals_by_action[id] = [];
     })
     var max_y = 0;
 
-    var date_key = new Date().getFullYear();
-    var month = new Date().getMonth() + 1 > 9 ? (new Date().getMonth() + 1).toString(): '0' + (new Date().getMonth() + 1).toString();
-    var date = new Date().getDate() > 9 ? (new Date().getDate()).toString(): '0' + (new Date().getDate()).toString();
-    date_key += '-' + month + '-' + date;
-    var month_date_label = (new Date().getMonth() + 1).toString() + '/' + new Date().getDate();
-    date_labels.push(month_date_label);
-    if (all_data[date_key] == undefined){
+    while(cur_time.getTime() <= max_time.getTime()){
+        var detected_numbers = {};
         Object.keys(actions).map(id => {
-            totals_by_action[id].push(0);
+            detected_numbers[id] = 0;
         })
-    } else {
-        Object.keys(actions).map(id => {
-            if (all_data[date_key][id] == undefined){
-                totals_by_action[id].push(0);
-            } else {
-                totals_by_action[id].push(all_data[date_key][id].length);
-                if (all_data[date_key][id].length > max_y) max_y = all_data[date_key][id].length;
+        Object.keys(all_data).map(detect_time => {
+            var detect_hour = detect_time.split(':')[0];
+            var detect_mins = detect_time.split(':')[1];
+            var detect_time_object = new Date();
+            detect_time_object.setHours(parseInt(detect_hour));
+            detect_time_object.setMinutes(parseInt(detect_mins));
+            if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + 15 * 60 * 1000){
+                Object.keys(actions).map(id => {
+                    if (all_data[detect_time][id] != undefined){
+                        detected_numbers[id]++;
+                    }
+                })
             }
+        })
+        date_labels.push(new Date(cur_time));
+        cur_time.setMinutes(cur_time.getMinutes() + 15);
+        Object.keys(actions).map(id => {
+            totals_by_action[id].push(detected_numbers[id]);
+            if (detected_numbers[id] > max_y) max_y = detected_numbers[id];
         })
     }
 
@@ -255,9 +310,14 @@
         },
         options: {
             legend: {
-                    labels: {
-                        fontSize: 30
-                    }
+                labels: {
+                    fontSize: 30
+                }
+            },
+            responsive: true,
+            interaction: {
+                intersect: false,
+                axis: 'x'
             },
             title: {
                 display: true,
@@ -267,29 +327,29 @@
             scales: {
                 yAxes: [{
                     ticks: {
-                        suggestedMax: max_y + 2,
+                        suggestedMax: max_y + 1,
                         suggestedMin: 0,
                         stepSize: parseInt((max_y + 2)/5) + 1,
                         fontSize: 30,
                         callback: function(value, index, values){
-                        return  value +  '回'
+                            return  value +  '回'
                         }
                     }
                 }],
                 xAxes:[{
-                    // type: 'time',
-                    // time: {
-                    //     unit: 'hour',
-                    //     displayFormats: {
-                    //         hour: 'H:mm'
-                    //     },
-                    //     distribution: 'series'
-                    // },
+                    type: 'time',
+                    time: {
+                        unit: 'minute',
+                        displayFormats: {
+                            minute: 'H:mm'
+                        },
+                        distribution: 'series'
+                    },
                     ticks: {
                         fontSize: 30,
-                        // max: max_time,
-                        // min: min_time,
-                        // stepSize: 1,
+                        max: max_time,
+                        min: min_time,
+                        stepSize: 15,
                     }
                 }]
             },

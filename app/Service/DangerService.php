@@ -99,6 +99,7 @@ class DangerService
                 'cameras.installation_position',
                 'cameras.location_id',
                 'cameras.contract_no',
+                'cameras.camera_id as camera_no',
                 'locations.name as location_name'
             )
             ->leftJoin('danger_area_detection_rules', 'danger_area_detection_rules.id', 'danger_area_detections.rule_id')

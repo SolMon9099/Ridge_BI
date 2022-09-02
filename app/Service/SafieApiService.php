@@ -72,6 +72,7 @@ class SafieApiService
 
     public function generateToken()
     {
+        Log::info('Start Generate Token-----------');
         $auth_code = $this->getAuthCode();
         $this->getAccessToken($auth_code);
     }
@@ -106,8 +107,15 @@ class SafieApiService
         $params['grant_type'] = 'authorization_code';
         $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', $this->redirect_uri);
         $params['code'] = $code;    //認可コード
-        $response = $this->sendPostApi($url, null, $params);
-        $this->updateTokenDB($response);
+        $response = $this->sendPostwithHttpCode($url, null, $params);
+        if (isset($response['http_code'])) {
+            if ($response['http_code'] == 200) {
+                $this->updateTokenDB($response['response_data']);
+                Log::info('Success---- Generate Token');
+            } else {
+                Log::info('Error---- Generate Token : '.$response['http_code']);
+            }
+        }
     }
 
     public function refreshToken($refresh_token)
@@ -119,10 +127,17 @@ class SafieApiService
         $params['grant_type'] = 'refresh_token';
         $params['refresh_token'] = $refresh_token;
         $params['scope'] = 'safie-api';
-        $response = $this->sendPostApi($url, null, $params);
+        $response = $this->sendPostwithHttpCode($url, null, $params);
         Log::info($response);
-        $this->updateTokenDB($response);
-        Log::info('Finish Refresh Token');
+        if (isset($response['http_code'])) {
+            if ($response['http_code'] == 200) {
+                $this->updateTokenDB($response['response_data']);
+                Log::info('Success ----- Finish Refresh Token');
+            } else {
+                Log::info('Not Success -> Regenerate Refresh Token : '.$response['http_code']);
+                $this->generateToken();
+            }
+        }
     }
 
     public function getAuthUrl()
@@ -220,6 +235,11 @@ class SafieApiService
         $ch = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         Log::info('httpcode='.$httpcode);
+
+        if ($httpcode == 401) {
+            $this->generateRefreshToken();
+        }
+
         if (curl_errno($curl)) {
             Log::debug('--- Curl エラー ---');
             echo curl_error($curl);
@@ -404,6 +424,11 @@ class SafieApiService
         $response = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         Log::info('httpcode = '.$httpcode);
+
+        if ($httpcode == 401) {
+            $this->generateRefreshToken();
+        }
+
         curl_close($curl);
         Log::info('【Finish Post Api】url:'.$url);
         if ($httpcode == 200) {
@@ -445,6 +470,9 @@ class SafieApiService
         $response = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         Log::info('httpcode = '.$httpcode);
+        if ($httpcode == 401) {
+            $this->generateRefreshToken();
+        }
         curl_close($curl);
         Log::info('【Finish Post Api】url:'.$url);
         if ($httpcode == 200) {
@@ -457,7 +485,7 @@ class SafieApiService
         }
     }
 
-    public static function sendDeleteApi($url, $header = null, $data = null)
+    public function sendDeleteApi($url, $header = null, $data = null)
     {
         Log::info('【Start Delete Api】url:'.$url);
 
@@ -477,6 +505,9 @@ class SafieApiService
         $response = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         Log::info('httpcode = '.$httpcode);
+        if ($httpcode == 401) {
+            $this->generateRefreshToken();
+        }
         Log::info('【Finish Delete Api】url:'.$url);
 
         return $httpcode;
@@ -497,6 +528,11 @@ class SafieApiService
         $response = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         Log::info('httpcode = '.$httpcode);
+
+        if ($httpcode == 401) {
+            $this->generateRefreshToken();
+        }
+
         if ($httpcode == 200) {
             if ($json_type == true) {
                 $response_edit = strstr($response, '{');
@@ -514,15 +550,5 @@ class SafieApiService
                 return null;
             }
         }
-    }
-
-    public static function convertISO8601ForKeysURL($carbon)
-    {
-        return $carbon->format('Y-m-d').'T'.$carbon->format('H:i').'+0900';
-    }
-
-    public static function convertISO8601ForAccessesURL($carbon)
-    {
-        return $carbon->format('Y-m-d').'T'.$carbon->format('H:i:s').'+09:00';
     }
 }

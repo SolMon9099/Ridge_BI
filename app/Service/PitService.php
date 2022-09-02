@@ -118,6 +118,7 @@ class PitService
                 'cameras.installation_position',
                 'cameras.location_id',
                 'cameras.contract_no',
+                'cameras.camera_id as camera_no',
                 'locations.name as location_name',
                 'pit_detection_rules.max_permission_time',
                 'pit_detection_rules.min_members'

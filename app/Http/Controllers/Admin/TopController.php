@@ -5,12 +5,17 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Models\AuthorityGroup;
 use Illuminate\Support\Facades\Auth;
+use App\Service\DangerService;
 
 class TopController extends AdminController
 {
     public function index()
     {
-        return view('admin.top.index');
+        $danger_detections = DangerService::searchDetections(null)->limit(10)->get()->all();
+
+        return view('admin.top.index')->with([
+            'danger_detections' => $danger_detections,
+        ]);
     }
 
     public function permission_group()

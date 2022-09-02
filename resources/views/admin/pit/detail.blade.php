@@ -27,7 +27,7 @@
                             </li>
                             <li><a data-target="camera" class="modal-open setting">選択する</a></li>
                             @if($selected_rule != null)
-                                <li><p>{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
+                                <li><p class="selected-camera">{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
                             @endif
 
                         </ul>
@@ -41,7 +41,7 @@
                         <div id="image-container" onclick="location.href='{{route('admin.pit.edit', ['pit' => $selected_rule->id])}}'"></div>
                     @endif
                     <div style="display: flex;width:100%;margin-bottom:30px;" class="mainbody">
-                        <div class='video-show' style="width:50%;">
+                        <div class='video-show' style="width:54%;">
                             @if($selected_rule != null)
                             <div class="streaming-video" style="height:360px;width:640px;">
                                 <safie-streaming-player></safie-streaming-player>
@@ -212,7 +212,7 @@
 </form>
 <style>
     #myLineChart1{
-        width:50%!important;
+        width:46%!important;
         height: 400px!important;
         cursor: pointer;
     }

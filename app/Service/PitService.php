@@ -151,6 +151,7 @@ class PitService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
+        $query->orderByDesc('pit_detections.starttime');
 
         return $query;
     }

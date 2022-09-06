@@ -136,6 +136,7 @@ class DangerService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
+        $query->orderByDesc('danger_area_detections.starttime');
 
         return $query;
     }

@@ -124,6 +124,7 @@ class ShelfService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
+        $query->orderByDesc('shelf_detections.starttime');
 
         return $query;
     }

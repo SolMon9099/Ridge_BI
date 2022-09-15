@@ -15,12 +15,12 @@
         <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.danger')}}">危険エリア侵入検知</a></li>
-            <li>ダッシュボード</li>
+            <li>リアルタイムデータ</li>
         </ul>
         </div>
         <div id="r-content">
             <div class="title-wrap">
-                <h2 class="title">ダッシュボード({{date('Y/m/d')}})</h2>
+                <h2 class="title">リアルタイムデータ({{date('Y/m/d')}})</h2>
             </div>
             <div class="title-wrap ver2 stick">
                 <div class="sp-ma">
@@ -40,6 +40,14 @@
             <div class="list">
                 <div class="inner active">
                     <h3 class="title">現在の映像</h3>
+                    <div style="display: flex;">
+                        <div style="width:50%; position: relative;">
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_danger']}})">TOPページへ追加</button>
+                        </div>
+                        <div style="width:50%; position: relative;">
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_danger']}})">TOPページへ追加</button>
+                        </div>
+                    </div>
                     @if(isset($selected_rule))
                         <div id="image-container" onclick="location.href='{{route('admin.danger.edit', ['danger' => $selected_rule->id])}}'"></div>
                     @endif
@@ -59,7 +67,10 @@
                     </div>
                 </div>
             </div>
-            <ul class="kenchi-list" style="margin-top: 45px;">
+            <ul class="kenchi-list" style="margin-top: 45px;position: relative;">
+                @if(count($danger_detections) > 0)
+                    <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_danger']}})">TOPページへ追加</button>
+                @endif
                 @foreach ($danger_detections as $item)
                 <?php
                     $video_path = '';
@@ -187,6 +198,10 @@
     <p class="closemodal"><a class="modal-close">×</a></p>
 </div>
 <!-- -->
+<div id="alert-modal" title="test" style="display:none">
+    <p><span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 
 <style>
     #myLineChart1{
@@ -208,6 +223,15 @@
         text-decoration: underline;
         color: blue;
         cursor: pointer;
+    }
+    .add-to-toppage{
+        position: absolute;
+        right: 0;
+        top:-35px;
+        padding-left: 5px;
+        padding-right:5px;
+        padding-top:2px;
+        padding-bottom:2px;
     }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>

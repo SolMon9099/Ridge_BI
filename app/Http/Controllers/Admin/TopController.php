@@ -4,18 +4,189 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Models\AuthorityGroup;
+use App\Models\TopBlock;
+use App\Service\CameraService;
 use Illuminate\Support\Facades\Auth;
 use App\Service\DangerService;
+use App\Service\PitService;
+use App\Service\SafieApiService;
+use App\Service\TopService;
 
 class TopController extends AdminController
 {
     public function index()
     {
-        $danger_detections = DangerService::searchDetections(null)->limit(10)->get()->all();
+        $cameras = CameraService::doSearch()->get()->all();
+        $top_blocks = TopService::search()->get()->all();
+        foreach ($top_blocks as $item) {
+            switch ($item->block_type) {
+                case config('const.top_block_type_codes')['live_video_danger']:
+                case config('const.top_block_type_codes')['recent_detect_danger']:
+                case config('const.top_block_type_codes')['detect_list_danger']:
+                    if (!isset($danger_detections)) {
+                        $danger_detections = DangerService::searchDetections(null)->get();
+                    }
+                    $item->danger_detections = $danger_detections;
+                    $item->danger_detection = count($danger_detections) > 0 ? $danger_detections[0] : null;
+
+                    if (!isset($danger_cameras)) {
+                        $danger_cameras = DangerService::getAllCameras();
+                        $access_tokens = [];
+                        foreach ($danger_cameras as $camera) {
+                            if ($camera->contract_no == null) {
+                                continue;
+                            }
+                            if (!in_array($camera->contract_no, array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera->contract_no);
+                                $access_tokens[$camera->contract_no] = $safie_service->access_token;
+                            }
+                            $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                            if ($camera_image_data != null) {
+                                $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+                            }
+                            $camera->img = $camera_image_data;
+                            $camera->access_token = $access_tokens[$camera->contract_no];
+                        }
+                    }
+                    $item->cameras = $danger_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = json_decode($item->options);
+                        $item->options = $options;
+                        if (isset($item->options->selected_camera)) {
+                            $item->selected_camera = $item->options->selected_camera;
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+
+                    break;
+
+                case config('const.top_block_type_codes')['live_graph_danger']:
+                    break;
+                case config('const.top_block_type_codes')['past_graph_danger']:
+                    break;
+                case config('const.top_block_type_codes')['live_video_pit']:
+                case config('const.top_block_type_codes')['recent_detect_pit']:
+                case config('const.top_block_type_codes')['detect_list_pit']:
+                    if (!isset($pit_cameras)) {
+                        $pit_cameras = PitService::getAllCameras();
+                        $access_tokens = [];
+                        foreach ($pit_cameras as $camera) {
+                            if ($camera->contract_no == null) {
+                                continue;
+                            }
+                            if (!in_array($camera->contract_no, array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera->contract_no);
+                                $access_tokens[$camera->contract_no] = $safie_service->access_token;
+                            }
+                            $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                            if ($camera_image_data != null) {
+                                $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+                            }
+                            $camera->img = $camera_image_data;
+                            $camera->access_token = $access_tokens[$camera->contract_no];
+                        }
+                    }
+                    $item->cameras = $pit_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = json_decode($item->options);
+                        $item->options = $options;
+                        if (isset($item->options->selected_camera)) {
+                            $item->selected_camera = $item->options->selected_camera;
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+                    break;
+            }
+        }
 
         return view('admin.top.index')->with([
-            'danger_detections' => $danger_detections,
+            'top_blocks' => $top_blocks,
         ]);
+    }
+
+    public function update(Request $request)
+    {
+        $selected_top_block_id = $request['selected_top_block'];
+        $selected_camera_data = json_decode($request['selected_camera_data']);
+        $top_block = TopBlock::find($selected_top_block_id);
+        $top_block->options = json_encode(['selected_camera' => $selected_camera_data]);
+        $top_block->save();
+
+        $request->session()->flash('success', '変更しました。');
+
+        return redirect()->route('admin.top');
+    }
+
+    public function AjaxUpdate(Request $request)
+    {
+        if (isset($request['changed_data']) && count($request['changed_data']) > 0) {
+            foreach ($request['changed_data'] as $item) {
+                if (isset($item['id']) && $item['id'] > 0) {
+                    $top_block = TopBlock::find($item['id']);
+                    $top_block->gs_x = $item['gs_x'];
+                    $top_block->gs_y = $item['gs_y'];
+                    $top_block->gs_w = $item['gs_w'];
+                    $top_block->gs_h = $item['gs_h'];
+                    $top_block->save();
+                }
+            }
+        }
+
+        return 'ok';
+    }
+
+    public function save_block(Request $request)
+    {
+        $login_user = Auth::guard('admin')->user();
+        $block_type = $request['block_type'];
+        $top_blocks = TopService::search()->get()->all();
+
+        $enable_add_flag = true;
+        $x = 0;
+        $y = 0;
+        foreach ($top_blocks as $item) {
+            if ($item->block_type == $block_type) {
+                $enable_add_flag = false;
+                break;
+            }
+            if ($item->gs_y + $item->gs_h >= $y) {
+                $y = $item->gs_y + $item->gs_h;
+                $x = $item->gs_x + $item->gs_w;
+            }
+        }
+        if ($enable_add_flag) {
+            $new_block = new TopBlock();
+            $new_block->user_id = $login_user->id;
+            $new_block->block_type = $block_type;
+            $new_block->gs_x = $x >= 12 ? 0 : $x;
+            $new_block->gs_y = $y;
+            $new_block->gs_w = 4;
+            $new_block->gs_h = 3;
+            $new_block->save();
+
+            return 'TOPページに追加しました。';
+        }
+
+        return 'すでに登録されています。';
+    }
+
+    public function delete(Request $request, TopBlock $top)
+    {
+        if (TopService::doDelete($top)) {
+            $request->session()->flash('success', '削除しました。');
+
+            return redirect()->route('admin.top');
+        } else {
+            $request->session()->flash('error', '削除が失敗しました。');
+
+            return redirect()->route('admin.top');
+        }
     }
 
     public function permission_group()

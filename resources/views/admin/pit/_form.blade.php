@@ -29,7 +29,7 @@
             </div>
             <div>
                 <label>アラート対象滞在時間：</label>
-                <select name = 'max_permission_time' class="select-box" style="width:60px;margin-right:0px;">
+                <select name = 'max_permission_time' class="select-box" style="width:85px;margin-right:0px;">
                     <option value=''></option>
                     @foreach(config('const.pit_time_options') as $time)
                         @if (old('max_permission_time', isset($max_permission_time)?$max_permission_time:'') == $time)

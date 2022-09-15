@@ -40,10 +40,11 @@
             </div>
             <div class="list">
                 <div class="inner active">
-                    <div style="display: flex;">
+                    <div style="display: flex; position: relative;">
                         <h3 class="title">ピット内人数推移</h3>
                         <button type='button' class="time-change-btn" onclick="changeXRange()">時間軸切り替え</button>
                         <button type="button" class='time-change-btn' onclick="moveXRange()">時間軸➞</button>
+                        <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_pit']}})">TOPページへ追加</button>
                     </div>
                     <canvas id="myLineChart1"></canvas>
 
@@ -185,6 +186,10 @@
     </div>
     <!-- -->
 </form>
+<div id="alert-modal" title="test" style="display:none">
+    <p><span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <style>
     .time-change-btn{
         margin-left: 25px;
@@ -192,6 +197,15 @@
         margin-top: 10px;
         padding-left: 10px;
         padding-right:10px;
+    }
+    .add-to-toppage{
+        position: absolute;
+        right:0px;
+        top:0px;
+        padding-left: 5px;
+        padding-right:5px;
+        padding-top:2px;
+        padding-bottom:2px;
     }
     /* #myLineChart1{
         width:50%!important;

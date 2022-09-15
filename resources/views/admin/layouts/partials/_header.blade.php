@@ -12,7 +12,9 @@
 ?>
 <div class="overlay" id="js__overlay"></div>
 <div id="sp-head">
-    <h1><img src="{{ asset('assets/admin/img/logo-top.svg') }}?1111"></h1>
+    <a href="{{route('admin.top')}}">
+        <h1><img src="{{ asset('assets/admin/img/logo-top.svg') }}?1111"></h1>
+    </a>
     <p class="spnav"><a id="btn"><span></span></a></p>
 
     <div id="rightside">
@@ -69,7 +71,11 @@
 <header>
     <div id="header">
         <div class="leftside">
-            <h1><img src="{{ asset('assets/admin/img/logo-top.svg') }}"></h1>
+            <a href="{{route('admin.top')}}">
+                <h1>
+                    <img src="{{ asset('assets/admin/img/logo-top.svg') }}">
+                </h1>
+            </a>
         </div>
     </div>
     <ul class="nav" id="dropmenu">
@@ -79,8 +85,14 @@
             <ul>
             @foreach (config('const.pages')[$header_name] as $item)
                 <?php $page_id = $item['id']; $url = config('const.page_route_names')[$page_id];?>
-                @if (!$general_user_flag || in_array($url, $manager_allowed_pages))
-                    <li><a href="{{route($url)}}">{{$item['name']}}</a></li>
+                @if ($super_admin_flag)
+                    @if (!in_array($url, config('const.super_admin_not_allowed_pages')))
+                        <li><a href="{{route($url)}}">{{$item['name']}}</a></li>
+                    @endif
+                @else
+                    @if (!$general_user_flag || in_array($url, $manager_allowed_pages))
+                        <li><a href="{{route($url)}}">{{$item['name']}}</a></li>
+                    @endif
                 @endif
             @endforeach
             </ul>
@@ -90,8 +102,13 @@
 </header>
 <style>
     .login-user-name{
-        color:#999;
-        padding-top:7px;
+        color: #999;
+        padding-top: 7px;
+        padding-left:10px;
+        padding-bottom: 7px;
+        background: white;
+        margin-right: 10px;
+        border-radius: 40px;
     }
     @media only screen and (max-width:768px) {
         .login-user-name{

@@ -21,6 +21,10 @@ Route::group(['middleware' => 'auth:admin'], function () {
     Route::get('/', 'TopController@index')->name('admin.top');
     Route::get('/authority_group', 'TopController@permission_group')->name('admin.top.permission_group');
     Route::post('/permission_store', 'TopController@permission_store')->name('admin.top.permission_store');
+    Route::post('/save_block', 'TopController@save_block')->name('admin.top.save_block');
+    Route::post('/update', 'TopController@update')->name('admin.top.update');
+    Route::post('/AjaxUpdate', 'TopController@AjaxUpdate')->name('admin.top.AjaxUpdate');
+    Route::delete('/delete/{top}', 'TopController@delete')->name('admin.top.delete');
 
     Route::group(['prefix' => 'account'], function () {
         Route::get('/', 'AccountController@index')->name('admin.account');

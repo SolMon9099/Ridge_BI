@@ -13,18 +13,18 @@ use Illuminate\Support\Facades\DB;
 
 class CameraService
 {
-    public static function doSearch($params)
+    public static function doSearch($params = null)
     {
         $cameras = Camera::query();
-        if ($params->has('location') && $params->location > 0) {
+        if (isset($params) && $params->has('location') && $params->location > 0) {
             $cameras = $cameras->where('cameras.location_id', $params->location);
         }
-        if ($params->has('floor_number') && $params->floor_number != '') {
+        if (isset($params) && $params->has('floor_number') && $params->floor_number != '') {
             $cameras->select('cameras.*', 'drawing.floor_number')->leftJoin('camera_mapping_details as map', 'cameras.id', 'map.camera_id')->whereNull('map.deleted_at')
                 ->leftJoin('location_drawings as drawing', 'drawing.id', 'map.drawing_id')->whereNull('drawing.deleted_at')
                 ->where('drawing.floor_number', 'LIKE', '%'.$params->floor_number.'%');
         }
-        if ($params->has('is_enabled') && $params->is_enabled != '') {
+        if (isset($params) && $params->has('is_enabled') && $params->is_enabled != '') {
             $cameras = $cameras->where('is_enabled', $params->is_enabled ? 1 : 0);
         }
         if (Auth::guard('admin')->user()->contract_no != null) {

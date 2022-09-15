@@ -11,12 +11,12 @@
         <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.pit')}}">ピット入退場検知</a></li>
-            <li>ダッシュボード</li>
+            <li>リアルタイムデータ</li>
         </ul>
         </div>
         <div id="r-content">
             <div class="title-wrap">
-                <h2 class="title">ダッシュボード({{date('Y/m/d')}})</h2>
+                <h2 class="title">リアルタイムデータ({{date('Y/m/d')}})</h2>
             </div>
             <div class="title-wrap ver2 stick">
                 <div class="sp-ma">
@@ -40,6 +40,14 @@
                     @if($selected_rule != null)
                         <div id="image-container" onclick="location.href='{{route('admin.pit.edit', ['pit' => $selected_rule->id])}}'"></div>
                     @endif
+                    <div style="display: flex;">
+                        <div style="width:50%; position: relative;">
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_pit']}})">TOPページへ追加</button>
+                        </div>
+                        <div style="width:50%; position: relative;">
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_pit']}})">TOPページへ追加</button>
+                        </div>
+                    </div>
                     <div style="display: flex;width:100%;margin-bottom:30px;" class="mainbody">
                         <div class='video-show' style="width:54%;">
                             @if($selected_rule != null)
@@ -57,8 +65,9 @@
                     </div>
 
                     <div class="left-right">
-                        <div class="left-box">
+                        <div class="left-box" style="position: relative;">
                             <h3 class="title">ピット内最大時間の超過検知</h3>
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_pit']}})">TOPページへ追加</button>
                             <table class="table2 text-centre top50">
                                 <thead>
                                     <tr>
@@ -76,8 +85,9 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="right-box">
+                        <div class="right-box" style="position: relative;">
                             <h3 class="title">入退場履歴</h3>
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['pit_history']}})">TOPページへ追加</button>
                             <table class="table2 text-centre top50">
                                 <thead>
                                     <tr>
@@ -210,6 +220,10 @@
     </div>
     <!-- -->
 </form>
+<div id="alert-modal" title="test" style="display:none">
+    <p><span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <style>
     #myLineChart1{
         width:46%!important;
@@ -230,6 +244,21 @@
         text-decoration: underline;
         color: blue;
         cursor: pointer;
+    }
+    .add-to-toppage{
+        position: absolute;
+        right: 0;
+        top:-35px;
+        padding-left: 5px;
+        padding-right:5px;
+        padding-top:2px;
+        padding-bottom:2px;
+    }
+    .left-box > .add-to-toppage{
+        top:0px;
+    }
+    .right-box > .add-to-toppage{
+        top:0px;
     }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>

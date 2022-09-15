@@ -81,9 +81,9 @@ $(function () {
     $(this).addClass('active');
   });
 
-	
+
 $(function(){
- 
+
 var hash = location.hash;
 if(hash.length){
 if(hash.match(/#tab/)){
@@ -100,7 +100,7 @@ $('.list .inner').eq(0).fadeIn();
 }
 }
 });
-	
+
   //ページャーをクリックしたときの動作
   $('.tab_sub li').click(function () {
     //クリックしたページャーのindexを取得
@@ -155,15 +155,37 @@ $(function () {
 });
 $(function () {
 $('.video-pit').hover( function() {
- 
+
       $('.video-pit p').fadeOut();
- 
+
     },
     function() {
- 
+
         //マウスカーソルが離れた時の処理
- 
+
     }
 );
 	 });
+
+    function addToToppage(block_type){
+        let token = $('meta[name="csrf-token"]').attr('content');
+
+        jQuery.ajax({
+            url : '/admin/save_block',
+            method: 'post',
+            data: {
+                block_type,
+                _token:token,
+            },
+
+            error : function(){
+                console.log('failed');
+                helper_alert('alert-modal', '登録失敗', result, 300, '閉じる');
+            },
+            success: function(result){
+                console.log(result);
+                helper_alert('alert-modal', '登録完了', result, 300, '閉じる');
+            }});
+    }
+
 

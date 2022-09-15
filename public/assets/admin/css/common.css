@@ -1,7 +1,7 @@
 ﻿select {
-  -webkit-appearance: none;
+  /* -webkit-appearance: none;
   -moz-appearance: none;
-  appearance: none;
+  appearance: none; */
   -webkit-text-size-adjust: 100%;
 }
 @media only screen and (max-width:768px) {
@@ -17,7 +17,7 @@
 }
 p.set{
 	margin: 20px 0;
-	font-size:14px;
+	font-size:16px;
 }
 .w10 {
   width: 10%;
@@ -55,7 +55,7 @@ input[type=color]{
   display: flex;
 }
 .breadcrumb ul li {
-  font-size: 11px;
+  font-size: 13px;
   color: #999;
 }
 .breadcrumb ul li:after {
@@ -220,11 +220,11 @@ header{
     z-index: 9999;
     box-shadow: 0px 10px 10px -3px rgb(1 24 54 / 10%);
 }
-@media only screen and (max-width:1569px) {
+/* @media only screen and (max-width:1569px) {
     header{
         width: 50px;
     }
-}
+} */
 
 #header {
   margin: 0;
@@ -377,7 +377,7 @@ input[type=text], input[type=password], input[type=number] {
   border: none;
 }
 #login input[type=checkbox] + label {
-  font-size: 13px;
+  font-size: 15px;
 }
 #login input[type=submit]:hover {
   background: #FFF;
@@ -438,7 +438,7 @@ input[type=text], input[type=password], input[type=number] {
 #dropmenu li.analysis-menu a:hover{
     background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAZVJREFUSEu1VdttwzAQIydpM0mbSdpM0mSSZpM4kzSd5AoKOuEsyZL7EQGBHT+OvCNFE09efHJ9TAHM7B3AGwAd9XsAWDKxO4AXAJ/52oWk7pe1CWBmrwC+c9G9jV5JnqYAZvYF4JwfFKMrgDvJJQML3AnEeg+ShyFAVfxM8rJF38xuVYfjDjK7n1zwKMaj2YQxqhsVb8isNAiMGua52AeAXwk9A3diBcDM5ASJ2syxMwq9L10a19QdRwAXdsW+Kq6iWiKTQGrXjADEXi+eSKZCoSv9PbjH/6NV7EDiSqxYyMfWMB3pNd0H/kCw7ELyGF80s6bj3LXpSDKRH0ZFjgl5XZtNtk0xUI1o2PGeLHKmMYNc5FVnoeNilD0A0kX+9+jwSfXG5ju7GGUKEPRQkgpM6ZlyqdLEbb7aRw1A2LE+hjL7QSYJXOy1VhHTA/CZb45ig7kuNxHTA0g2C6vEdXaTbmlU+gipS513i3dtGvy9NZH6ughI1G7yzjRQZCg9JWz8ZApEBSW251OX0G4X7W2nfu7pAH85sNcZ69O/OwAAAABJRU5ErkJggg==") no-repeat 15px 50% #0062de;
 }
-@media only screen and (max-width:1569px) {
+/* @media only screen and (max-width:1569px) {
     #dropmenu li:nth-child(1) a,
     #dropmenu li:nth-child(2) a,
     #dropmenu li:nth-child(3) a,
@@ -446,7 +446,7 @@ input[type=text], input[type=password], input[type=number] {
     #dropmenu li:nth-child(5) a{
         text-indent: -999em;
     }
-}
+} */
 
 #dropmenu li a.noafter:after {
     display: none;
@@ -455,17 +455,17 @@ input[type=text], input[type=password], input[type=number] {
     display: block;
     margin: 0;
     padding: 20px 15px;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1;
     text-decoration: none;
-    transition: all 0.3s ease-in-out;
+    /* transition: all 0.3s ease-in-out; */
     color: #3178dd;
 }
-@media only screen and (max-width:1569px) {
+/* @media only screen and (max-width:1569px) {
     #dropmenu li a {
         padding: 20px 10px;
     }
-}
+} */
 
 #dropmenu li a.active,
 #dropmenu li a:hover{
@@ -499,7 +499,7 @@ input[type=text], input[type=password], input[type=number] {
     color: #d7e6fe;
     text-indent:0 !important;
 }
-@media only screen and (max-width:1569px) {
+/* @media only screen and (max-width:1569px) {
     #dropmenu li ul li:nth-child(1):before {
         content:"";
         padding: 10px 15px !important;
@@ -507,7 +507,7 @@ input[type=text], input[type=password], input[type=number] {
         text-align: left;
         color: #333;
         text-indent:0 !important;
-        font-size:12px;
+        font-size:14px;
         position: absolute;
         top:-37px;
         border-radius:0 10px 0 0;
@@ -528,13 +528,13 @@ input[type=text], input[type=password], input[type=number] {
     #dropmenu li:nth-child(5) ul li:nth-child(1):before {
         content:"過去分析";
     }
-}
+} */
 #dropmenu li ul li a:hover{
 	opacity: 1;
-	  background: #3682fa;
+	background: #3682fa;
 }
 #dropmenu li ul li a:after{
-	  transform: scale(1,1.3) rotate(0);
+	transform: scale(1,1.3) rotate(0);
 }
 #dropmenu > li:hover > a, #dropmenu > li:hover > div {
   background: #0062de;
@@ -545,10 +545,10 @@ input[type=text], input[type=password], input[type=number] {
 }
 #dropmenu li ul li {
   overflow: hidden;
-  width: 200px;
+  width: 205px;
   height: 0;
   color: #fff;
-  transition: .2s;
+  /* transition: .2s; */
 }
 #dropmenu > li:hover > ul > li {
   overflow: visible;
@@ -598,7 +598,7 @@ input[type=text], input[type=password], input[type=number] {
   #dropmenu li ul li a {
     padding: 15px;
     background: #FFF;
-    font-size: 13px;
+    font-size: 15px;
     color: #0062de !important;
   }
   #dropmenu li:first-child a:after {
@@ -636,7 +636,7 @@ input[type=text], input[type=password], input[type=number] {
   left: -20px;
   color: #F39700;
   font-weight: bold;
-  font-size: 12px;
+  font-size: 14px;
   display: inline-block;
   transform: scale(0.8, 1)
 }
@@ -654,7 +654,7 @@ input[type=text], input[type=password], input[type=number] {
     content: ">";
     color: #F39700;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 14px;
     display: inline-block;
     top: 15px;
     right: 20px;
@@ -697,7 +697,7 @@ input[type=text], input[type=password], input[type=number] {
 }
 .navi-wrap a {
   display: block;
-  font-size: 15px;
+  font-size: 17px;
   padding: 10px 10px;
   color: #FFF;
 }
@@ -710,7 +710,7 @@ input[type=text], input[type=password], input[type=number] {
     top: 43px !important;
   }
   .navi-wrap a {
-    font-size: 13px;
+    font-size: 15px;
   }
 }
 .source {
@@ -736,7 +736,7 @@ input[type=text], input[type=password], input[type=number] {
   z-index: 999;
 }
 #r-head input[type="search"] {
-  font-size: 14px;
+  font-size: 16px;
   padding: 5px;
   box-sizing: border-box;
   border: none;
@@ -772,7 +772,7 @@ input[type=text], input[type=password], input[type=number] {
 }
 #r-head-left ul li a {
   margin-right: 20px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: bold;
   color: #555;
 }
@@ -790,7 +790,7 @@ p.bk {
 }
 p.bk a {
   color: #FFF;
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.3s ease-in-out;
 }
 p.bk a:hover {
@@ -814,7 +814,7 @@ p.bk a:before {
     padding: 0 13px 13px 13px;
     line-height: 0;
     border-radius: 50px;
-    font-size: 11px;
+    font-size: 13px;
     margin-right: 20px;
     box-shadow: 0px 10px 10px -3px rgb(1 24 54 / 10%);
 }
@@ -831,7 +831,7 @@ p.bk a:before {
     padding: 0 13px 13px 13px;
     line-height: 0;
     border-radius: 50px;
-    font-size: 11px;
+    font-size: 13px;
     box-shadow: 0px 10px 10px -3px rgb(1 24 54 / 10%);
 }
 #r-head-right ul li button.cog.on{
@@ -845,7 +845,7 @@ p.bk a:before {
 	display: none;
 	position: absolute;
 	padding: 20px;
-	width:180px;
+	width:190px;
 	right:0;
     top:125%;
 	background: #FFF;
@@ -860,13 +860,13 @@ p.bk a:before {
 }
 #r-head-right ul li ul.hidden-box li h2{
 	opacity: .5;
-	font-size:13px;
+	font-size:15px;
 }
 #r-head-right ul li ul.hidden-box li:last-child{
 	margin-bottom: 0;
 }
 #r-head-right ul li ul.hidden-box li ul li{
-	font-size:13px;
+	font-size:15px;
 	margin: 5px 0 0 0;
 
 }
@@ -899,7 +899,7 @@ p.bk a:before {
     }
     #r-head-left ul li a {
         margin-right: 0 !important;
-        font-size: 11px;
+        font-size: 13px;
     }
     #r-head-left ul li a svg {
         margin-right: 0;
@@ -933,7 +933,7 @@ p.bk a:before {
         z-index: 999;
     }
     #r-head-right ul li button.logout {
-        font-size: 12px;
+        font-size: 14px;
         border: none;
         background: none;
         padding-right: 0;
@@ -955,13 +955,13 @@ p.bk a:before {
     }
     #r-head-right ul li {
         margin-left: 15px;
-        font-size: 12px;
+        font-size: 14px;
     }
 }
 #r-head-right ul li .bell span {
   position: absolute;
   background: #F27E95;
-  font-size: 9px;
+  font-size: 11px;
   color: #FFF;
   border-radius: 50%;
   right: -5px;
@@ -990,7 +990,7 @@ p.bk a:before {
   letter-spacing: 2;
 }
 .welcom-member {
-  font-size: 13px;
+  font-size: 15px;
   color: #FFF;
 }
 @media only screen and (max-width:768px) {
@@ -1000,7 +1000,7 @@ p.bk a:before {
     top: 50px;
   }
   .welcom-member {
-    font-size: 11px;
+    font-size: 13px;
   }
 }
 .bell-content ul li {
@@ -1009,19 +1009,19 @@ p.bk a:before {
   border-bottom: 1px solid #EEE;
 }
 .bell-content h2 {
-  font-size: 15px !important;
+  font-size: 17px !important;
   border-bottom: 1px solid #DDD;
   padding-bottom: 5px;
   margin-bottom: 5px;
 }
 .bell-content p {
-  font-size: 13px;
+  font-size: 15px;
 }
 .bell-content ul li:last-child {
   border: none;
 }
 .bell-content ul li dt {
-  font-size: 11px;
+  font-size: 13px;
   color: #666;
 }
 #r-head-right ul li .welcom-member {
@@ -1045,18 +1045,18 @@ p.bk a:before {
 	width:100%;
 	box-sizing: border-box;
 }
-@media only screen and (max-width:1569px) {
+/* @media only screen and (max-width:1569px) {
 	#wrapper {
         padding: 20px 0 0 50px;
 	}
-}
+} */
 #r-content {
     padding: 0 30px 30px 30px;
     margin: 0;
     box-sizing: border-box;
     min-height: calc(100vh - 57px);
 }
-@media only screen and (max-width:1569px) {
+/* @media only screen and (max-width:1569px) {
     #r-content {
         padding: 0 15px 30px 15px;
     }
@@ -1064,7 +1064,7 @@ p.bk a:before {
         left: -100px;
         position: relative;
     }
-}
+} */
 @media only screen and (max-width:768px) {
   #r-content {
     padding: 0;
@@ -1077,14 +1077,14 @@ p.bk a:before {
     padding: 55px 0;
   }
   .bell-content h2 {
-    font-size: 13px;
+    font-size: 15px;
   }
   .bell-content ul li dd {
-    font-size: 13px;
+    font-size: 15px;
   }
 }
 #r-content h2.title {
-  font-size: 18px;
+  font-size: 19px;
   margin: 15px 20px 15px 0;
   color: #333;
   letter-spacing: 1px;
@@ -1124,7 +1124,7 @@ p.bk a:before {
   margin-bottom: 0;
 }
 #r-content .title-wrap p.pagecount {
-  font-size: 11px;
+  font-size: 13px;
   margin-left: 0 !important;
   position: relative;
   top: 12px;
@@ -1145,7 +1145,7 @@ p.bk a:before {
 }
 .new-btn a {
   background: linear-gradient(-135deg, #2ebf43, #00db4f);
-  font-size: 15px;
+  font-size: 17px;
   border-radius: 50px;
   border: none;
   padding: 10px 20px 10px 20px;
@@ -1153,7 +1153,7 @@ p.bk a:before {
 }
 #r-content .title-wrap ul li select {
   background: none;
-  font-size: 13px;
+  font-size: 15px;
   color: #555;
   font-weight: bold;
   border: 1px solid #888;
@@ -1166,7 +1166,7 @@ p.bk a:before {
 }
 @media only screen and (max-width:768px) {
 	#r-content .title-wrap ul li{
-		font-size: 12px;
+		font-size: 14px;
 	}
 	#r-content .title-wrap.ver2 .sort.ver2 ul{
 		margin-left: 25px;
@@ -1220,7 +1220,7 @@ p.bk a:before {
   #r-content .title-wrap ul li button {
     display: block;
     width: 100%;
-    font-size: 12px;
+    font-size: 14px;
   }
   #r-content .title-wrap ul li button svg {
     width: 20px;
@@ -1245,10 +1245,10 @@ p.bk a:before {
 }
 #r-content h2.title + p {
   /* margin-bottom: 20px; */
-  font-size: 14px;
+  font-size: 16px;
 }
 #r-content .title-wrap h3{
-  font-size: 14px;
+  font-size: 16px;
 	color: #333;
 background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAL1JREFUSEvtleENglAMhD8m0A3UCdAJdBSdTDeQERxFN5AJNGcgKURSn2n/wU9o717v+o6K5KdKxmcmcBW2Eh2AM7B2u4YFd+AE3L71WQIVrgrB+3L1bjyC15/gfZs97AU46oN9GUGwBK6A5P5gRxLsOg+33UjhBE9AEwwki5xgbGH4BOkELbDIlEgmaz3rLJOluUxugH3GmroXTWtmNSy52I+pDBuHnTQszSOBKxbcsCs58c+18x/NlSpdojcnzBwZY78YwgAAAABJRU5ErkJggg==) no-repeat left 50%;
 	padding-left: 30px;
@@ -1256,7 +1256,7 @@ background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz3
 @media only screen and (max-width:768px) {
 #r-content .title-wrap + h3{
 		margin: 10px 0 0 0;
-		font-size: 13px;
+		font-size: 15px;
 	}
 
 }
@@ -1277,7 +1277,7 @@ p.other-btn {
 }
 @media only screen and (max-width:768px) {
   #r-content h2.title + p {
-    font-size: 11px;
+    font-size: 13px;
     margin-top:10px;
   }
   #r-content h2.title {
@@ -1377,7 +1377,7 @@ input[type=button].back {
 }
 .edit.left{
 	margin: 0 !important;
-font-size:14px;
+    font-size:16px;
 }
 .history{
   border: 1px solid #999;
@@ -1455,7 +1455,7 @@ ul.thename li:nth-child(1) {
     float: none;
     margin-right: 10px;
     margin-bottom: 10px;
-    font-size: 13px;
+    font-size: 15px;
   }
   ul.thename.two li:not(:first-child) {
     float: left !important;
@@ -1472,7 +1472,7 @@ select {
   font-weight: 500;
   width: 100%;
   box-sizing: border-box;
-  font-size: 13px;
+  font-size: 15px;
   margin-right: 10px;
 }
 /* オリジナルボタン */
@@ -1487,7 +1487,7 @@ select {
 }
 /* 未選択時のアイコン */
 .icon {
-  font-size: 12px;
+  font-size: 14px;
   margin: 0 10px 0 15px;
   padding: 3px 30px;
   border-radius: 15px;
@@ -1503,7 +1503,7 @@ select {
 /* ファイル名 */
 .filename {
   display: inline-block;
-  font-size: 12px;
+  font-size: 14px;
 }
 textarea {
   padding: 5px 10px;
@@ -1523,7 +1523,7 @@ table.table {
 table.table th {
   color: #666;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
   border-radius: 10px;border: 2px solid #edf3f8;
 	vertical-align: middle;
 	width:16%;
@@ -1534,7 +1534,7 @@ table.table th small {
 }
 table.table td {
   border: 2px solid #edf3f8;
-  font-size: 14px;
+  font-size: 16px;
   vertical-align: middle;
 	padding: 10px 0;
 }
@@ -1575,7 +1575,7 @@ table.table td h3:not(:first-child) {
 	width:auto;
 }
   select, textarea {
-    font-size: 13px;
+    font-size: 15px;
   }
   table {
     width: 100%;
@@ -1587,7 +1587,7 @@ table.table td h3:not(:first-child) {
     display: block;
     padding: 5px 0;
     width: auto;
-    font-size: 13px;
+    font-size: 15px;
     box-sizing: border-box;
   }
   table.table td {
@@ -1615,14 +1615,14 @@ table.table td h3:not(:first-child) {
     /*tableにスクロールバーを追加*/
   }
   table.table th, table.table td {
-    font-size: 13px;
+    font-size: 15px;
     border: none;
   }
   ul.t-btn li {
     float: none;
   }
   ul.t-btn li:nth-child(1) a {
-    font-size: 12px;
+    font-size: 14px;
     width: 100%;
     display: block;
     margin-bottom: 10px;
@@ -1631,7 +1631,7 @@ table.table td h3:not(:first-child) {
     text-align: center;
   }
   ul.t-btn li:nth-child(2) input {
-    font-size: 12px;
+    font-size: 14px;
     background-image: none;
     padding: 5px 10px;
   }
@@ -1652,7 +1652,7 @@ table.table td h3:not(:first-child) {
 }
 .btn-wrap ul li {
   float: left;
-  font-size: 15px;
+  font-size: 17px;
 }
 .btn-wrap ul li h2 {
   margin: 5px 20px 0 0 !important;
@@ -1685,7 +1685,7 @@ table.table td h3:not(:first-child) {
     margin-right: 0;
     margin-top: 30px;
     width: auto;
-    font-size: 12px;
+    font-size: 14px;
     white-space: nowrap;
   }
 }
@@ -1727,7 +1727,7 @@ ul.topnews li {
   clear: both;
   overflow: hidden;
   margin-bottom: 15px;
-  font-size: 14px;
+  font-size: 16px;
 }
 ul.topnews li a {
   display: block;
@@ -1766,7 +1766,7 @@ ul.topnews li dl dd {
     width: auto;
   }
   ul.topnews li {
-    font-size: 13px;
+    font-size: 15px;
   }
 }
 textarea.textbox {
@@ -1787,18 +1787,18 @@ textarea.textbox {
   transition: all 0.3s ease-in-out;
   background: url(../img/icon-write.png) no-repeat 10px 50%;
   background-size: 20px auto;
-  font-size: 16px;
+  font-size: 18px;
 }
 .write:hover {
   opacity: 0.7;
 }
 @media only screen and (max-width:768px) {
   textarea.textbox {
-    font-size: 13px;
+    font-size: 15px;
     margin: 0 0 5px 0;
   }
   .write {
-    font-size: 13px;
+    font-size: 15px;
   }
 }
 ul.chatlist li {
@@ -1824,7 +1824,7 @@ ul.chatlist li div.notread {
   width: 80px;
   text-align: center;
   margin-right: 2%;
-  font-size: 14px;
+  font-size: 16px;
 }
 .chatname {
   position: absolute;
@@ -1838,35 +1838,35 @@ ul.chatlist li div.notread + .chatname {
 ul.chatlist li div.date {
   float: right;
   color: #666;
-  font-size: 14px;
+  font-size: 16px;
 }
 @media only screen and (max-width:768px) {
   ul.chatlist li a {
     padding: 10px 10px 10px 10px;
   }
   ul.chatlist li div.notread {
-    font-size: 11px;
+    font-size: 13px;
     width: 20%;
     padding: 3px 0;
   }
   .chatname {
     position: static;
     margin-left: 24%;
-    font-size: 13px;
+    font-size: 15px;
     width: 54%;
   }
   ul.chatlist li div.notread + .chatname {
     margin-left: 2%;
   }
   ul.chatlist li div.date {
-    font-size: 10px;
+    font-size: 12px;
   }
 }
 .line-bc {
   padding: 20px 10px;
   margin: 15px auto;
   text-align: right;
-  font-size: 14px;
+  font-size: 16px;
   background: #F7F7F7;
 }
 /*以下、②左側のコメント*/
@@ -1925,7 +1925,7 @@ ul.chatlist li div.date {
   max-width: 70%;
   border-radius: 12px;
   background: #EADDE3;
-  font-size: 15px:
+  font-size: 17px;
 }
 .mycomment p:after {
   content: "";
@@ -1959,7 +1959,7 @@ ul.chatlist li div.date {
   padding: 5px;
   box-sizing: border-box;
   border-radius: 7px;
-  font-size: 15px;
+  font-size: 17px;
   max-height: 100px;
   height: 35px;
   box-shadow: 0 0 20px #CCC;
@@ -1982,10 +1982,10 @@ ul.chatlist li div.date {
     bottom: 0;
   }
   .comment textarea {
-    font-size: 13px;
+    font-size: 15px;
   }
   .comment input[type=submit] {
-    font-size: 13px;
+    font-size: 15px;
     letter-spacing: 1px;
   }
 }
@@ -2011,7 +2011,7 @@ ul.chatlist li div.date {
   width: 100px;
   border: 1px solid #CCC;
   margin-right: 10px;
-  font-size: 15px;
+  font-size: 17px;
   box-sizing: border-box;
   padding: 5px;
 }
@@ -2147,7 +2147,7 @@ input[type=checkbox]:checked + .custom-style::after {
 }
 @media only screen and (max-width:768px) {
   ul.coil-list li label {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 p.coil {
@@ -2163,7 +2163,7 @@ p.coil a {
   cursor: pointer;
   transition: all 0.3s ease-in-out;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 18px;
 }
 p.coil a:hover {
   color: #620D35;
@@ -2203,7 +2203,7 @@ p.coil a:hover {
   width: 100px;
   border: 2px solid #CCC;
   margin-right: 10px;
-  font-size: 15px;
+  font-size: 17px;
   box-sizing: border-box;
   padding: 5px;
 }
@@ -2214,7 +2214,7 @@ p.coil a:hover {
 }
 @media only screen and (max-width:768px) {
   p.coil a {
-    font-size: 14px;
+    font-size: 16px;
   }
   .cancer-size-list2 li {
     margin-right: 20px;
@@ -2247,7 +2247,7 @@ p.coil a:hover {
   padding: 7px 10px;
   border-radius: 7px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
 }
 .delateall {
   margin-bottom: 20px;
@@ -2280,7 +2280,7 @@ ul.favoritelist li div.delate {
 ul.favoritelist li div.folder {
   float: right;
   position: relative;
-  font-size: 14px;
+  font-size: 16px;
 }
 ul.favoritelist li div.folder span {
   cursor: pointer;
@@ -2303,7 +2303,7 @@ ul.favoritelist li div.folder span {
   box-shadow: 0 0 20px #DDD;
   border-radius: 10px;
   z-index: 99999;
-  font-size: 14px;
+  font-size: 16px;
 }
 .close-folder {
   position: absolute;
@@ -2337,15 +2337,15 @@ ul.favoritelist li div.folder span {
 }
 @media only screen and (max-width:768px) {
   p.delateall {
-    font-size: 14px;
+    font-size: 16px;
   }
   ul.favoritelist li div {
     margin-right: 10px;
-    font-size: 13px;
+    font-size: 15px;
   }
   ul.favoritelist li div.name {
     clear: both;
-    font-size: 15px;
+    font-size: 17px;
     margin: 15px 0 0 0;
   }
   .folder-contents input[type=text] {
@@ -2410,7 +2410,7 @@ ul.favoritelist li div.folder span {
     flex: 0 0 40%;
     margin-top: 30px;
     width: auto;
-    font-size: 12px;
+    font-size: 14px;
     white-space: nowrap;
   }
 }
@@ -2470,7 +2470,7 @@ ul.service-list li {
   vertical-align: middle;
 }
 .table2 thead th small {
-  font-size: 10px;
+  font-size: 12px;
 }
 .bo-btm {
   width: 100%;
@@ -2483,7 +2483,7 @@ ul.service-list li {
 }
 table.table2 th, table.table2 td {
   padding: 15px 10px;
-  font-size: 14px;
+  font-size: 16px;
   text-align: left;
 }
 table.table2 td .red{
@@ -2546,7 +2546,7 @@ table.table2 tr:hover td {
 }
 table.table2 th {
   padding: 10px;
-  font-size: 12px;
+  font-size: 14px;
   text-align: center;
   color: #999;
 }
@@ -2633,7 +2633,7 @@ ul.table-list2 li input[type=date] {
     display: block;
   }
   table.table2 th, table.table2 td {
-    font-size: 13px;
+    font-size: 15px;
   }
   table.table2 th {
     padding: 15px;
@@ -2685,14 +2685,14 @@ input[type=button].custom-btn {
   margin: 0;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   letter-spacing: 2px;
   transition: 0.3s all ease-in-out;
 }
 @media only screen and (max-width:768px) {
   input[type=button].custom-btn {
-    font-size: 14px;
+    font-size: 16px;
     padding: 10px 20px;
     margin-right: 5px;
   }
@@ -2713,7 +2713,7 @@ input[type=button].custom-btn {
 @media only screen and (max-width:768px) {
   .tour-content h2.title + ul li {
     margin: 0 15px 15px 0;
-    font-size: 13px;
+    font-size: 15px;
   }
   .new-wrire {
     margin-left: 0;
@@ -2761,7 +2761,7 @@ p.pdf a {
   margin: 0;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   letter-spacing: 2px;
   transition: 0.3s all ease-in-out;
@@ -2828,11 +2828,11 @@ p a.add-btn:hover {
 .pagecount {
   margin: 0 auto 0 20px;
   color: #999;
-  font-size: 80%;
+  font-size: 90%;
 }
 @media only screen and (max-width:768px) {
   p a.add-btn {
-    font-size: 14px;
+    font-size: 16px;
   }
   .pagecount {
     margin: 3px 0 0 20px;
@@ -2897,7 +2897,7 @@ ul.btn-list li a, ul.btn-list2 li a, ul.btn-list2 li button {
   text-decoration: none !important;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
-  font-size: 13px;
+  font-size: 15px;
 }
 ul.btn-list li a:hover, ul.btn-list2 li a:hover {
   background: #00253a;
@@ -2950,7 +2950,7 @@ ul#deal-list li a.active {
     padding: 5px 0;
   }
   ul#deal-list li, .tab {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 .panel.is-show {
@@ -3072,7 +3072,7 @@ ul.flow li:last-child:after {
     display: none;
   }
   ul.flow li {
-    font-size: 11px;
+    font-size: 13px;
   }
 }
 .wrap {
@@ -3351,11 +3351,11 @@ p.office a {
   margin: 0;
 }
 .talkline-all .right-message .thename {
-  font-size: 11px;
+  font-size: 13px;
   color: #999;
 }
 .talkline-all .left-message .thename {
-  font-size: 11px;
+  font-size: 13px;
   color: #999;
   margin-left: 50px;
 }
@@ -3367,7 +3367,7 @@ p.office a {
   float: left;
 }
 ul.fukidashi li p, div.fukidashi p {
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 @media only screen and (max-width:736px) {
   .talkline-all .right-message {
@@ -3376,7 +3376,7 @@ ul.fukidashi li p, div.fukidashi p {
     margin: 0;
   }
   ul.fukidashi li p, div.fukidashi p {
-    font-size: 13px !important;
+    font-size: 15px !important;
   }
   .talkline-all ul.fukidashi {
     clear: both;
@@ -3583,7 +3583,7 @@ input.pluralBtn {
 }
 .pager span, .pager a {
   margin: 0 10px;
-  font-size: 13px;
+  font-size: 15px;
 }
 .pager span {
   width: 30px;
@@ -3607,7 +3607,7 @@ input.pluralBtn {
   margin: 0 10px;
   position: relative;
   top: -1px;
-  font-size: 10px;
+  font-size: 12px;
 }
 .tour-content .pager span {
   width: 25px;
@@ -3622,7 +3622,7 @@ input.pluralBtn {
   margin: 0 5px;
   position: relative;
   top: -1px;
-  font-size: 11px;
+  font-size: 13px;
 }
 .cal-box {
   overflow: hidden;
@@ -3680,7 +3680,7 @@ ul.two-btns li button {
   border-radius: 5px;
   color: #00253a;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
 }
 ul.two-btns li button:after {
   content: "+";
@@ -3701,7 +3701,7 @@ ul.stick li a {
   padding: 7px 21px;
   background: #FFF;
   border-bottom: 3px solid #EEE;
-  font-size: 15px;
+  font-size: 17px;
 }
 @media only screen and (max-width:736px) {
 	.stick-t {
@@ -3713,7 +3713,7 @@ ul.stick li a {
     margin-top: 5px;
   }
   ul.two-btns li button {
-    font-size: 13px;
+    font-size: 15px;
   }
   ul.stick {
     overflow-x: scroll;
@@ -3726,7 +3726,7 @@ ul.stick li a {
     white-space: nowrap;
   }
   ul.stick li a {
-    font-size: 13px;
+    font-size: 15px;
     padding: 7px;
   }
 }
@@ -3739,7 +3739,7 @@ ul.stick li a.active {
 }
 .red {
   color: #C00;
-	font-size: 12px;
+	font-size: 14px;
 
 }
 ul.three-list {
@@ -3787,7 +3787,7 @@ button:hover {
   border: 2px solid #00253a;
   color: #00253a;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
   padding: 8px 10px;
   border-radius: 4px;
   display: inline-block;
@@ -3802,7 +3802,7 @@ button:hover {
 .form__file label:after {
   content: "選択されていません";
   color: #333;
-  font-size: 14px;
+  font-size: 16px;
   height: 20px;
   line-height: 20px;
   position: absolute;
@@ -3814,7 +3814,7 @@ button:hover {
   content: "";
 }
 .form__file .filename {
-  font-size: 12px;
+  font-size: 14px;
 }
 ul.target-list {
   margin: 10px 0 0 0;
@@ -3830,10 +3830,10 @@ ul.sp-block {
 }
 @media only screen and (max-width:736px) {
   .form__file label {
-    font-size: 13px;
+    font-size: 15px;
   }
   .form__file label:after {
-    font-size: 12px;
+    font-size: 14px;
     right: -120px;
   }
   ul.target-list {
@@ -3945,11 +3945,11 @@ input[type=submit].tuika {
   }
   #wrapper .user_info .user_info_flex li:first-child {
     width: 40%;
-    font-size: 13px;
+    font-size: 15px;
   }
   #wrapper .user_info .user_info_flex li {
     width: 60%;
-    font-size: 13px;
+    font-size: 15px;
   }
   #wrapper .user_info .user_info_flex {
     padding: 5px;
@@ -3967,7 +3967,7 @@ input[type=submit].tuika {
   .form_erea table.table_margin td, .form_erea table.sp_table_border td {
     padding: 10px;
     border: 1px solid #EEE;
-    font-size: 13px;
+    font-size: 15px;
     vertical-align: middle;
   }
   .form_erea table.sp_table_border {
@@ -4095,12 +4095,12 @@ input[type=submit].tuika {
   color: #2574D3;
 }
 #mini-calendar td span {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.3;
   display: block;
 }
 #mini-calendar [class*=calender-label] {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.3;
   color: #FFF;
   background: #4F616B;
@@ -4123,12 +4123,12 @@ input[type=submit].tuika {
   font-weight: bold;
   text-decoration: none;
   border-radius: 50px;
-  font-size: 12px;
+  font-size: 14px;
 }
 #mini-calendar td a.calender-label.blue {
   /*background-color: #CFE4FC;
 	border:1px solid #8E9BD2;*/
-  font-size: 12px;
+  font-size: 14px;
   background: none !important;
   color: #333;
 }
@@ -4138,11 +4138,11 @@ input[type=submit].tuika {
   font-weight: bold;
   text-decoration: none;
   border-radius: 50px;
-  font-size: 12px;
+  font-size: 14px;
 }
 #mini-calendar td a.calender-label.purple {
   /*background-color: #EDDEF9; border:1px solid #936DAA; */
-  font-size: 12px;
+  font-size: 14px;
   background: none !important;
   color: #333;
 }
@@ -4191,7 +4191,7 @@ input[type=submit].tuika {
     padding: 5px;
     margin-top: 0;
     margin-right: 5px;
-    font-size: 12px;
+    font-size: 14px;
   }
   /* 日付 */
   #mini-calendar td .calendar-day-number {
@@ -4212,7 +4212,7 @@ input[type=submit].tuika {
   }
   /* モバイル用曜日を追加 */
   #mini-calendar td i:after {
-    font-size: 12px;
+    font-size: 14px;
     position: relative;
     left: -5px;
   }
@@ -4307,8 +4307,8 @@ input[type=submit].tuika {
 	align-items: center;
 }
 .sort.ver2 ul li{
-margin-right: 10px;
-	font-size:13px;
+    margin-right: 10px;
+	font-size:15px;
 	margin-left: 10px !important;
 }
 .sort.ver2 ul li:first-child{
@@ -4327,7 +4327,7 @@ margin-right: 10px;
 	}
 	.sort.ver2 ul li{
 		margin-right: 5px !important;
-		font-size: 12px;
+		font-size: 14px;
 		margin-left: 15px !important;
 	}
 	.sort.ver2 ul li:first-child{
@@ -4345,22 +4345,22 @@ margin-right: 10px;
   }
 }
 .sort select {
-  background: #FFF;
+    background: #FFF;
 	border:none !important;
-  width: 100%;
-  border-bottom: 1px solid #999 !important;
+    width: 100%;
+    border-bottom: 1px solid #999 !important;
 	padding: 5px 15px 5px 10px !important;
-  border-radius: 0 !important;
-	font-size: 12px;
+    border-radius: 0 !important;
+	font-size: 14px;
 	font-weight: normal !important;
 }
 .sort select option{
 	padding: 5px;
 }
 @media screen and (max-width: 768px) {
-  .sort select {
-    width: 70%;
-  }
+    .sort select {
+        width: 70%;
+    }
 }
 select::-ms-expand {
   display: none; /* デフォルトの矢印を非表示(IE用) */
@@ -4393,7 +4393,7 @@ content: "";
     background:#FFF;
     border:none;
     color:  #0062de;
-    font-size: 13px;
+    font-size: 15px;
     padding: 0 20px 3px 20px;
     border-radius: 50px;
 	margin-left: 20px;
@@ -4418,7 +4418,7 @@ input[type="file"] + label {
   display: inline-block;
   cursor: pointer;
   border-radius: 7px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: bold;
 }
 button.delete {
@@ -4429,7 +4429,7 @@ button.delete {
   display: inline-block;
   cursor: pointer;
   border-radius: 7px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: bold;
   border: none;
 }
@@ -4437,7 +4437,7 @@ input[type="file"] + label.image img {
   max-width: 300px;
 }
 .js-upload-filename {
-  font-size: 12px;
+    font-size: 14px;
 }
 .fileclear {
   display: none;
@@ -4498,19 +4498,19 @@ button.search {
   border-radius: 7px;
 }
 p.caption {
-  font-size: 11px;
-  color: #999;
-  margin: 10px 0 0 0;
+    font-size: 13px;
+    color: #999;
+    margin: 10px 0 0 0;
 }
 .hide1, .hide2, .hide3, .hide4, .hide5 {
   display: none;
 }
 .checkbox-wrap {
-  font-size: 13px;
-  margin-bottom: 25px;
+    font-size: 15px;
+    margin-bottom: 25px;
 }
 table.table td input[type=email].mail {
-  width: 80%;
+    width: 80%;
 }
 button.testsend {
   background: #666;
@@ -4519,7 +4519,7 @@ button.testsend {
   padding: 5px 9px;
   border-radius: 7px;
   margin-left: 10px;
-  font-size: 13px;
+  font-size: 15px;
 }
 button.btn {
   background: #666;
@@ -4527,7 +4527,7 @@ button.btn {
   border: none;
   padding: 5px 9px;
   border-radius: 7px;
-  font-size: 13px;
+  font-size: 15px;
 }
 button.pdf {
   border: 2px solid #ad0b00;
@@ -4535,7 +4535,7 @@ button.pdf {
   padding: 0 34px 7px 34px;
   border-radius: 7px;
   color: #ad0b00;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
 }
 button.pdf svg {
@@ -4603,40 +4603,40 @@ ul.date-list li:last-child{
 	margin-right: 0 !important;
 }
 ul.date-list li h4 {
-  font-size: 12px;
+  font-size: 14px;
   color: #666;
   margin-left: 20px;
 }
 @media screen and (max-width: 768px) {
-  ul.date-list li h4 {
-    font-size: 11px;
-			padding-left: 10px;
-  }
+    ul.date-list li h4 {
+        font-size: 13px;
+        padding-left: 10px;
+    }
 }
 ul.date-list li input[type=tel],
 ul.date-list li input[type=date] {
-  font-size: 14px;
-  padding: 5px 5px 2px 5px;
-  border: none;
+    font-size: 16px;
+    padding: 5px 5px 2px 5px;
+    border: none;
 	border-radius: 0;
-  border-bottom: 1px solid #999;
-  font-family: "Renner*" !important;
-  background: none;
+    border-bottom: 1px solid #999;
+    font-family: "Renner*" !important;
+    background: none;
 }
 ul.date-list li input[type=text] {
-  font-size: 14px;
-  padding: 5px 5px 2px 5px;
-  border: none;
-  border-bottom: 1px solid #999;
+    font-size: 16px;
+    padding: 5px 5px 2px 5px;
+    border: none;
+    border-bottom: 1px solid #999;
 	border-radius:0 !important;
-  background: none;
+    background: none;
 }
 ul.date-list li input[type=tel]{
 	width:40px;
 	text-align: center;
 }
 ul.date-list li:last-child{
-	font-size: 14px;
+	font-size: 16px;
 }
 .btns {
   margin: 25px 0 0 0;
@@ -4649,7 +4649,7 @@ ul.date-list li:last-child{
 	left:50%;
 	transform: translateX(-50%);
 	padding: 15px 30px !important;
-	font-size:14px;
+	font-size:16px;
 }
 @media screen and (max-width: 768px) {
 	.btns {
@@ -4660,7 +4660,7 @@ ul.date-list li:last-child{
 
 button.ok {
   background: linear-gradient(-135deg, #2ebf43, #00db4f);
-  font-size: 16px;
+  font-size: 18px;
   color: #FFF;
   border: none;
   padding: 15px 75px;
@@ -4669,14 +4669,14 @@ button.ok {
   box-shadow: 0px 10px 10px -5px rgba(46, 191, 67, 0.2);
 }
 button.delete2 {
-  background: #999;
-  font-size: 16px;
-  color: #FFF;
-  border: none;
-  padding: 15px 75px;
-  border-radius: 50px;
-  letter-spacing: 5px;
-  box-shadow: 0px 10px 10px -5px rgba(0,0,0, 0.1);
+    background: #999;
+    font-size: 18px;
+    color: #FFF;
+    border: none;
+    padding: 15px 75px;
+    border-radius: 50px;
+    letter-spacing: 5px;
+    box-shadow: 0px 10px 10px -5px rgba(0,0,0, 0.1);
 	margin-left: 30px;
 }
 @media screen and (max-width: 768px) {
@@ -4695,14 +4695,14 @@ button.delete2 {
   justify-content: space-between;
 }
 .tab li {
-  width: 49%;
-  background: #FFF;
-  border-radius: 10px;
-  text-align: center;
-  padding: 10px 0;
-  color: #999;
-  font-size: 15px;
-		cursor: pointer;
+    width: 49%;
+    background: #FFF;
+    border-radius: 10px;
+    text-align: center;
+    padding: 10px 0;
+    color: #999;
+    font-size: 17px;
+	cursor: pointer;
 }
 .tab li a{
 	display: block;
@@ -4716,7 +4716,7 @@ button.delete2 {
     width: auto;
   }
   .tab li {
-    font-size: 13px;
+    font-size: 15px;
   }
 }
 .tab li.active {
@@ -4731,38 +4731,38 @@ button.delete2 {
   list-style: none;
 }
 .tab_sub li {
-  padding: 5px 15px;
-  background: #FFF;
-  margin-right: 10px;
-  border-radius: 5px;
-  color: #999;
-  font-size: 14px;
+    padding: 5px 15px;
+    background: #FFF;
+    margin-right: 10px;
+    border-radius: 5px;
+    color: #999;
+    font-size: 16px;
 	cursor: pointer;
 }
 @media screen and (max-width: 768px) {
-  .tab_sub {
-    margin: 10px 15px;
-  }
-  .tab_sub li {
-    font-size: 12px;
-  }
+    .tab_sub {
+        margin: 10px 15px;
+    }
+    .tab_sub li {
+        font-size: 16px;
+    }
 }
 .tab_sub li.active {
-  background: #3682fa;
-  color: #FFF;
+    background: #3682fa;
+    color: #FFF;
 }
 .list .inner, .list .inner .scroll {
-  display: none;
+    display: none;
 }
 .list .inner.active {
-  display: block;
+    display: block;
 }
 .list .inner .scroll.active {
-  display: block;
+    display: block;
 }
 @media screen and (max-width: 768px) {
 	.list .inner.active {
-			margin: 0 15px;
+		margin: 0 15px;
 	}
 	.flow{
 		margin: 0 15px;
@@ -4777,11 +4777,11 @@ button.delete2 {
 	padding-bottom: 5px;
 	margin-right: 20px;
 	opacity: .5;
-	font-size:14px;
+	font-size:16px;
 }
 @media screen and (max-width: 768px) {
 	.flow ul li{
-		font-size:11px;
+		font-size:13px;
 	}
 }
 .flow ul li:last-child{
@@ -4793,7 +4793,7 @@ button.delete2 {
 }
 .flow ul li span{
 	  font-family: "Renner*" !important;
-	font-size:11px;
+	font-size:13px;
 	letter-spacing: 0;
 	margin: 0 10px 0 0;
 }
@@ -4826,7 +4826,7 @@ button.delete2 {
 }
 .back p a{
 	color: #999;
-	font-size:14px;
+	font-size:16px;
 }
 .back p a:before{
 	content:"<";
@@ -4977,19 +4977,19 @@ button.set{
  cursor: url(../img/bxs-eyedropper.cur), default;
 }
 #canvas-container2.hei{
-margin-bottom: 0;
+    margin-bottom: 0;
 }
 #d{
-	  position: absolute;
-	  display: block;
-      top: 0;
-      left: 0;
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
 	width: 100% !important;
-      height: 100% !important;
+    height: 100% !important;
 }
 #debug{
 	color: #999;
-	font-size:11px;
+	font-size:13px;
 }
 ul.delete-list li{
 	display: flex;
@@ -4999,7 +4999,7 @@ ul.delete-list li{
 	margin-right: 20px !important;
 }
 .sort ul li ul li label{
-	font-size: 13px;
+	font-size: 15px;
 	color: #555;
 }
 ul.three-btns{
@@ -5016,7 +5016,7 @@ ul.three-btns li button{
 	border-radius:10px;
 	padding: 10px;
 	box-sizing: border-box;
-	font-size:14px;
+	font-size:16px;
 	letter-spacing: .1em;
 }
 ul.three-btns li button.active{
@@ -5081,7 +5081,7 @@ table.table3{
 table.table3 th,
 table.table3 td{
 	padding: 10px;
-	font-size:14px;
+	font-size:16px;
 	vertical-align: middle;
 }
 table.table3 th{
@@ -5108,7 +5108,7 @@ table.table3 td input[type=reset]{
 	z-index: 999;
 }
 .all{
-	font-size: 13px;
+	font-size: 15px;
 	margin-bottom: 20px;
 	text-align: right;
 }
@@ -5125,7 +5125,7 @@ ul.camera-list{
 	flex-wrap:wrap;
 }
 ul.camera-list li{
-	width:23%;
+	width:32%;
 	margin-right: 1.25%;
 	margin-bottom: 1.25%;
 }
@@ -5201,7 +5201,7 @@ ul.kenchi-list li .movie .cap time{
     font-size: 120%;
 }
 ul.kenchi-list li .movie .cap p{
-    font-size:12px;
+    font-size:14px;
 }
 ul.kenchi-list li .movie img{
     border-radius:0 50px 0 20px / 0 50px 0 20px;
@@ -5274,7 +5274,7 @@ ul.kenchi-list li .text table td:nth-child(4){
 }
 ul.kenchi-list li .text p.camera-id{
 	color: #FFF;
-	font-size:12px;
+	font-size:14px;
 	margin-bottom: 10px;
 	background: #0062de;
 	padding: 5px 5px 10px 10px;
@@ -5292,7 +5292,7 @@ ul.kenchi-list li .text p.camera-id{
 	ul.kenchi-list li .text table td:nth-child(3),
 	ul.kenchi-list li .text table td:nth-child(4){
 		width:auto;
-		font-size:13px;
+		font-size:15px;
 	}
 }
 ul.pit-list{
@@ -5314,14 +5314,14 @@ ul.pit-list li dl{
 }
 ul.pit-list li dl dt,
 ul.pit-list li dd{
-    font-size: 13px;
+    font-size: 15px;
     color: #333;
 }
 ul.pit-list li dl dt{
 	color: #666;
 }
 ul.pit-list li dl dt{
-	font-size:12px;
+	font-size:14px;
 }
 
 .icon-map{
@@ -5357,18 +5357,18 @@ ul.pit-list li dd{
 	padding: 5px;
 }
 ul.pit-list li h2 + p{
-	font-size:13px;
+	font-size:15px;
 	color: #333;
 }
 @media only screen and (max-width:1300px) {
 	ul.pit-list li dl dt{
-        font-size:11px;
+        font-size:13px;
     }
 	ul.pit-list li dd{
-		font-size:11px;
+		font-size:13px;
     }
 	ul.pit-list li h2 + p{
-	    font-size:12px;
+	    font-size:14px;
     }
 }
 .pit-wrap{
@@ -5379,7 +5379,7 @@ ul.pit-list li h2,
 	letter-spacing: .1em;
 	color: #0062de;
 	margin-bottom: 5px;
-	font-size:15px;
+	font-size:17px;
 }
 .n-area{
 	display: flex;
@@ -5406,7 +5406,7 @@ ul.pit-list li h2,
 .n-area h3{
 	margin-bottom: 15px;
 	color: #666;
-	font-size:14px;
+	font-size:16px;
 	border-bottom: 1px solid #CCC;
 	padding-bottom: 15px;
 }
@@ -5420,11 +5420,11 @@ ul.pit-list li h2,
 .n-area input[type=radio] + label{
 	padding-left: 15px;
 	color: #333;
-	font-size:14px;
+	font-size:16px;
 }
 button.reset{
 	margin: 0px auto 0 0;
-	font-size:14px;
+	font-size:16px;
 	padding: 15px;
 	color: #999;
 	border: 1px solid #999;
@@ -5465,7 +5465,7 @@ button.reset{
     height: 50px;
 }
 .demo_text{
-	font-size:10px;
+	font-size:12px;
 }
 
 .n-area2{
@@ -5493,13 +5493,13 @@ button.reset{
 .n-area2 h3{
 	margin-bottom: 15px;
 	color: #666;
-	font-size:14px;
+	font-size:16px;
 	border-bottom: 1px solid #CCC;
 	padding-bottom: 15px;
 }
 .n-area2 p small{
 	display: block;
-	font-size:12px;
+	font-size:14px;
 	margin-bottom: 50px;
 	color: #999;
 }
@@ -5512,7 +5512,7 @@ button.reset{
 .n-area2 input[type=radio] + label{
 	padding-left: 15px;
 	color: #333;
-	font-size:14px;
+	font-size:16px;
 }
 ul.time{
 	display: flex;
@@ -5526,16 +5526,16 @@ ul.time li input{
 	background: #FFF;
 }
 .balloon1 {
-  position: absolute;
+    position: absolute;
 	left:50%;
 	transform: translateX(-50%);
-  margin: 0 0;
-  padding: 7px 10px;
-  min-width: 120px;
-  max-width: 100%;
-  color: #555;
-  font-size: 16px;
-  background: #FFF;
+    margin: 0 0;
+    padding: 7px 10px;
+    min-width: 120px;
+    max-width: 100%;
+    color: #555;
+    font-size: 18px;
+    background: #FFF;
 	top:-85px;
 	box-shadow:0 0 10px #999;
 	border-radius:5px;
@@ -5564,7 +5564,7 @@ ul.time li input{
 }
 
 .balloon1 p {
-  margin: 0;
-  padding: 10px 0;
-	font-size:12px;
+    margin: 0;
+    padding: 10px 0;
+	font-size:14px;
 }

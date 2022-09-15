@@ -87,7 +87,7 @@
                 @endforeach
             </div>
             <div class="add-figure-area">
-                <button type="button" onclick="addNewFigure()" class="{{count($rules) < $max_figure_numbers ? 'draw-btn add-btn' : 'disabled-btn draw-btn add-btn' }}">矩形を追加</button>
+                <button type="button" onclick="addNewFigure()" class="{{count($rules) < $max_figure_numbers ? 'draw-btn add-btn' : 'disabled-btn draw-btn add-btn' }}">検知設定を追加</button>
                 <div class="balloon_danger">
                     <p>画像内をクリックし矩形を選択してください。</p>
                 </div>
@@ -99,10 +99,12 @@
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
                 <p class="error-message area" style="display: none">エリアを選択してください。</p>
                 <div class="description">点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
-                <div class="btns" id="direction">
-                    <button type="button" onclick="clearImage()" class="edit clear-btn history">選択をクリア</button>
-                    <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
-                </div>
+                @if(!$super_admin_flag)
+                    <div class="btns" id="direction">
+                        <button type="button" onclick="clearImage()" class="edit clear-btn history">選択をクリア</button>
+                        <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

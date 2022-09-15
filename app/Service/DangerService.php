@@ -108,7 +108,9 @@ class DangerService
         if (isset($params['starttime']) && $params['starttime'] != '') {
             $query->whereDate('danger_area_detections.starttime', '>=', $params['starttime']);
         } else {
-            $query->whereDate('danger_area_detections.starttime', '>=', date('Y-m-d', strtotime('-1 week')));
+            if ($params != null) {
+                $query->whereDate('danger_area_detections.starttime', '>=', date('Y-m-d', strtotime('-1 week')));
+            }
         }
         if (isset($params['endtime']) && $params['endtime'] != '') {
             $query->whereDate('danger_area_detections.starttime', '<=', $params['endtime']);

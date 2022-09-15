@@ -2,7 +2,7 @@
 
 @section('content')
 
-<form action="{{route('admin.danger.detail')}}" method="get" name="form1" id="form1">
+<form action="{{route('admin.danger.past_analysis')}}" method="get" name="form1" id="form1">
 @csrf
     <div id="wrapper">
         <div class="breadcrumb">
@@ -52,6 +52,7 @@
                             <a data-target="action" class="modal-open blue" onclick="setSelectedSearchOption(3)">アクションから選択</a>
                         </li>
                     </ul>
+                    <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_danger']}})">TOPページへ追加</button>
                     <div class="active sp-ma-right">  <canvas id="myLineChart1"></canvas> </div>
                     {{-- <div class="scroll sp-ma-right">  <canvas id="myLineChart2"></canvas></div>
                     <div class="scroll sp-ma-right"> <canvas id="myLineChart3"></canvas> </div> --}}
@@ -213,10 +214,26 @@
     </div>
     <!-- -->
 </form>
+<div id="alert-modal" title="test" style="display:none">
+    <p><span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <style>
     .textarea{
         max-width: 1200px;
         width:100%;
+    }
+    .inner{
+        position: relative;
+    }
+    .add-to-toppage{
+        position: absolute;
+        right:0px;
+        top:0px;
+        padding-left: 5px;
+        padding-right:5px;
+        padding-top:2px;
+        padding-bottom:2px;
     }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>

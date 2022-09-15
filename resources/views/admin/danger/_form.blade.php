@@ -24,21 +24,35 @@
             <div id="rule_items">
                 <p class="close-items"><a class="close-icon">×</a></p>
                 <div class="radio-area">
-                    <input id="radio-rect" type="radio" value="0" checked>
+                    <label class="title-label">図形：</label>
+                    <select name = '' class="select-box" style="">
+                        <option value="0" selected>四角形</option>
+                        <option value="1">多角形</option>
+                    </select>
+                    {{-- <input id="radio-rect" type="radio" value="0" checked>
                     <label for="radio-rect" class="radio-label radio-label-rect">四角形</label>
                     <input id="radio-polygon" type="radio" value="1">
-                    <label for="radio-polygon" class="radio-label radio-label-polygon">多角形</label>
+                    <label for="radio-polygon" class="radio-label radio-label-polygon">多角形</label> --}}
                 </div>
-                <div class="title-div">カラー</div>
-                <div class="content-div"><input type="color" class="color" value=""/><button type="button" class="draw-btn disabled-btn">矩形描く</button></div>
-                <div class="title-div">アクション</div>
+                <button type="button" class="draw-btn area-draw-btn" style="display: none;">エリア選択</button>
+                <div class="title-div">
+                    <label class="title-label">カラー選択：</label>
+                    <input type="color" class="color" value=""/>
+                </div>
                 <div class="content-div action-div">
-                    @foreach($action_options as $id => $action)
+                    <label class="title-label">アクション：</label>
+                    <select style="" class="select-box">
+                        <option value=""></option>
+                        @foreach($action_options as $id => $action)
+                            <option value={{$id}}>{{$action}}</option>
+                        @endforeach
+                    </select>
+                    {{-- @foreach($action_options as $id => $action)
                         <div>
                             <input value={{$id}} type="checkbox" id="{{'action_'.$id}}">
                             <label class="custom-style" for="{{'action_'.$id}}"></label>{{$action}}
                         </div>
-                    @endforeach
+                    @endforeach --}}
                 </div>
                 <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
             </div>
@@ -47,7 +61,18 @@
                 <div class="rule_items" data-index = {{$index}}>
                     <p class="close-items"><a class="close-icon" onclick="removeFigure({{$index}})">×</a></p>
                     <div class="radio-area">
-                        @if(count($rule->points) == 4)
+                        <label class="title-label">図形：</label>
+                        <select name={{'figure_type_'.$index}} class="select-box" style=""
+                        disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}>
+                            @if(count($rule->points) == 4)
+                                <option value="0" selected>四角形</option>
+                                <option value="1">多角形</option>
+                            @else
+                                <option value="0">四角形</option>
+                                <option value="1" selected>多角形</option>
+                            @endif
+                        </select>
+                        {{-- @if(count($rule->points) == 4)
                             <input disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}
                                 id={{"radio-rect_".$index}} name={{'figure_type_'.$index}} type="radio" value="0" onchange="changeFigure(this, '{{$index}}')" checked>
                             <label for={{"radio-rect_".$index}} class="radio-label">四角形</label>
@@ -61,17 +86,29 @@
                             <input disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}
                                 id={{"radio-polygon_".$index}} name={{'figure_type_'.$index}} type="radio" value="1" onchange="changeFigure(this, '{{$index}}')" checked>
                             <label for={{"radio-polygon_".$index}} class="radio-label">多角形</label>
-                        @endif
+                        @endif --}}
 
                     </div>
-                    <div class="title-div">カラー</div>
-                    <div class="content-div">
+                    @if(count($rule->points) != 4)
+                        <button type="button" class="draw-btn disabled-btn area-draw-btn">エリア選択</button>
+                    @endif
+                    <div class="title-div">
+                        <label class="title-label">カラー選択：</label>
                         <input onchange="changeColor(this, '{{$index}}')" type="color" class="color" value="{{isset($rule->color) ? $rule->color:'#000000'}}"/>
-                        <button type="button" class="draw-btn disabled-btn">矩形描く</button>
                     </div>
-                    <div class="title-div">アクション</div>
                     <div class="content-div action-div">
+                        <label class="title-label">アクション：</label>
+                        <select name={{'figure_type_'.$index}} class="select-box" onchange="changeActions(this, {{$index}})">
+                            <option value=""></option>
                             @foreach($action_options as $id => $action)
+                                @if (in_array($id, $rule->action_id))
+                                    <option value={{$id}} selected>{{$action}}</option>
+                                @else
+                                    <option value={{$id}}>{{$action}}</option>
+                                @endif
+                            @endforeach
+                        </select>
+                            {{-- @foreach($action_options as $id => $action)
                             <div>
                                 @if (in_array($id, $rule->action_id))
                                     <input value={{$id}} type="checkbox" id="{{$index.'_action_'.$id}}" checked>
@@ -80,7 +117,7 @@
                                 @endif
                                 <label onclick="changeActions({{$index.' ,'.$id}})" class="custom-style" for="{{$index.'_action_'.$id}}"></label>{{$action}}
                             </div>
-                            @endforeach
+                            @endforeach --}}
                     </div>
                     <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
                 </div>
@@ -88,7 +125,7 @@
             </div>
 
             <div class="add-figure-area">
-                <button type="button" onclick="addNewFigure()" class="{{count($rules) < $max_figure_numbers ? 'draw-btn add-btn' : 'disabled-btn draw-btn add-btn' }}">矩形を追加</button>
+                <button type="button" onclick="addNewFigure()" class="{{count($rules) < $max_figure_numbers ? 'draw-btn add-btn' : 'disabled-btn draw-btn add-btn' }}">検知設定を追加</button>
                 <div class="balloon_danger">
                     <p>画像内をクリックし矩形を選択してください。</p>
                 </div>
@@ -99,18 +136,15 @@
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
                 <p class="error-message area" style="display: none">エリアを選択してください。</p>
                 <div id="debug"></div>
-                <div class="btns" id="direction">
-                    <button type="button" onclick="clearImage()" class="clear-btn history">選択をクリア</button>
-                    <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
-                </div>
+                @if(!$super_admin_flag)
+                    <div class="btns" id="direction">
+                        <button type="button" onclick="clearImage()" class="clear-btn history">選択をクリア</button>
+                        <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
-    {{-- <div class="streaming-video" style="height:500px;">
-        <safie-streaming-player></safie-streaming-player>
-        <input type="button" value='Play' onClick="play()">
-        <input type="button" value='Pause' onClick="pause()">
-    </div> --}}
     <input type="hidden" value="" name="rule_data" id = 'rule_data'/>
 </div>
 <!--MODAL -->
@@ -140,12 +174,28 @@
         padding-left:15px;
         display:flex;
     }
+    .select-box{
+        width:110px;
+        background: white;
+        padding:5px;
+    }
+    .title-label{
+        font-size: 14px;
+        width:93px;
+        display: inline-block;
+    }
+    input[type="color"]{
+        height:21px;
+    }
+    .area-draw-btn{
+        margin-bottom: 10px;
+    }
     .add-figure-area{
         position: relative;
         margin-top:45px;
     }
     .action-div{
-        display: flex;
+        /* display: flex; */
     }
     .action-div > div{
         white-space: nowrap;
@@ -182,7 +232,9 @@
     }
     .radio-area{
         height: 30px;
-        margin-left: 10px;
+        margin-left: 0px;
+        margin-top:8px;
+        margin-bottom: 8px;
     }
     #debug{
     }
@@ -305,6 +357,8 @@
     radius = parseInt(radius);
     var unique_rule_id = null;
     var rules = <?php echo json_encode($rules);?>;
+    var rule_default_color = <?php echo json_encode(config('const.rule_default_color'));?>;
+
     var rules_object = {};
     rules.map((rule_item, rule_index) => {
         rules_object[rule_index] = rule_item;
@@ -501,18 +555,25 @@
         rules_object[rule_index].color = e.value;
     }
 
-    function changeActions(rule_index, id_action){
+    function changeActions (e, rule_index){
         if (rules_object[rule_index].action_id == undefined) rules_object[rule_index].action_id = [];
-        var check_input_id = rule_index + '_action_' + id_action;
-        var add_remove_flag = $('#' + check_input_id).is(':checked');
-        if (add_remove_flag){
-            var action_index = rules_object[rule_index].action_id.findIndex(x => x == id_action);
-            if (action_index > -1){
-                rules_object[rule_index].action_id.splice(action_index, 1);
-            }
+        var id_action = e.value;
+        if ( id_action > 0){
+            rules_object[rule_index].action_id = [parseInt(id_action)];
         } else {
-            rules_object[rule_index].action_id.push(parseInt(id_action));
+            rules_object[rule_index].action_id = [];
         }
+
+        // var check_input_id = rule_index + '_action_' + id_action;
+        // var add_remove_flag = $('#' + check_input_id).is(':checked');
+        // if (add_remove_flag){
+        //     var action_index = rules_object[rule_index].action_id.findIndex(x => x == id_action);
+        //     if (action_index > -1){
+        //         rules_object[rule_index].action_id.splice(action_index, 1);
+        //     }
+        // } else {
+        //     rules_object[rule_index].action_id.push(parseInt(id_action));
+        // }
     }
 
     function removeFigure(rule_index){
@@ -555,23 +616,26 @@
         template_item.attr('data-index', unique_rule_id);
         template_item.show();
         $('#rule_item_area').append(template_item);
-        $('#radio-rect', template_item).attr('name', 'figure_type_' + unique_rule_id);
-        $('#radio-rect', template_item).attr('id', 'radio-rect_' + unique_rule_id);
-        $('#radio-polygon', template_item).attr('name', 'figure_type_' + unique_rule_id);
-        $('#radio-polygon', template_item).attr('id', 'radio-polygon_' + unique_rule_id);
-        $('.radio-label-rect', template_item).attr('for', 'radio-rect_' + unique_rule_id);
-        $('.radio-label-polygon', template_item).attr('for', 'radio-polygon_' + unique_rule_id);
-        $('input', $('.action-div', template_item)).each(function(){
-            $(this).attr('id', unique_rule_id+'_'+$(this).attr('id'));
-        });
-        $('label', $('.action-div', template_item)).each(function(){
-            $(this).attr('for', unique_rule_id+'_'+$(this).attr('for'));
-        });
+        // $('#radio-rect', template_item).attr('name', 'figure_type_' + unique_rule_id);
+        // $('#radio-rect', template_item).attr('id', 'radio-rect_' + unique_rule_id);
+        // $('#radio-polygon', template_item).attr('name', 'figure_type_' + unique_rule_id);
+        // $('#radio-polygon', template_item).attr('id', 'radio-polygon_' + unique_rule_id);
+        // $('.radio-label-rect', template_item).attr('for', 'radio-rect_' + unique_rule_id);
+        // $('.radio-label-polygon', template_item).attr('for', 'radio-polygon_' + unique_rule_id);
+        // $('input', $('.action-div', template_item)).each(function(){
+        //     $(this).attr('id', unique_rule_id+'_'+$(this).attr('id'));
+        // });
+        // $('label', $('.action-div', template_item)).each(function(){
+        //     $(this).attr('for', unique_rule_id+'_'+$(this).attr('for'));
+        // });
+
+        $('.color', template_item).val(rule_default_color[Object.keys(rules_object).length]);
         rules_object[unique_rule_id] = {
             points:[],
-            color:'#000000',
+            color:rule_default_color[Object.keys(rules_object).length],
             action_id:[]
         };
+
         $('.add-btn').addClass('disabled-btn');
         $('.balloon_danger').show();
         enable_add_figure_flag = false;
@@ -596,26 +660,33 @@
             }
             delete rules_object[rule_index];
         });
-        $('input', $('.radio-area', template_item)).change(function(){
+        $('select', $('.radio-area', template_item)).change(function(){
             if ($(this).val() == 0){
                 selected_figure = 'rect';
-                $('.draw-btn', template_item).addClass('disabled-btn');
+                // $('.draw-btn', template_item).addClass('disabled-btn');
+                $('.draw-btn', template_item).hide();
             } else {
                 selected_figure = 'polygon';
-                $('.draw-btn', template_item).removeClass('disabled-btn');
+                // $('.draw-btn', template_item).removeClass('disabled-btn');
+                $('.draw-btn', template_item).show();
             }
         });
-        $('input', $('.action-div', template_item)).change(function(){
+        $('select', $('.action-div', template_item)).change(function(){
             var rule_index = template_item.attr('data-index');
             if (rules_object[rule_index].action_id == undefined) rules_object[rule_index].action_id = [];
-            if (rules_object[rule_index].action_id.includes($(this).val())){
-                var action_index = rules_object[rule_index].action_id.findIndex(x => x == $(this).val());
-                if (action_index > -1){
-                    rules_object[rule_index].action_id.splice(action_index, 1);
-                }
+            if ($(this).val() > 0){
+                rules_object[rule_index].action_id = [parseInt($(this).val())];
             } else {
-                rules_object[rule_index].action_id.push(parseInt($(this).val()));
+                rules_object[rule_index].action_id = [];
             }
+            // if (rules_object[rule_index].action_id.includes($(this).val())){
+            //     var action_index = rules_object[rule_index].action_id.findIndex(x => x == $(this).val());
+            //     if (action_index > -1){
+            //         rules_object[rule_index].action_id.splice(action_index, 1);
+            //     }
+            // } else {
+            //     rules_object[rule_index].action_id.push(parseInt($(this).val()));
+            // }
         });
         $('.draw-btn', template_item).click(function(){
             var rule_index = template_item.attr('data-index');

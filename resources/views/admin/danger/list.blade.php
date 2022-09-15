@@ -38,6 +38,7 @@
                 </div>
             </div>
         </form>
+        <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['detect_list_danger']}})">TOPページへ追加</button>
         {{ $danger_detections->appends([
             'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
             'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
@@ -184,7 +185,10 @@
 <p class="closemodal"><a class="modal-close">×</a></p>
 </div>
 <!-- -->
-
+<div id="alert-modal" title="test" style="display:none">
+    <p><span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <style>
     .textarea{
         max-width: 1200px;

@@ -32,7 +32,7 @@ p.set{
   width: 42%;
 }
 .w90 {
-  width: 90% !important;
+  width: 85% !important;
 }
 @media only screen and (max-width:768px) {
   .w30, .w42 {
@@ -4254,6 +4254,8 @@ input[type=submit].tuika {
   display: flex;
   padding-left: 15px;
   position: relative;
+  white-space: nowrap;
+  width: 99%;
 }
 .sort, .sort input,.sort li,.sort ul.date-list li h4, .sort ul.date-list li input[type=date], .sort .modal-open.setting{
 	border: none;
@@ -4348,6 +4350,7 @@ input[type=submit].tuika {
     background: #FFF;
 	border:none !important;
     width: 100%;
+    min-width: 150px;
     border-bottom: 1px solid #999 !important;
 	padding: 5px 15px 5px 10px !important;
     border-radius: 0 !important;
@@ -4377,8 +4380,8 @@ select::-ms-expand {
 	background: none;
 	border: 1px solid #CCC;
 }
-.select-c::before {
-content: "";
+/* .select-c::before {
+    content: "";
     position: absolute;
     right: 10px;
     top: 15px;
@@ -4387,7 +4390,7 @@ content: "";
     border-top: 1px solid #555;
     border-left: 1px solid #555;
     transform: translateY(-50%) rotate(-135deg)
-}
+} */
 
 .sort button.apply {
     background:#FFF;
@@ -5151,7 +5154,8 @@ ul.camera-list li .text .edit2:hover{
 	opacity: .7;
 }
 ul.camera-list li table th{
-	width:30%;	padding:5px 0 0 0;
+	width:30%;
+    padding:8px 0 0 0;
 	border: none;
 	color: #999;
 	font-weight: normal;

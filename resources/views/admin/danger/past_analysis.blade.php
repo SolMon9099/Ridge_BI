@@ -52,7 +52,7 @@
                             <a data-target="action" class="modal-open blue" onclick="setSelectedSearchOption(3)">アクションから選択</a>
                         </li>
                     </ul>
-                    <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_danger']}})">TOPページへ追加</button>
+                    <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_danger']}})">ダッシュボートへ追加</button>
                     <div class="active sp-ma-right">  <canvas id="myLineChart1"></canvas> </div>
                     {{-- <div class="scroll sp-ma-right">  <canvas id="myLineChart2"></canvas></div>
                     <div class="scroll sp-ma-right"> <canvas id="myLineChart3"></canvas> </div> --}}

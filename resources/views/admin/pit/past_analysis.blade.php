@@ -44,7 +44,7 @@
                         <h3 class="title">ピット内人数推移</h3>
                         <button type='button' class="time-change-btn" onclick="changeXRange()">時間軸切り替え</button>
                         <button type="button" class='time-change-btn' onclick="moveXRange()">時間軸➞</button>
-                        <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_pit']}})">TOPページへ追加</button>
+                        <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_pit']}})">ダッシュボートへ追加</button>
                     </div>
                     <canvas id="myLineChart1"></canvas>
 

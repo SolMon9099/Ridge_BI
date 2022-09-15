@@ -51,7 +51,11 @@
                 $video_path .= asset('storage/video/').'/';
                 $video_path .= $item->video_file_path;
 
-                $thumb_path = asset('storage/thumb/').'/'.$item->thumb_img_path;
+                if (isset($item->thumb_img_path) && $item->thumb_img_path != ''){
+                    $thumb_path = asset('storage/thumb/').'/'.$item->thumb_img_path;
+                } else {
+                    $thumb_path = asset('assets/admin/img/samplepic.png');
+                }
             ?>
             <li>
                 <div class="movie" video-path = '{{$video_path}}'>

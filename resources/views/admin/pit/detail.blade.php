@@ -42,10 +42,10 @@
                     @endif
                     <div style="display: flex;">
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_pit']}})">TOPページへ追加</button>
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_pit']}})">ダッシュボートへ追加</button>
                         </div>
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_pit']}})">TOPページへ追加</button>
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_pit']}})">ダッシュボートへ追加</button>
                         </div>
                     </div>
                     <div style="display: flex;width:100%;margin-bottom:30px;" class="mainbody">
@@ -67,7 +67,7 @@
                     <div class="left-right">
                         <div class="left-box" style="position: relative;">
                             <h3 class="title">ピット内最大時間の超過検知</h3>
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_pit']}})">TOPページへ追加</button>
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
                             <table class="table2 text-centre top50">
                                 <thead>
                                     <tr>
@@ -87,7 +87,7 @@
                         </div>
                         <div class="right-box" style="position: relative;">
                             <h3 class="title">入退場履歴</h3>
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['pit_history']}})">TOPページへ追加</button>
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['pit_history']}})">ダッシュボートへ追加</button>
                             <table class="table2 text-centre top50">
                                 <thead>
                                     <tr>

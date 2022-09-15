@@ -42,10 +42,10 @@
                     <h3 class="title">現在の映像</h3>
                     <div style="display: flex;">
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_danger']}})">TOPページへ追加</button>
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_danger']}})">ダッシュボートへ追加</button>
                         </div>
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_danger']}})">TOPページへ追加</button>
+                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_danger']}})">ダッシュボートへ追加</button>
                         </div>
                     </div>
                     @if(isset($selected_rule))
@@ -69,7 +69,7 @@
             </div>
             <ul class="kenchi-list" style="margin-top: 45px;position: relative;">
                 @if(count($danger_detections) > 0)
-                    <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_danger']}})">TOPページへ追加</button>
+                    <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_danger']}})">ダッシュボートへ追加</button>
                 @endif
                 @foreach ($danger_detections as $item)
                 <?php
@@ -77,7 +77,11 @@
                     $video_path .= asset('storage/video/').'/';
                     $video_path .= $item->video_file_path;
 
-                    $thumb_path = asset('storage/thumb/').'/'.$item->thumb_img_path;
+                    if (isset($item->thumb_img_path) && $item->thumb_img_path != ''){
+                        $thumb_path = asset('storage/thumb/').'/'.$item->thumb_img_path;
+                    } else {
+                        $thumb_path = asset('assets/admin/img/samplepic.png');
+                    }
                 ?>
                 <li>
                     <div class="movie" video-path = '{{$video_path}}'>

@@ -246,9 +246,13 @@ class SafieApiService
 
             return null;
         }
-        $response = curl_multi_getcontent($curl);
+        if ($httpcode == 200) {
+            $response = curl_multi_getcontent($curl);
 
-        return $response;
+            return $response;
+        } else {
+            return null;
+        }
     }
 
     // HTTP Live Streamingプレイリスト取得

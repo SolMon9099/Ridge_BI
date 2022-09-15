@@ -42,7 +42,11 @@
                 </div>
             </div>
         </form>
-        <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['detect_list_pit']}})">TOPページへ追加</button>
+
+        @if(count($pit_detections) > 0)
+            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['detect_list_pit']}})">ダッシュボートへ追加</button>
+        @endif
+
         {{ $pit_detections->appends([
             'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
             'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
@@ -55,7 +59,11 @@
                 $video_path .= asset('storage/video/').'/';
                 $video_path .= $item->video_file_path;
 
-                $thumb_path = asset('storage/thumb/').'/'.$item->thumb_img_path;
+                if (isset($item->thumb_img_path) && $item->thumb_img_path != ''){
+                    $thumb_path = asset('storage/thumb/').'/'.$item->thumb_img_path;
+                } else {
+                    $thumb_path = asset('assets/admin/img/samplepic.png');
+                }
             ?>
             <li>
                 <div class="movie" video-path = '{{$video_path}}'>

@@ -284,7 +284,7 @@ ul.face-wrap li:last-child a {
 	font-weight:bold;
 	padding-bottom: 10px;
 	border-bottom: 2px solid #00253a;
-	
+
 }
 
 @media only screen and (max-width:768px) {
@@ -308,7 +308,7 @@ h1#logo {
 	font-weight:bold;
 }
 h1#logo span{
-	
+
 	font-size: 60%;
 }
 h1#logo img {
@@ -482,7 +482,7 @@ input[type=checkbox] {
 }
 input[type=radio] + label ,
 input[type=checkbox] + label {
-	position: relative; 
+	position: relative;
 }
 
 input[type=radio] + label:after, input[type=radio] + label:before,
@@ -508,7 +508,6 @@ input[type=checkbox] + label:after{
 input[type=radio] + label:after,
 input[type=checkbox] + label:after{
 	left:-10px;
-	
 }
 input[type=radio] + label:before,
 input[type=checkbox] + label:before{
@@ -1549,7 +1548,7 @@ input[type=file] {
    @media only screen and (max-width:736px) {
 	input[type=file] {
 	font-size: 13px;
-}   
+}
    }
 .labelwrap {
 	overflow: hidden;
@@ -1597,7 +1596,7 @@ ul.payment-wrap li{
 		  .firsttime-wrap h2 + p + p{
 			  font-size:13px;
 		  }
-	   
+
    }
 .centre{
 	text-align:center;

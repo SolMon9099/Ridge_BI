@@ -85,14 +85,14 @@
         <ul class="camera-list">
         @foreach($cameras as $camera)
             <li class="camera-item">
-                <div class="pic"><img src="{{ $camera->img }}"></div>
+                <div class="pic"><img src="{{isset($camera->img) && $camera->img != ''? $camera->img :asset('assets/admin/img/samplepic.png') }}"></div>
                 <div class="text">
                 <button style="background:transparent;border:none;" class="edit2" onclick="location.href='{{route('admin.camera.edit', ['camera' => $camera->id])}}'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="fill: rgba(46, 191, 67, 1);transform: ;msFilter:;">
                     <path d="M16 2H8C4.691 2 2 4.691 2 8v13a1 1 0 0 0 1 1h13c3.309 0 6-2.691 6-6V8c0-3.309-2.691-6-6-6zM8.999 17H7v-1.999l5.53-5.522 1.999 1.999L8.999 17zm6.473-6.465-1.999-1.999 1.524-1.523 1.999 1.999-1.524 1.523z"></path>
                     </svg>
                 </button>
-                <table class="table">
+                <table class="table" style="margin-top: 10px;">
                     <tr>
                         <th>カメラNo.</th>
                         <td>{{$camera->camera_id}}</td>

@@ -358,6 +358,14 @@
             stage.container().style.cursor = 'default';
         });
         circle.on('dragmove', function (e) {
+            if (e.evt.offsetX <= 5 || e.evt.offsetX >= 1275) {
+                circle.stopDrag();
+                return;
+            }
+            if (e.evt.offsetY <= 5 || e.evt.offsetY >= 715) {
+                circle.stopDrag();
+                return;
+            }
             if (color == null){
                 var index = red_points.findIndex(point => point.id == e.target.id());
                 if (index > -1){
@@ -474,6 +482,14 @@
                 stage.container().style.cursor = 'default';
             });
             circle.on('dragmove', function (e) {
+                if (e.evt.offsetX <= 5 || e.evt.offsetX >= 1275) {
+                    circle.stopDrag();
+                    return;
+                }
+                if (e.evt.offsetY <= 5 || e.evt.offsetY >= 715) {
+                    circle.stopDrag();
+                    return;
+                }
                 var index = red_points.findIndex(point => point.id == e.target.id());
                 if (index > -1){
                     red_points[index].x = e.evt.offsetX;

@@ -372,6 +372,14 @@
             stage.container().style.cursor = 'default';
         });
         circle.on('dragmove', function (e) {
+            if (e.evt.offsetX <= 5 || e.evt.offsetX >= 1275) {
+                circle.stopDrag();
+                return;
+            }
+            if (e.evt.offsetY <= 5 || e.evt.offsetY >= 715) {
+                circle.stopDrag();
+                return;
+            }
             var circle_id = e.target.id();
             var rule_index = parseInt(circle_id.split('_')[0]);
             if (!isNaN(rule_index)){

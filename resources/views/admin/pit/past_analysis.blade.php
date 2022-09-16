@@ -7,12 +7,12 @@
         <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.pit')}}">ピット入退場検知</a></li>
-            <li>過去データ</li>
+            <li>過去グラフ</li>
         </ul>
         </div>
         <div id="r-content">
             <div class="title-wrap">
-                <h2 class="title">過去データ</h2>
+                <h2 class="title">過去グラフ</h2>
             </div>
             <div class="title-wrap ver2 stick">
                 <div class="sp-ma">

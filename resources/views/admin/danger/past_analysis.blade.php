@@ -8,12 +8,12 @@
         <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.danger')}}">危険エリア侵入検知</a></li>
-            <li>過去データ</li>
+            <li>過去グラフ</li>
         </ul>
         </div>
         <div id="r-content">
             <div class="title-wrap">
-                <h2 class="title">過去データ</h2>
+                <h2 class="title">過去グラフ</h2>
             </div>
             <div class="title-wrap ver2 stick">
             <div class="sp-ma">

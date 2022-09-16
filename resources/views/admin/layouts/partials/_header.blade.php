@@ -79,6 +79,12 @@
         </div>
     </div>
     <ul class="nav" id="dropmenu">
+        <li class="top-menu">
+            <a href="#">ダッシュボード</a>
+            <ul>
+                <li><a href="{{route('admin.top')}}">ダッシュボード</a></li>
+            </ul>
+        </li>
         @foreach (config('const.header_menus') as $code => $header_name)
         @if ($super_admin_flag || in_array($code, $headers))
             <li class="{{config('const.header_menu_classes')[$code]}}"><a href="#">{{$header_name}}</a>

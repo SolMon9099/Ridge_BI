@@ -399,6 +399,13 @@ input[type=text], input[type=password], input[type=number] {
     margin: 0;
     padding: 0;
 }
+#dropmenu li.top-menu a{
+    background:url("../img/blue_home.ico") no-repeat 15px 50% #FFF;
+    padding-left: 40px
+}
+#dropmenu li.top-menu a:hover{
+    background:url("../img/white_home.ico") no-repeat 15px 50% #0062de;
+}
 #dropmenu li.pit-menu a{
     background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAJNJREFUSEtjZKAxYKSx+Qz0tcCw4s5+BgZGB5ivzncogx1gWHH3P7JPcYg/ON+hrIgeIig+INIgBkIWI1uC1QKYAcTGD8xh2PTR1wJiXUyKOnqnIkhqGbpxgC814At3mqcifJbTN5JJSX7IamkeRIPPAnylKa6CDj14YepQItmo4u78/wwMCTSzgOaRPHItGNCcDABgpX4ZTw6BiAAAAABJRU5ErkJggg==") no-repeat 15px 50% #FFF;
     padding-left: 40px
@@ -537,7 +544,22 @@ input[type=text], input[type=password], input[type=number] {
 	transform: scale(1,1.3) rotate(0);
 }
 #dropmenu > li:hover > a, #dropmenu > li:hover > div {
-  background: #0062de;
+    color:#FFF;
+}
+#dropmenu li.top-menu:hover > a, #dropmenu > li:hover > div {
+    background:url("../img/white_home.ico") no-repeat 15px 50% #0062de;
+}
+#dropmenu li.pit-menu:hover > a, #dropmenu > li:hover > div {
+    background:url("../img/white_home.ico") no-repeat 15px 50% #0062de;
+}
+#dropmenu li.danger-menu:hover > a, #dropmenu > li:hover > div {
+    background:url("../img/white_home.ico") no-repeat 15px 50% #0062de;
+}
+#dropmenu li.shelf-menu:hover > a, #dropmenu > li:hover > div {
+    background:url("../img/white_home.ico") no-repeat 15px 50% #0062de;
+}
+#dropmenu li.thief-menu:hover > a, #dropmenu > li:hover > div {
+    background:url("../img/white_home.ico") no-repeat 15px 50% #0062de;
 }
 #dropmenu > li:hover li:hover > a {
   background: #0062de;

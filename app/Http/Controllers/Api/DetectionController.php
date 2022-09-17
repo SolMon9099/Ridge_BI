@@ -59,20 +59,22 @@ class DetectionController extends Controller
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
             return ['error' => 'デバイスがありません。'];
         }
-        $request_interval = config('const.request_interval');
+        $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
         Log::info('start datetime = '.$start_datetime);
 
         $time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $start_datetime, new \DateTimeZone('+0900'));
-        $record_start_time = $time_object->format('c');
         $record_end_time_object = clone $time_object;
         if ((isset($request['detect_end_date']) && $request['detect_end_date'] != '')) {
             $end_datetime = date('Y-m-d H:i:s', strtotime($request['detect_end_date']));
             $record_end_time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $end_datetime, new \DateTimeZone('+0900'));
         } else {
-            $record_end_time_object->add(new \DateInterval('PT'.(string) $request_interval.'M'));
+            $record_end_time_object->add(new \DateInterval('PT'.(string) $detection_video_length.'S'));
         }
         $record_end_time = $record_end_time_object->format('c');
+        $record_start_time_object = clone $time_object;
+        $record_start_time_object->sub(new \DateInterval('PT'.(string) $detection_video_length.'S'));
+        $record_start_time = $record_start_time_object->format('c');
         Log::info('record startdatetime = '.$record_start_time);
         Log::info('record enddatetime = '.$record_end_time);
 
@@ -138,20 +140,22 @@ class DetectionController extends Controller
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
             return ['error' => 'デバイスがありません。'];
         }
-        $request_interval = config('const.request_interval');
+        $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
         Log::info('start datetime = '.$start_datetime);
 
         $time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $start_datetime, new \DateTimeZone('+0900'));
-        $record_start_time = $time_object->format('c');
         $record_end_time_object = clone $time_object;
         if ((isset($request['detect_end_date']) && $request['detect_end_date'] != '')) {
             $end_datetime = date('Y-m-d H:i:s', strtotime($request['detect_end_date']));
             $record_end_time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $end_datetime, new \DateTimeZone('+0900'));
         } else {
-            $record_end_time_object->add(new \DateInterval('PT'.(string) $request_interval.'M'));
+            $record_end_time_object->add(new \DateInterval('PT'.(string) $detection_video_length.'S'));
         }
         $record_end_time = $record_end_time_object->format('c');
+        $record_start_time_object = clone $time_object;
+        $record_start_time_object->sub(new \DateInterval('PT'.(string) $detection_video_length.'S'));
+        $record_start_time = $record_start_time_object->format('c');
         Log::info('record startdatetime = '.$record_start_time);
         Log::info('record enddatetime = '.$record_end_time);
 
@@ -224,20 +228,22 @@ class DetectionController extends Controller
         if (isset($request['analyze_result']['nb_exit']) && $request['analyze_result']['nb_exit'] > 0) {
             $nb_exit = $request['analyze_result']['nb_exit'];
         }
-        $request_interval = config('const.request_interval');
+        $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
         Log::info('start datetime = '.$start_datetime);
 
         $time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $start_datetime, new \DateTimeZone('+0900'));
-        $record_start_time = $time_object->format('c');
         $record_end_time_object = clone $time_object;
         if ((isset($request['detect_end_date']) && $request['detect_end_date'] != '')) {
             $end_datetime = date('Y-m-d H:i:s', strtotime($request['detect_end_date']));
             $record_end_time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $end_datetime, new \DateTimeZone('+0900'));
         } else {
-            $record_end_time_object->add(new \DateInterval('PT'.(string) $request_interval.'M'));
+            $record_end_time_object->add(new \DateInterval('PT'.(string) $detection_video_length.'S'));
         }
         $record_end_time = $record_end_time_object->format('c');
+        $record_start_time_object = clone $time_object;
+        $record_start_time_object->sub(new \DateInterval('PT'.(string) $detection_video_length.'S'));
+        $record_start_time = $record_start_time_object->format('c');
         Log::info('record startdatetime = '.$record_start_time);
         Log::info('record enddatetime = '.$record_end_time);
 
@@ -305,20 +311,22 @@ class DetectionController extends Controller
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
             return ['error' => 'デバイスがありません。'];
         }
-        $request_interval = config('const.request_interval');
+        $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
         Log::info('start datetime = '.$start_datetime);
 
         $time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $start_datetime, new \DateTimeZone('+0900'));
-        $record_start_time = $time_object->format('c');
         $record_end_time_object = clone $time_object;
         if ((isset($request['detect_end_date']) && $request['detect_end_date'] != '')) {
             $end_datetime = date('Y-m-d H:i:s', strtotime($request['detect_end_date']));
             $record_end_time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $end_datetime, new \DateTimeZone('+0900'));
         } else {
-            $record_end_time_object->add(new \DateInterval('PT'.(string) $request_interval.'M'));
+            $record_end_time_object->add(new \DateInterval('PT'.(string) $detection_video_length.'S'));
         }
         $record_end_time = $record_end_time_object->format('c');
+        $record_start_time_object = clone $time_object;
+        $record_start_time_object->sub(new \DateInterval('PT'.(string) $detection_video_length.'S'));
+        $record_start_time = $record_start_time_object->format('c');
         Log::info('record startdatetime = '.$record_start_time);
         Log::info('record enddatetime = '.$record_end_time);
 

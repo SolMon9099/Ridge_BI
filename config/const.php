@@ -222,6 +222,7 @@ return [
     'camera_start_time' => '08:00:00',
     'camera_end_time' => '21:00:00',
     'request_interval' => 5,        //分
+    'detection_video_length' => 10,    //秒
     'pit_time_options' => [15, 30, 45, 60, 75, 90, 105, 120],
     'shelf_max_rect_numbers' => 3,
     'thief_max_rect_numbers' => 3,

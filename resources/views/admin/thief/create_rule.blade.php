@@ -24,6 +24,7 @@
         <form action="{{route('admin.thief.store')}}" method="post" name="form1" id="form_thief_rule">
             @csrf
             <input type="hidden" name="camera_id" value="{{$camera_id}}" id = "camera_id" />
+            <input type="hidden" name="operation_type" value="register" />
             @include('admin.thief._form')
         </form>
     </div>

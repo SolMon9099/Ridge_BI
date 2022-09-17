@@ -24,6 +24,7 @@
         <form action="{{route('admin.shelf.store')}}" method="post" name="form1" id="form_shelf_rule">
             @csrf
             <input type="hidden" name="camera_id" value="{{$camera_id}}" id = "camera_id" />
+            <input type="hidden" name="operation_type" value="edit" />
             @include('admin.shelf._form')
         </form>
     </div>

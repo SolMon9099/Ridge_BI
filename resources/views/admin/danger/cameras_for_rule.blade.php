@@ -28,25 +28,25 @@
                             <th>設置エリア</th>
                             <th>設置フロア</th>
                             <th>設置場所</th>
-                            <th>備考</th>
-                            <th>稼働状況</th>
+                            <th>ルール登録数</th>
                         </tr>
                         </thead>
                         <tbody>
                         @foreach($cameras as $camera)
-                            <tr>
+                        <tr class="{{count($camera->rules) > 0 ? 'disabled-tr' : ''}}">
                                 <td>
+                                    @if(count($camera->rules) == 0)
                                     <div class="radio">
                                         <input id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
                                         <label for="radio-{{$camera->id}}" class="radio-label"></label>
                                     </div>
+                                    @endif
                                 </td>
                                 <td>{{$camera->camera_id}}</td>
                                 <td>{{isset($locations[$camera->location_id])?$locations[$camera->location_id]:''}}</td>
                                 <td>{{$camera->floor_number}}</td>
                                 <td>{{$camera->installation_position}}</td>
-                                <td>{{$camera->remarks}}</td>
-                                <td>{{config('const.camera_status')[$camera->is_enabled]}}</td>
+                                <td>{{count($camera->rules)}}/3</td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -67,6 +67,12 @@
         .notice-area{
             color: #999;
             margin-bottom: 8px;
+        }
+        .disabled-tr{
+            background: lightgray!important;
+        }
+        .disabled-tr > td{
+            background: lightgray!important;
         }
     </style>
 @endsection

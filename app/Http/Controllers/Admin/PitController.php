@@ -40,6 +40,16 @@ class PitController extends AdminController
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
             abort(403);
         }
+        $pit_rules = PitService::doSearch()->get()->all();
+        $temp = [];
+        foreach ($pit_rules as $rule) {
+            if (!isset($temp[$rule->camera_id])) {
+                $temp[$rule->camera_id] = [];
+            }
+            $temp[$rule->camera_id][] = $rule;
+        }
+        $pit_rules = $temp;
+
         $locations = LocationService::getAllLocationNames();
         $camera_query = Camera::query();
         if (Auth::guard('admin')->user()->contract_no != null) {
@@ -54,6 +64,7 @@ class PitController extends AdminController
             if ($map_data != null) {
                 $camera->floor_number = $map_data->floor_number;
             }
+            $camera->rules = isset($pit_rules[$camera->id]) ? $pit_rules[$camera->id] : [];
         }
 
         return view('admin.pit.cameras_for_rule')->with([
@@ -111,12 +122,16 @@ class PitController extends AdminController
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
             abort(403);
         }
+        $operation_type = '変更';
+        if (isset($request['operation_type']) && $request['operation_type'] == 'register') {
+            $operation_type = '追加';
+        }
         if (PitService::saveData($request)) {
-            $request->session()->flash('success', 'ルールを変更しました。');
+            $request->session()->flash('success', 'ルールを'.$operation_type.'しました。');
 
             return redirect()->route('admin.pit');
         } else {
-            $request->session()->flash('error', 'ルール変更に失敗しました。');
+            $request->session()->flash('error', 'ルール'.$operation_type.'に失敗しました。');
 
             return redirect()->route('admin.pit');
         }

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DangerService
 {
-    public static function doSearch($params)
+    public static function doSearch($params = null)
     {
         $danger_rules = DangerAreaDetectionRule::select(
             'danger_area_detection_rules.*',
@@ -23,11 +23,13 @@ class DangerService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $danger_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
-        if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
-            $danger_rules->whereIn('danger_area_detection_rules.camera_id', $params['selected_cameras']);
-        }
-        if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
-            $danger_rules->where('danger_area_detection_rules.camera_id', $params['selected_camera']);
+        if ($params != null) {
+            if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
+                $danger_rules->whereIn('danger_area_detection_rules.camera_id', $params['selected_cameras']);
+            }
+            if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+                $danger_rules->where('danger_area_detection_rules.camera_id', $params['selected_camera']);
+            }
         }
 
         return $danger_rules;

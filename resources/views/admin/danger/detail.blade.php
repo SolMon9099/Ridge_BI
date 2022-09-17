@@ -15,14 +15,15 @@
         <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.danger')}}">危険エリア侵入検知</a></li>
-            <li>リアルタイムデータ</li>
+            <li>TOP</li>
         </ul>
         </div>
         <div id="r-content">
             <div class="title-wrap">
-                <h2 class="title">リアルタイムデータ({{date('Y/m/d')}})</h2>
+                <h2 class="title">TOP(危険エリア侵入検知)</h2>
             </div>
-            <div class="title-wrap ver2 stick">
+            <h5>{{date('Y/m/d')}}のデータを表示</h5>
+            <div class="title-wrap ver2 stick" style="margin-top: 10px;">
                 <div class="sp-ma">
                     <div class="sort">
                         <ul class="date-list">

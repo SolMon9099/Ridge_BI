@@ -23,6 +23,7 @@
         <form action="{{route('admin.pit.store')}}" method="post" name="form1" id="form_pit_rule">
             @csrf
             <input type="hidden" name="camera_id" value="{{$camera_id}}" id = "camera_id" />
+            <input type="hidden" name="operation_type" value="edit" />
             @include('admin.pit._form')
         </form>
     </div>

@@ -4,7 +4,7 @@
 <div id="wrapper">
     <div id="r-content">
 	    <div class="sp-ma">
-            {{-- <h2 class="title">最近の検知</h2> --}}
+            <h2 class="title">ダッシュボード</h2>
 
             {{-- <div class="add-widget new-btn">
                 <a onClick="addNewWidget()" href="#">
@@ -45,7 +45,8 @@
                             @if($item->block_type == config('const.top_block_type_codes')['live_video_danger'] || $item->block_type == config('const.top_block_type_codes')['live_video_pit'])
                                 @if(isset($item->cameras) && count($item->cameras) > 0)
                                     <div class="camera-id">カメラID： {{$item->selected_camera->camera_id}}</div>
-                                    <div class="streaming-video">
+                                    <div id={{"image_container_".$item->id}} class="image-container"></div>
+                                    <div class="streaming-video" id = {{'streaming_video_'.$item->id}}>
                                         <safie-streaming-player data-camera-id='{{$item->selected_camera->camera_id}}' data-token='{{$item->selected_camera->access_token}}'>
                                         </safie-streaming-player>
                                     </div>
@@ -76,7 +77,7 @@
                                 @endif
                             @elseif($item->block_type == config('const.top_block_type_codes')['detect_list_danger'])
                                 @if (isset($item->danger_detections) && count($item->danger_detections) > 0)
-                                    <table class="danger-detect-list">
+                                    <table class="danger-detect-list list-table">
                                         <thead>
                                             <tr>
                                                 <th class="time">時間</th>
@@ -208,6 +209,10 @@
     .camera-id{
         font-size:14px;
     }
+    .image-container{
+        position: absolute;
+        z-index: 1;
+    }
     .streaming-video{
         height:80%;
     }
@@ -272,11 +277,20 @@
     .action{
         width:21%;
     }
+    .list-table > thead{
+        background: #0062de;
+        color: white;
+    }
+    .list-table > tbody > tr:nth-child(even){
+        background: #edf3f8;
+    }
 </style>
 <script src="{{ asset('assets/admin/js/gridstack-all.js?2') }}"></script>
 <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <script src="{{ asset('assets/admin/js/helper.js?2') }}"></script>
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
+<script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
+
 <script>
     function videoPlay(path){
         var video = document.getElementById('video-container');
@@ -381,6 +395,7 @@
         float: false
     };
     var grid = GridStack.init(options);
+    var stages = {};
     function load() {
         safieStreamingPlayerElements = $('safie-streaming-player');
         safieStreamingPlayerElements.each(function(index){
@@ -427,9 +442,32 @@
             },
             success: function(result){
                 console.log(result);
-            }});
+            }
+        });
+        $('.image-container').each(function(){
+            var image_container_id = $(this).attr('id');
+            var streaming_video_id = 'streaming_video_' + image_container_id.replace('image_container_', '');
+            if (stages[image_container_id] != undefined){
+                stages[image_container_id].width($('#' + streaming_video_id).width());
+                stages[image_container_id].height($('#' + streaming_video_id).height());
+            }
+        })
+
     });
 
+    $(document).ready(function() {
+        $('.image-container').each(function(){
+            var image_container_id = $(this).attr('id');
+            var streaming_video_id = 'streaming_video_' + image_container_id.replace('image_container_', '');
+            stages[image_container_id] = new Konva.Stage({
+                container: $(this).attr('id'),
+                width: $('#' + streaming_video_id).width(),
+                height: $('#' + streaming_video_id).height(),
+            });
+            var layer = new Konva.Layer();
+            stages[image_container_id].add(layer);
+        })
+    })
 
 </script>
 @endsection

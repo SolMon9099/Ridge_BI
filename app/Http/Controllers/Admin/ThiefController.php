@@ -124,12 +124,16 @@ class ThiefController extends AdminController
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
             abort(403);
         }
+        $operation_type = '変更';
+        if (isset($request['operation_type']) && $request['operation_type'] == 'register') {
+            $operation_type = '追加';
+        }
         if (ThiefService::saveData($request)) {
-            $request->session()->flash('success', 'ルールを変更しました。');
+            $request->session()->flash('success', 'ルールを'.$operation_type.'しました。');
 
             return redirect()->route('admin.thief');
         } else {
-            $request->session()->flash('error', 'ルール変更に失敗しました。');
+            $request->session()->flash('error', 'ルール'.$operation_type.'に失敗しました。');
 
             return redirect()->route('admin.thief');
         }

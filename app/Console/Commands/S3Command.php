@@ -187,7 +187,7 @@ class S3Command extends Command
                 $params['rect_info']['action_id'] = $action_data;
                 $params['priority'] = 1;
                 Log::info('危険エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
-                $url = 'https://52.192.123.36/api/v1/danger-zone/register-camera';
+                $url = 'https://43.206.48.25/api/v1/danger-zone/register-camera';
                 $this->sendPostApi($url, $header, $params, 'json');
             }
         }
@@ -217,7 +217,7 @@ class S3Command extends Command
                     $params['priority'] = 1;
 
                     Log::info('ピット入退場解析リクエスト（BI→AI）開始ーーーー');
-                    $url = 'https://52.192.123.36/api/v1/pit/register-camera';
+                    $url = 'https://43.206.48.25/api/v1/pit/register-camera';
                     $this->sendPostApi($url, $header, $params, 'json');
                 }
             }
@@ -248,7 +248,7 @@ class S3Command extends Command
                     $params['priority'] = 1;
                 }
                 Log::info('棚乱れ解析リクエスト（BI→AI）開始ーーーー');
-                $url = 'https://52.192.123.36/api/v1/shelf-theft/register-camera';
+                $url = 'https://43.206.48.25/api/v1/shelf-theft/register-camera';
                 $this->sendPostApi($url, $header, $params, 'json');
             }
         }
@@ -280,7 +280,7 @@ class S3Command extends Command
                     $params['priority'] = 1;
                 }
                 Log::info('大量盗難解析リクエスト（BI→AI）開始ーーーー');
-                $url = 'https://52.192.123.36/api/v1/hanger-counter/register-camera';
+                $url = 'https://43.206.48.25/api/v1/hanger-counter/register-camera';
                 $this->sendPostApi($url, $header, $params, 'json');
             }
         }

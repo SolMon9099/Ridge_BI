@@ -5580,17 +5580,48 @@ ul.time li input{
 }
 
 .balloon1:before {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -10px;
-  border: 10px solid transparent;
-  border-top: 10px solid #FFF;
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -10px;
+    border: 10px solid transparent;
+    border-top: 10px solid #FFF;
 }
 
 .balloon1 p {
     margin: 0;
     padding: 10px 0;
 	font-size:14px;
+}
+.close-gear-icon{
+    display: none;
+    width: 24px;
+    height: 0px;
+    position: relative;
+    background: #0062de;
+}
+.close-gear-icon:before{
+    transform: rotate(-45deg);
+    top: 0;
+
+    content: "";
+    display: block;
+    position: absolute;
+    background: #0062de;
+    width: 24px;
+    height: 2px;
+    transition: all 0.3s ease-in-out;
+}
+.close-gear-icon:after{
+    transform: rotate(45deg);
+    top: 0;
+
+    content: "";
+    display: block;
+    position: absolute;
+    background: #0062de;
+    width: 24px;
+    height: 2px;
+    transition: all 0.3s ease-in-out;
 }

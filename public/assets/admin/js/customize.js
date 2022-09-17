@@ -44,10 +44,19 @@ $(function () {
   });
 });
 $(function () {
-  $(".cog").click(function () {
-			$(this).toggleClass("on");
-    $(".hidden-box").fadeToggle('fast'); /*ふわっと表示*/
-  });
+    $(".cog").click(function () {
+        $(this).toggleClass("on");
+        $(".hidden-box").fadeToggle('fast'); /*ふわっと表示*/
+        if ($(this).hasClass('on')){
+            $('svg', $(this)).hide();
+            $('.close-gear-icon', $(this)).show();
+            $(this).css('background', 'transparent');
+        } else {
+            $('svg', $(this)).show();
+            $('.close-gear-icon', $(this)).hide();
+            $(this).css('background', 'white');
+        }
+    });
 });
 
 $(function () {

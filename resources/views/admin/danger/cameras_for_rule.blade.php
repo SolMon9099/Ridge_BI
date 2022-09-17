@@ -33,9 +33,9 @@
                         </thead>
                         <tbody>
                         @foreach($cameras as $camera)
-                        <tr class="{{count($camera->rules) > 0 ? 'disabled-tr' : ''}}">
+                        <tr class="{{count($camera->rules) == config('const.danger_max_figure_numbers')? 'disabled-tr' : ''}}">
                                 <td>
-                                    @if(count($camera->rules) == 0)
+                                    @if(count($camera->rules) < config('const.danger_max_figure_numbers'))
                                     <div class="radio">
                                         <input id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
                                         <label for="radio-{{$camera->id}}" class="radio-label"></label>

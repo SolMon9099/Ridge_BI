@@ -18,7 +18,7 @@
 ?>
 <div class="no-scroll">
     @include('admin.layouts.flash-message')
-    <div class="scroll">
+    <div class="scroll" style="position: relative;">
         <h3>検知設定</h3>
         <div class="setting-head">
             <div id="rule_items">
@@ -127,10 +127,11 @@
             <div class="add-figure-area">
                 <button type="button" onclick="addNewFigure()" class="{{count($rules) < $max_figure_numbers ? 'draw-btn add-btn' : 'disabled-btn draw-btn add-btn' }}">検知設定を追加</button>
                 <div class="balloon_danger">
-                    <p>画像内をクリックし矩形を選択してください。</p>
+                    <p>画像内をクリックしエリアを選択してください。</p>
                 </div>
             </div>
         </div>
+        <button type="button" onclick="clearImage()" class="clear-btn history">選択を全てクリア</button>
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
@@ -138,7 +139,6 @@
                 <div id="debug"></div>
                 @if(!$super_admin_flag)
                     <div class="btns" id="direction">
-                        <button type="button" onclick="clearImage()" class="clear-btn history">選択をクリア</button>
                         <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
                     </div>
                 @endif
@@ -153,15 +153,17 @@
         <div class="explain">
             <h3>【使い方】</h3>
             <ul>
-                <li>①動画内をクリックし危険エリアとして指定する矩形を作成します。
-                    <small>※四角形(最大3つ)、多角形(最大1つ)を選択できます。</small>
+                <li>①危険エリアの図形を四角形、多角形から選択し<br/>
+                    動画内をクリックし危険エリアとして指定するエリアを作成します。
+                    <small>※最大３箇所選択することができます。</small>
                 </li>
-                <li>②危険エリアを指定する矩形毎に
-                    <small>検知するアクションを選択します。</small>
-                    <small>※複数選択可能</small>
+                <li>②危険エリアを指定する矩形毎に<br/>
+                    検知するアクションを選択します。
+                    {{-- <small>※複数選択可能</small> --}}
                 </li>
-                <li>③選択が完了したら「決定」ボタンを押下してください。
-                    <small>※「選択をクリア」した際は全ての選択がクリアされます。</small>
+                <li>③設定が完了したら「決定」ボタンを押下してください。</li>
+                <li>④エリアは検知設定内の×ボタンで削除できます。
+                    <small>※「選択をすべてクリア」ですべてのエリアを削除できます。</small>
                 </li>
             </ul>
         </div>
@@ -170,6 +172,13 @@
 </div>
 <!-- -->
 <style>
+    .clear-btn{
+        margin:0;
+        padding: 10px 35px;
+        position: absolute;
+        right:0;
+        top: 140px;
+    }
     .setting-head{
         padding-left:15px;
         display:flex;
@@ -199,11 +208,6 @@
     }
     .action-div > div{
         white-space: nowrap;
-    }
-    .clear-btn{
-        margin:0;
-        margin-right:15px;
-        padding: 15px 75px;
     }
     .image-record{
         display: none;
@@ -324,7 +328,9 @@
             display: flex;
         }
         .clear-btn{
-            padding:15px 60px;
+            position: relative;
+            top:0;
+            margin-top: 10px;
         }
         .save-btn{
             padding:15px 60px;

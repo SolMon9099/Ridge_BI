@@ -164,18 +164,17 @@ li.active .modal-open.blue{
   cursor: pointer;
 }
 .textarea, .textarea_c {
-  width: 65%;
+    width: 70%;
 	max-width: 980px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  box-sizing: border-box;
-  transition: all 0.5s ease-in-out;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    transition: all 0.5s ease-in-out;
 }
 .textarea.narrow{
 	width: 20%;
-	
 }
 .textarea .listing{
 	background: #FFF;

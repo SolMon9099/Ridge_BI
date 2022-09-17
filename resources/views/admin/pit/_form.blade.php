@@ -15,14 +15,19 @@
 ?>
 <div class="no-scroll">
     {{-- @include('admin.layouts.flash-message') --}}
-    <div class="scroll">
+    <div class="scroll" style="position: relative;">
         <h2>検知設定</h2>
+        <div class="guide">
+            <p>動画内をクリックしピットの入り口を囲ってください。</p>
+            <p>　※4点をクリックすると4角形が自動生成されます。</p>
+            <p>　※赤枠は入場を検知し青枠は退場を検知します。</p>
+        </div>
         <div class="setting-head">
             <div style="margin-right:30px;">
                 <label>ピット内人数：</label>
                 <input name="min_members" type="number" inputmode="numeric" pattern="\d*" max='10' min='0' class='members_input'
                     value="{{old('min_members', isset($min_members)?$min_members:'')}}">
-                    <span style="font-size: 14px;">以上</span>
+                    <span style="font-size: 14px;">人以上</span>
                 @error('min_members')
                     <p class="error-message min_members">{{ $message }}</p>
                 @enderror
@@ -44,6 +49,7 @@
                     <p class="error-message max_permission_time">{{ $message }}</p>
                 @enderror
             </div>
+            <button type="button" class="clear-btn history" onclick="clearImage()">選択を全てクリア</button>
         </div>
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
@@ -57,7 +63,6 @@
 
         @if(!$super_admin_flag)
         <div class="btns" id="direction">
-            <button type="button" class="clear-btn history" onclick="clearImage()">選択をクリア</button>
             <button type="button" class="ok save-btn" onclick="saveRule()">決定</button>
         </div>
         @endif
@@ -93,8 +98,18 @@
 <style>
     .clear-btn{
         margin:0;
-        margin-right:15px;
-        padding: 15px 75px;
+        padding: 10px 35px;
+        position: absolute;
+        right:0;
+    }
+    .guide{
+        position: absolute;
+        left: 450px;
+        top: -70px;
+        white-space: nowrap;
+    }
+    label{
+        white-space: nowrap;
     }
     .cancel-btn{
         margin:0;
@@ -143,7 +158,14 @@
             display: flex;
         }
         .clear-btn{
-            padding:15px 60px;
+            position: relative;
+        }
+        .guide{
+            position: relative;
+            top:0;
+            left:0;
+            margin-top:10px;
+
         }
         .save-btn{
             padding:15px 60px;

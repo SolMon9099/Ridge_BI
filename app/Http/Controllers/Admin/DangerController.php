@@ -241,7 +241,7 @@ class DangerController extends AdminController
         }
 
         return view('admin.danger.detail')->with([
-            'all_data' => json_encode($all_data),
+            'all_data' => json_encode(array_reverse($all_data)),
             'request' => $request,
             'rules' => $rules,
             'cameras' => $cameras,
@@ -270,7 +270,7 @@ class DangerController extends AdminController
         $all_data = [];
         foreach ($danger_detections as $item) {
             if ($item->detection_action_id > 0) {
-                $all_data[date('Y-m-d', strtotime($item->starttime))][$item->detection_action_id][] = $item;
+                $all_data[date('Y-m-d H:i', strtotime($item->starttime))][$item->detection_action_id][] = $item;
             }
         }
         $rules = DangerService::doSearch($request)->get()->all();
@@ -313,7 +313,7 @@ class DangerController extends AdminController
         }
 
         return view('admin.danger.past_analysis')->with([
-            'all_data' => json_encode($all_data),
+            'all_data' => json_encode(array_reverse($all_data)),
             'request' => $request,
             'rules' => $rules,
             'cameras' => $cameras,

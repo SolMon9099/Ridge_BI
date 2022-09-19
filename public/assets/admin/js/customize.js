@@ -176,25 +176,90 @@ $('.video-pit').hover( function() {
 );
 	 });
 
-    function addToToppage(block_type){
-        let token = $('meta[name="csrf-token"]').attr('content');
+function addToToppage(block_type){
+    let token = $('meta[name="csrf-token"]').attr('content');
 
-        jQuery.ajax({
-            url : '/admin/save_block',
-            method: 'post',
-            data: {
-                block_type,
-                _token:token,
-            },
+    jQuery.ajax({
+        url : '/admin/save_block',
+        method: 'post',
+        data: {
+            block_type,
+            _token:token,
+        },
 
-            error : function(){
-                console.log('failed');
-                helper_alert('alert-modal', '登録失敗', result, 300, '閉じる');
-            },
-            success: function(result){
-                console.log(result);
-                helper_alert('alert-modal', '登録完了', result, 300, '閉じる');
-            }});
-    }
+        error : function(){
+            console.log('failed');
+            helper_alert('alert-modal', '登録失敗', result, 300, '閉じる');
+        },
+        success: function(result){
+            console.log(result);
+            helper_alert('alert-modal', '登録完了', result, 300, '閉じる');
+        }});
+}
 
+function isLeft(p0, a, b) {
+    return (a.x-p0.x)*(b.y-p0.y) - (b.x-p0.x)*(a.y-p0.y);
+}
 
+function distCompare(p0, a, b) {
+    var distA = (p0.x-a.x)*(p0.x-a.x) + (p0.y-a.y)*(p0.y-a.y);
+    var distB = (p0.x-b.x)*(p0.x-b.x) + (p0.y-b.y)*(p0.y-b.y);
+    return distA - distB;
+}
+
+function angleCompare(p0, a, b) {
+    var left = isLeft(p0, a, b);
+    if (left == 0) return distCompare(p0, a, b);
+    return left;
+}
+function sortFigurePoints(figure_points) {
+
+    figure_points = figure_points.splice(0);
+    var p0 = {};
+    p0.y = Math.min.apply(null, figure_points.map(p=>p.y));
+    p0.x = Math.max.apply(null, figure_points.filter(p=>p.y == p0.y).map(p=>p.x));
+    figure_points.sort((a,b)=>angleCompare(p0, a, b));
+    return figure_points;
+};
+
+function formatDateLine(val) {  // format : 2018-02-21
+    if (val == undefined || val == null || val =='') return '';
+    let dt = new Date(val);
+    var y = dt.getFullYear();
+    var m = ("00" + (dt.getMonth() + 1)).slice(-2);
+    var d = ("00" + dt.getDate()).slice(-2);
+    var result = y + '-' + m + '-' + d;
+    return result;
+};
+
+function formatYearMonth(val){  // format : 2018-02
+    if (val == undefined || val == null || val =='') return '';
+    let dt = new Date(val);
+    var y = dt.getFullYear();
+    var m = ("00" + (dt.getMonth() + 1)).slice(-2);
+    var result = y + '-' + m;
+    return result;
+}
+
+function getWeekNumber(d) {
+    // Copy date so don't modify original
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    // Set to nearest Thursday: current date + 4 - current day number
+    // Make Sunday's day number 7
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+    // Get first day of year
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    // Calculate full weeks to nearest Thursday
+    var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+    // Return array of year and week number
+    return weekNo;
+}
+
+function formatYearWeekNum(val){    //// format : 2018/42
+    if (val == undefined || val == null || val =='') return '';
+    let dt = new Date(val);
+    var y = dt.getFullYear();
+    var w = getWeekNumber(dt);
+    var result = y + '/' + w;
+    return result;
+}

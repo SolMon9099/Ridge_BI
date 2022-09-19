@@ -1,6 +1,14 @@
 @extends('admin.layouts.app')
 
 @section('content')
+<?php
+    $total_data = array();
+    $sum = 0;
+    foreach ($pit_detections as $item) {
+        $sum += ($item->nb_entry - $item->nb_exit);
+        $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
+    }
+?>
 <form action="{{route('admin.pit.past_analysis')}}" method="get" name="form1" id="form1">
 @csrf
     <div id="wrapper">
@@ -39,13 +47,19 @@
                 </div>
             </div>
             <div class="list">
-                <div class="inner active">
+                <div class="inner active" style="position: relative;">
                     <div style="display: flex; position: relative;">
                         <h3 class="title">ピット内人数推移</h3>
-                        <button type='button' class="time-change-btn" onclick="changeXRange()">時間軸切り替え</button>
-                        <button type="button" class='time-change-btn' onclick="moveXRange()">時間軸➞</button>
                         <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_pit']}})">ダッシュボートへ追加</button>
                     </div>
+                    <div class="period-select-buttons">
+                        <button type="button" class="period-button three selected" onclick="displayGraphData(3)">3時間</button>
+                        <button type="button" class="period-button six" onclick="displayGraphData(6)">6時間</button>
+                        <button type="button" class="period-button twelve" onclick="displayGraphData(12)">12時間</button>
+                        <button type="button" class="period-button twofour" onclick="displayGraphData(24)">24時間</button>
+                    </div>
+                    <a class="prev" onclick="moveXRange(-1)">❮</a>
+                    <a class="next" onclick="moveXRange(1)">❯</a>
                     <canvas id="myLineChart1"></canvas>
 
                     <div class="left-right">
@@ -207,6 +221,45 @@
         padding-top:2px;
         padding-bottom:2px;
     }
+    .period-select-buttons{
+        position: absolute;
+        right: 10px;
+        top: 45px;
+    }
+    .period-select-buttons > button{
+        padding:3px;
+    }
+    .period-select-buttons > .selected{
+        background: lightgreen;
+    }
+    .prev, .next {
+        cursor: pointer;
+        position: absolute;
+        top: 25%;
+        width: auto;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top:8px;
+        padding-bottom: 8px;
+        font-weight: bold;
+        font-size: 18px;
+        transition: 0.6s ease;
+        /* border-radius: 0 3px 3px 0; */
+        user-select: none;
+    }
+    .prev{
+        left:-20px;
+    }
+    .next {
+        right: -20px;
+        /* border-radius: 3px 0 0 3px; */
+    }
+
+    .prev:hover, .next:hover {
+        background-color:lightcoral;
+        color:white;
+        border-radius: 20px;
+    }
     /* #myLineChart1{
         width:50%!important;
         height: 360px!important;
@@ -223,55 +276,30 @@
         $('#form1').submit();
     }
     var x_range = 3;
-    var start_x = 8;
+    var start_x = 0;
 
     var ctx = document.getElementById("myLineChart1");
-    var time_labels = ['09:05:25', '09:22:12', '11:23:17', '12:33:41', '14:25:32', '15:31:45', '18:23:14', '19:47:51'];
-    var y_data = [1,2,1,0,1,0,1,0];
-    for(var i = 0; i<time_labels.length; i++){
-        time_labels[i] = new Date('2022-07-12 ' + time_labels[i]);
-    }
+    var total_data = <?php echo json_encode($total_data);?>;
+
+    // var time_labels = ['09:05:25', '09:22:12', '11:23:17', '12:33:41', '14:25:32', '15:31:45', '18:23:14', '19:47:51'];
+    // var y_data = [1,2,1,0,1,0,1,0];
+    // for(var i = 0; i<time_labels.length; i++){
+    //     time_labels[i] = new Date('2022-07-12 ' + time_labels[i]);
+    // }
     // time_labels.unshift(new Date('2022-07-12 08:00:00'));
     // time_labels.push(new Date('2022-07-12 20:00:00'));
     // y_data.unshift(null);
     // y_data.push(null);
-    var min_time = new Date();
-    min_time.setHours(8);
-    min_time.setMinutes(0);
-    min_time.setSeconds(0);
-    var max_time = new Date();
-    max_time.setHours(20);
-    max_time.setMinutes(0);
-    max_time.setSeconds(0);
 
-    function drawGraph(x_data, y_data, time_range, start_time){
-        var new_x_data = [];
-        var new_y_data = [];
-        var end_time_value = time_range + start_time;
-        if (end_time_value < 10) end_time_value = '0' + end_time_value.toString();
-        end_time_value = new Date('2022-07-12 ' + end_time_value + ':00:00');
-        if (start_time < 10) start_time = '0' + start_time.toString();
-        start_time = new Date('2022-07-12 ' + start_time + ':00:00');
-        for(var i = 0; i < x_data.length; i++){
-            if (x_data[i].getTime() <= end_time_value.getTime() && x_data[i].getTime() >= start_time.getTime()) {
-                new_x_data.push(x_data[i]);
-                new_y_data.push(y_data[i]);
-            }
-        }
-
-        new_x_data.push(end_time_value);
-        new_y_data.push(null);
-        new_x_data.unshift(start_time);
-        new_y_data.unshift(null);
-
+    function drawGraph(x_data, y_data, grid_unit){
         var myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels:new_x_data,
+                labels:x_data,
                 datasets: [{
                     label: '人',
                     steppedLine:true,
-                    data: new_y_data,
+                    data: y_data,
                     borderColor: "#42b688",
                     backgroundColor: "rgba(66,182,136, 0.3)",
                     pointBackgroundColor:'red',
@@ -279,6 +307,11 @@
                 }],
             },
             options: {
+                legend: {
+                    labels: {
+                        fontSize: 20
+                    }
+                },
                 title: {
                     display: false,
                     text: 'ピット内人数推移'
@@ -291,9 +324,10 @@
                 scales: {
                     yAxes: [{
                         ticks: {
-                            suggestedMax: Math.max(...new_y_data) + 1,
+                            suggestedMax: Math.max(...y_data) + 1,
                             suggestedMin: 0,
                             stepSize: 1,
+                            fontSize: 20,
                             callback: function(value, index, values){
                                 return  value +  '人'
                             }
@@ -306,12 +340,14 @@
                             displayFormats: {
                                 minute: 'H:mm'
                             },
-                            distribution: 'series'
+                            distribution: 'series',
+                            stepSize: grid_unit,
+                            format:'HH:mm'
                         },
                         ticks: {
-                            max: max_time,
-                            min: min_time,
-                            stepSize: 15,
+                            fontSize: 15,
+                            // max: max_time,
+                            // min: min_time,
                         }
                     }]
                 },
@@ -320,29 +356,89 @@
         });
     }
 
-    function changeXRange(){
-        if (x_range == 3) {
-            x_range = 6;
-        } else if (x_range == 6){
-            x_range = 12;
-        } else {
-            x_range = 3;
-        }
-        start_x = 8;
-        drawGraph(time_labels, y_data, x_range, start_x);
-    }
-
-    function moveXRange(){
-        if (x_range == 12) return;
-        if (start_x + x_range >= 20){
-            start_x = 8;
-        } else {
+    function moveXRange(increament = 1){
+        if (x_range == 24) return;
+        if (increament == 1){
             start_x = start_x + x_range;
+            if (start_x >= 24) start_x = 0;
+        } else {
+            start_x = start_x - x_range;
+            if (start_x < 0) start_x += 24;
         }
-        console.log('rrrr', x_range, start_x);
-        drawGraph(time_labels, y_data, x_range, start_x);
+
+        displayGraphData(x_range, false);
     }
 
-    drawGraph(time_labels, y_data, x_range, start_x);
+    function displayGraphData(time_period = 3, start_x_init = true){
+        var grid_unit = 15;
+        x_range = time_period;
+        if (start_x_init) start_x = 0;
+        $('.period-button').each(function(){
+            $(this).removeClass('selected');
+        });
+        switch(time_period){
+            case 3:
+                $('.three').addClass('selected');
+                grid_unit = 15;
+                break;
+            case 6:
+                $('.six').addClass('selected');
+                grid_unit = 30;
+                break;
+            case 12:
+                $('.twelve').addClass('selected');
+                grid_unit = 60;
+                break;
+            case 24:
+                $('.twofour').addClass('selected');
+                grid_unit = 60;
+                break;
+        }
+        var search_date = $('#searchdate').val();
+        var min_time = new Date(search_date);
+        min_time.setHours(start_x);
+        min_time.setMinutes(0);
+        min_time.setSeconds(0);
+        var max_time = new Date(search_date);
+        max_time.setHours(start_x + time_period);
+        max_time.setMinutes(0);
+        max_time.setSeconds(0);
+
+        var cur_time = new Date(search_date);
+        cur_time.setHours(min_time.getHours());
+        cur_time.setMinutes(0);
+        cur_time.setSeconds(0);
+
+        var time_labels = [];
+        var y_data = [];
+
+        while(cur_time.getTime() <= max_time.getTime()){
+            time_labels.push(new Date(cur_time));
+            var y_add_flag = false;
+            Object.keys(total_data).map((time, index) => {
+                if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000){
+                    if (index == 0){
+                        y_add_flag = true;
+                        if (new Date(time).getTime() != cur_time.getTime()) {
+                            time_labels.push(new Date(time));
+                            y_data.push(null);
+                        }
+                    } else {
+                        time_labels.push(new Date(time));
+                    }
+                    y_data.push(total_data[time]);
+                }
+            })
+            if (y_add_flag == false){
+                y_data.push(null);
+            }
+            cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
+        }
+
+        drawGraph(time_labels, y_data, grid_unit);
+    }
+    $(document).ready(function() {
+        displayGraphData();
+    });
 </script>
 @endsection

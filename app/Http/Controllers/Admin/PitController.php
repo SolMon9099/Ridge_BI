@@ -254,10 +254,6 @@ class PitController extends AdminController
         }
 
         $pit_detections = PitService::searchDetections($request)->get()->all();
-        $all_data = [];
-        foreach ($pit_detections as $item) {
-            $all_data[date('Y-m-d', strtotime($item->starttime))][] = $item;
-        }
         $cameras = PitService::getAllCameras();
         $camera_imgs = [];
         foreach ($cameras as $camera) {
@@ -284,7 +280,7 @@ class PitController extends AdminController
         }
 
         return view('admin.pit.past_analysis')->with([
-            'all_data' => json_encode($all_data),
+            'pit_detections' => $pit_detections,
             'request' => $request,
             'cameras' => $cameras,
             'selected_rule' => $selected_rule,

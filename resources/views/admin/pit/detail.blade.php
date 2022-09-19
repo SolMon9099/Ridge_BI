@@ -49,7 +49,7 @@
                             <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_pit']}})">ダッシュボートへ追加</button>
                         </div>
                     </div>
-                    <div style="display: flex;width:100%;margin-bottom:30px;" class="mainbody">
+                    <div style="" class="mainbody">
                         <div class='video-show' style="width:54%;">
                             @if($selected_rule != null)
                             <div class="streaming-video" style="height:360px;width:640px;">
@@ -60,7 +60,12 @@
                             @endif
                         </div>
                         @if($selected_rule != null)
-                            <canvas id="myLineChart1" onclick="location.href='{{route('admin.pit.edit', ['pit' => $selected_rule->id])}}'"></canvas>
+                            <div class="period-select-buttons">
+                                <button type="button" class="period-button three selected" onclick="displayGraphData(3)">3時間</button>
+                                <button type="button" class="period-button six" onclick="displayGraphData(6)">6時間</button>
+                                <button type="button" class="period-button twelve" onclick="displayGraphData(12)">12時間</button>
+                            </div>
+                            <canvas id="myLineChart1" onclick="location.href='{{route('admin.pit.past_analysis')}}'"></canvas>
                         @endif
 
                     </div>
@@ -226,6 +231,23 @@
 </div>
 <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <style>
+    .mainbody{
+        position: relative;
+        display: flex;
+        width:100%;
+        margin-bottom:30px;
+    }
+    .period-select-buttons{
+        position: absolute;
+        right: 10px;
+        top: -10px;
+    }
+    .period-select-buttons > button{
+        padding:2px;
+    }
+    .period-select-buttons > .selected{
+        background: lightgreen;
+    }
     #myLineChart1{
         width:46%!important;
         height: 400px!important;
@@ -249,7 +271,7 @@
     .add-to-toppage{
         position: absolute;
         right: 0;
-        top:-35px;
+        top:-50px;
         padding-left: 5px;
         padding-right:5px;
         padding-top:2px;
@@ -266,33 +288,15 @@
 <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <script>
     var ctx = document.getElementById("myLineChart1");
-    var time_labels = [];
-    var y_data = [];
     var total_data = <?php echo json_encode($total_data);?>;
-    Object.keys(total_data).map(time => {
-        time_labels.push(new Date(time));
-        y_data.push(total_data[time]);
-    });
 
     // var time_labels = ['09:05:25', '09:22:12', '11:23:17', '12:33:41', '14:25:32', '15:31:45', '18:23:14', '19:47:51'];
     // var y_data = [1,2,1,0,1,0,1,0];
     // for(var i = 0; i<time_labels.length; i++){
     //     time_labels[i] = new Date('2022-07-12 ' + time_labels[i]);
     // }
-    var min_time = new Date();
-    min_time.setHours(8);
-    min_time.setMinutes(0);
-    min_time.setSeconds(0);
-    var max_time = new Date();
-    max_time.setHours(20);
-    max_time.setMinutes(0);
-    max_time.setSeconds(0);
-    time_labels.unshift(min_time);
-    time_labels.push(max_time);
-    y_data.unshift(null);
-    y_data.push(null);
 
-    function drawGraph(x_data, y_data){
+    function drawGraph(x_data, y_data, grid_unit){
         var myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -310,7 +314,7 @@
             options: {
                 legend: {
                     labels: {
-                        fontSize: 30
+                        fontSize: 25
                     }
                 },
                 title: {
@@ -328,7 +332,7 @@
                             suggestedMax: Math.max(...y_data) + 1,
                             suggestedMin: 0,
                             stepSize: 1,
-                            fontSize: 30,
+                            fontSize: 25,
                             callback: function(value, index, values){
                                 return  value +  '人'
                             }
@@ -337,17 +341,18 @@
                     xAxes:[{
                         type: 'time',
                         time: {
-                            unit: 'hour',
+                            unit: 'minute',
                             displayFormats: {
-                                hour: 'H:mm'
+                                minute: 'H:mm'
                             },
-                            distribution: 'series'
+                            distribution: 'series',
+                            stepSize: grid_unit,
+                            format:'HH:mm'
                         },
                         ticks: {
-                            fontSize: 30,
+                            fontSize: 25,
                             // max: max_time,
                             // min: min_time,
-                            // stepSize: 1,
                         }
                     }]
                 },
@@ -356,25 +361,92 @@
         });
     }
 
-    drawGraph(time_labels, y_data);
-    setInterval(() => {
-        // for (var i = 0; i < y_data.length; i++){
-        //     y_data[i] = Math.floor(Math.random() * 5);
-        // }
-        // $.ajax({
-        //     type:'GET',
-        //     url:'{{ route("admin.pit.ajaxGetData") }}',
-        //     data:{
-        //         selected_camera:<?php echo $selected_camera;?>,
-        //     }
-        // }).then(
-        //     function(res){
+    function displayGraphData(time_period = 3){
+        $('.period-button').each(function(){
+            $(this).removeClass('selected');
+        });
+        var grid_unit = 15;
+        switch(time_period){
+            case 3:
+                $('.three').addClass('selected');
+                grid_unit = 15;
+                break;
+            case 6:
+                $('.six').addClass('selected');
+                grid_unit = 30;
+                break;
+            case 12:
+                grid_unit = 60;
+                $('.twelve').addClass('selected');
+                break;
+        }
+        var time_labels = [];
+        var y_data = [];
 
+        var now = new Date();
+        var min_time = new Date();
+        var max_time = new Date();
+
+        max_time.setHours(now.getHours() + 1);
+        max_time.setMinutes(0);
+        max_time.setSeconds(0);
+
+        min_time.setHours((now.getHours() - (time_period - 1) < 0 ? 0 : now.getHours() - (time_period - 1)));
+        min_time.setMinutes(0);
+        min_time.setSeconds(0);
+
+        var cur_time = new Date();
+        cur_time.setHours(min_time.getHours());
+        cur_time.setMinutes(0);
+        cur_time.setSeconds(0);
+
+        while(cur_time.getTime() <= max_time.getTime()){
+            time_labels.push(new Date(cur_time));
+            var y_add_flag = false;
+            Object.keys(total_data).map((time, index) => {
+                if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000){
+                    if (index == 0){
+                        y_add_flag = true;
+                        if (new Date(time).getTime() != cur_time.getTime()) {
+                            time_labels.push(new Date(time));
+                            y_data.push(null);
+                        }
+                    } else {
+                        time_labels.push(new Date(time));
+                    }
+                    y_data.push(total_data[time]);
+                }
+            })
+            if (y_add_flag == false){
+                y_data.push(null);
+            }
+            cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
+        }
+
+        drawGraph(time_labels, y_data, grid_unit);
+    }
+
+    $(document).ready(function() {
+        displayGraphData();
+        // setInterval(() => {
+        //     for (var i = 0; i < y_data.length; i++){
+        //         y_data[i] = Math.floor(Math.random() * 5);
         //     }
-        // )
-        // drawGraph(time_labels, y_data);
-        $('#form1').submit();
-    }, 30000);
+        //     $.ajax({
+        //         type:'GET',
+        //         url:'{{ route("admin.pit.ajaxGetData") }}',
+        //         data:{
+        //             selected_camera:<?php echo $selected_camera;?>,
+        //         }
+        //     }).then(
+        //         function(res){
+
+        //         }
+        //     )
+        //     drawGraph(time_labels, y_data);
+        //     $('#form1').submit();
+        // }, 30000);
+    })
 </script>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>

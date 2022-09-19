@@ -382,31 +382,6 @@
         }
     }
 
-    function isLeft(p0, a, b) {
-        return (a.x-p0.x)*(b.y-p0.y) - (b.x-p0.x)*(a.y-p0.y);
-    }
-
-    function distCompare(p0, a, b) {
-        var distA = (p0.x-a.x)*(p0.x-a.x) + (p0.y-a.y)*(p0.y-a.y);
-        var distB = (p0.x-b.x)*(p0.x-b.x) + (p0.y-b.y)*(p0.y-b.y);
-        return distA - distB;
-    }
-
-    function angleCompare(p0, a, b) {
-        var left = isLeft(p0, a, b);
-        if (left == 0) return distCompare(p0, a, b);
-        return left;
-    }
-    function sortFigurePoints(figure_points) {
-
-        figure_points = figure_points.splice(0);
-        var p0 = {};
-        p0.y = Math.min.apply(null, figure_points.map(p=>p.y));
-        p0.x = Math.max.apply(null, figure_points.filter(p=>p.y == p0.y).map(p=>p.x));
-        figure_points.sort((a,b)=>angleCompare(p0, a, b));
-        return figure_points;
-    };
-
     function drawCircle(center_point, point_index, figure_color, rule_index){
         if (!(Object.keys(rules_object).length > 0)) return;
         var circle = new Konva.Circle({

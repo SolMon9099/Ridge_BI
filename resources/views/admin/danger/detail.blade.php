@@ -52,7 +52,7 @@
                     @if(isset($selected_rule))
                         <div id="image-container" onclick="location.href='{{route('admin.danger.edit', ['danger' => $selected_rule->id])}}'"></div>
                     @endif
-                    <div style="display: flex;width:100%;margin-bottom:30px;" class="mainbody">
+                    <div class="mainbody">
                         <div class='video-show' style="width:54%;">
                             @if(isset($selected_rule))
                             <div class="streaming-video" style="height:360px;width:640px;">
@@ -63,7 +63,12 @@
                             @endif
                         </div>
                         @if(isset($selected_rule))
-                            <canvas id="myLineChart1" onclick="location.href='{{route('admin.danger.edit', ['danger' => $selected_rule->id])}}'"></canvas>
+                            <div class="period-select-buttons">
+                                <button type="button" class="period-button three selected" onclick="displayGraphData(3)">3時間</button>
+                                <button type="button" class="period-button six" onclick="displayGraphData(6)">6時間</button>
+                                <button type="button" class="period-button twelve" onclick="displayGraphData(12)">12時間</button>
+                            </div>
+                            <canvas id="myLineChart1" onclick="location.href='{{route('admin.danger.past_analysis')}}'"></canvas>
                         @endif
                     </div>
                 </div>
@@ -209,6 +214,23 @@
 <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 
 <style>
+    .mainbody{
+        position: relative;
+        display: flex;
+        width:100%;
+        margin-bottom:30px;
+    }
+    .period-select-buttons{
+        position: absolute;
+        right: 10px;
+        top: -10px;
+    }
+    .period-select-buttons > button{
+        padding:2px;
+    }
+    .period-select-buttons > .selected{
+        background: lightgreen;
+    }
     #myLineChart1{
         width:46%!important;
         height: 400px!important;
@@ -232,7 +254,7 @@
     .add-to-toppage{
         position: absolute;
         right: 0;
-        top:-35px;
+        top:-50px;
         padding-left: 5px;
         padding-right:5px;
         padding-top:2px;
@@ -243,13 +265,6 @@
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
 <script>
-
-    function timeFormat(value){
-        var res = value.toString();
-        if (value < 10) res = '0' + value.toString();
-        return res;
-    }
-
     function videoPlay(path){
         var video = document.getElementById('video-container');
         video.pause();
@@ -263,127 +278,160 @@
         3:'#42539a',
         4:'black',
     }
-
+    var ctx = document.getElementById("myLineChart1");
     var all_data = <?php echo $all_data;?>;
     var actions = <?php echo json_encode(config('const.action'));?>;
 
-    var now = new Date();
-    var min_time = new Date();
-    var max_time = new Date();
+    function displayGraphData(time_period = 3){
+        $('.period-button').each(function(){
+            $(this).removeClass('selected');
+        });
+        var grid_unit = 15;
+        switch(time_period){
+            case 3:
+                $('.three').addClass('selected');
+                grid_unit = 15;
+                break;
+            case 6:
+                $('.six').addClass('selected');
+                grid_unit = 30;
+                break;
+            case 12:
+                $('.twelve').addClass('selected');
+                grid_unit = 60;
+                break;
+        }
+        var now = new Date();
+        var min_time = new Date();
+        var max_time = new Date();
 
-    max_time.setHours(now.getHours() + 1);
-    max_time.setMinutes(0);
-    max_time.setSeconds(0);
+        max_time.setHours(now.getHours() + 1);
+        max_time.setMinutes(0);
+        max_time.setSeconds(0);
 
-    min_time.setHours((now.getHours() - 2 < 0 ? 0 : now.getHours() -2));
-    min_time.setMinutes(0);
-    min_time.setSeconds(0);
+        min_time.setHours((now.getHours() - (time_period -1 )) < 0 ? 0 : now.getHours() -(time_period -1 ));
+        min_time.setMinutes(0);
+        min_time.setSeconds(0);
 
-    var cur_time = new Date();
-    cur_time.setHours(min_time.getHours());
-    cur_time.setMinutes(0);
-    cur_time.setSeconds(0);
+        var cur_time = new Date();
+        cur_time.setHours(min_time.getHours());
+        cur_time.setMinutes(0);
+        cur_time.setSeconds(0);
 
-    var date_labels = [];
+        var date_labels = [];
 
-    var totals_by_action = {};
+        var totals_by_action = {};
 
-    Object.keys(actions).map(id => {
-        totals_by_action[id] = [];
-    })
-    var max_y = 0;
-
-    while(cur_time.getTime() <= max_time.getTime()){
-        var detected_numbers = {};
         Object.keys(actions).map(id => {
-            detected_numbers[id] = 0;
+            totals_by_action[id] = [];
         })
-        Object.keys(all_data).map(detect_time => {
-            var detect_hour = detect_time.split(':')[0];
-            var detect_mins = detect_time.split(':')[1];
-            var detect_time_object = new Date();
-            detect_time_object.setHours(parseInt(detect_hour));
-            detect_time_object.setMinutes(parseInt(detect_mins));
-            if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + 15 * 60 * 1000){
-                Object.keys(actions).map(id => {
-                    if (all_data[detect_time][id] != undefined){
-                        detected_numbers[id]++;
+        var max_y = 0;
+
+        while(cur_time.getTime() <= max_time.getTime()){
+            date_labels.push(new Date(cur_time));
+            var y_add_flag = false;
+            Object.keys(all_data).map((detect_time, index) => {
+                var detect_hour = detect_time.split(':')[0];
+                var detect_mins = detect_time.split(':')[1];
+                var detect_time_object = new Date();
+                detect_time_object.setHours(parseInt(detect_hour));
+                detect_time_object.setMinutes(parseInt(detect_mins));
+                if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000){
+                    if (index == 0){
+                        y_add_flag = true;
+                        if  (detect_time_object.getTime() != cur_time.getTime()){
+                            date_labels.push(detect_time_object);
+                            Object.keys(actions).map(id => {
+                                totals_by_action[id].push(0);
+                            })
+                        }
+                    } else {
+                        date_labels.push(detect_time_object);
                     }
+                    Object.keys(actions).map(id => {
+                        if (all_data[detect_time][id] != undefined){
+                            totals_by_action[id].push(all_data[detect_time][id].length);
+                            if (all_data[detect_time][id].length > max_y) max_y = all_data[detect_time][id].length;
+                        } else {
+                            totals_by_action[id].push(0);
+                        }
+                    })
+                }
+            })
+            cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
+            if (y_add_flag == false){
+                Object.keys(actions).map(id => {
+                    totals_by_action[id].push(0);
                 })
             }
-        })
-        date_labels.push(new Date(cur_time));
-        cur_time.setMinutes(cur_time.getMinutes() + 15);
-        Object.keys(actions).map(id => {
-            totals_by_action[id].push(detected_numbers[id]);
-            if (detected_numbers[id] > max_y) max_y = detected_numbers[id];
-        })
-    }
-
-    var datasets = [];
-    Object.keys(totals_by_action).map(action_id => {
-        datasets.push({
-            label:actions[action_id],
-            data:totals_by_action[action_id],
-            borderColor:color_set[action_id],
-            backgroundColor:'white'
-        })
-    });
-
-    var ctx = document.getElementById("myLineChart1");
-    var myLineChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: date_labels,
-            datasets
-        },
-        options: {
-            legend: {
-                labels: {
-                    fontSize: 30
-                }
-            },
-            responsive: true,
-            interaction: {
-                intersect: false,
-                axis: 'x'
-            },
-            title: {
-                display: true,
-                text: 'NGアクション毎の回数',
-                fontSize:35,
-            },
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        suggestedMax: max_y + 1,
-                        suggestedMin: 0,
-                        stepSize: parseInt((max_y + 2)/5) + 1,
-                        fontSize: 30,
-                        callback: function(value, index, values){
-                            return  value +  '回'
-                        }
-                    }
-                }],
-                xAxes:[{
-                    type: 'time',
-                    time: {
-                        unit: 'minute',
-                        displayFormats: {
-                            minute: 'H:mm'
-                        },
-                        distribution: 'series'
-                    },
-                    ticks: {
-                        fontSize: 30,
-                        max: max_time,
-                        min: min_time,
-                        stepSize: 15,
-                    }
-                }]
-            },
         }
-    });
+
+        var datasets = [];
+        Object.keys(totals_by_action).map(action_id => {
+            datasets.push({
+                label:actions[action_id],
+                data:totals_by_action[action_id],
+                borderColor:color_set[action_id],
+                backgroundColor:'white',
+                lineTension:0,
+            })
+        });
+
+        var myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: date_labels,
+                datasets
+            },
+            options: {
+                legend: {
+                    labels: {
+                        fontSize: 25
+                    }
+                },
+                responsive: true,
+                interaction: {
+                    intersect: false,
+                    axis: 'x'
+                },
+                title: {
+                    display: true,
+                    text: 'NGアクション毎の回数',
+                    fontSize:25,
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            suggestedMax: max_y + 1,
+                            suggestedMin: 0,
+                            stepSize: parseInt((max_y + 2)/5) + 1,
+                            fontSize: 25,
+                            callback: function(value, index, values){
+                                return  value +  '回'
+                            }
+                        }
+                    }],
+                    xAxes:[{
+                        type: 'time',
+                        time: {
+                            unit: 'minute',
+                            displayFormats: {
+                                minute: 'H:mm'
+                            },
+                            distribution: 'series',
+                            stepSize: grid_unit,
+                            format:'HH:mm'
+                        },
+                        ticks: {
+                            fontSize: 25,
+                            max: max_time,
+                            min: min_time,
+                        }
+                    }]
+                },
+            }
+        });
+    }
 
     let safieStreamingPlayerElement;
     let safieStreamingPlayer;
@@ -424,31 +472,6 @@
     layer = new Konva.Layer();
     stage.add(layer);
 
-    function isLeft(p0, a, b) {
-        return (a.x-p0.x)*(b.y-p0.y) - (b.x-p0.x)*(a.y-p0.y);
-    }
-
-    function distCompare(p0, a, b) {
-        var distA = (p0.x-a.x)*(p0.x-a.x) + (p0.y-a.y)*(p0.y-a.y);
-        var distB = (p0.x-b.x)*(p0.x-b.x) + (p0.y-b.y)*(p0.y-b.y);
-        return distA - distB;
-    }
-
-    function angleCompare(p0, a, b) {
-        var left = isLeft(p0, a, b);
-        if (left == 0) return distCompare(p0, a, b);
-        return left;
-    }
-    function sortFigurePoints(figure_points) {
-
-        figure_points = figure_points.splice(0);
-        var p0 = {};
-        p0.y = Math.min.apply(null, figure_points.map(p=>p.y));
-        p0.x = Math.max.apply(null, figure_points.filter(p=>p.y == p0.y).map(p=>p.x));
-        figure_points.sort((a,b)=>angleCompare(p0, a, b));
-        return figure_points;
-    };
-
     function drawFigure(figure_points, figure_color = null, ratio = 0.5){
         var figure_points = sortFigurePoints(figure_points);
         var drawing_point_data = [];
@@ -477,7 +500,7 @@
                 }
             })
         }
-
+        displayGraphData();
     });
-  </script>
-  @endsection
+</script>
+@endsection

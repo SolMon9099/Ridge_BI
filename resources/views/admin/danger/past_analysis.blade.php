@@ -1,7 +1,11 @@
 @extends('admin.layouts.app')
 
 @section('content')
-
+<?php
+    $starttime = (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week'));
+    $endtime = (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d');
+    $search_period = (strtotime($endtime) - strtotime($starttime))/86400;
+?>
 <form action="{{route('admin.danger.past_analysis')}}" method="get" name="form1" id="form1">
 @csrf
     <div id="wrapper">
@@ -23,13 +27,11 @@
                     <h4>検出期間</h4>
                     </li>
                     <li>
-                        <input id='starttime' type="date" name='starttime' onchange="search()"
-                            value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')))}}">
+                        <input id='starttime' type="date" name='starttime' onchange="search()" value="{{ old('starttime', $starttime)}}">
                     </li>
                     <li>～</li>
                     <li>
-                        <input id='endtime' type="date" name='endtime' onchange="search()"
-                            value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'))}}">
+                        <input id='endtime' type="date" name='endtime' onchange="search()" value="{{ old('endtime', $endtime)}}">
                     </li>
                 </ul>
                 </div>
@@ -53,9 +55,33 @@
                         </li>
                     </ul>
                     <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_danger']}})">ダッシュボートへ追加</button>
-                    <div class="active sp-ma-right">  <canvas id="myLineChart1"></canvas> </div>
-                    {{-- <div class="scroll sp-ma-right">  <canvas id="myLineChart2"></canvas></div>
-                    <div class="scroll sp-ma-right"> <canvas id="myLineChart3"></canvas> </div> --}}
+                    <div class="active sp-ma-right">
+                        <div class="period-select-buttons">
+                        @if ($search_period < 1)
+                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 3)">3時間</button>
+                            <button type="button" class="period-button" onclick="displayGraphData(this,6)">6時間</button>
+                            <button type="button" class="period-button" onclick="displayGraphData(this,12)">12時間</button>
+                            <button type="button" class="period-button" onclick="displayGraphData(this,24)">24時間</button>
+                        @elseif ($search_period < 7)
+                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 'time')">時間別</button>
+                            <button type="button" class="period-button" onclick="displayGraphData(this, 'day')">日別</button>
+                        @elseif ($search_period <= 30)
+                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 'time')">時間別</button>
+                            <button type="button" class="period-button" onclick="displayGraphData(this, 'day')">日別</button>
+                        @elseif ($search_period <= 180)
+                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 'day')">日別</button>
+                            <button type="button" class="period-button" onclick="displayGraphData(this, 'week')">週別</button>
+                            <button type="button" class="period-button" onclick="displayGraphData(this, 'month')">月別</button>
+                        @else
+                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 'day')">日別</button>
+                            <button type="button" class="period-button" onclick="displayGraphData(this, 'week')">週別</button>
+                            <button type="button" class="period-button" onclick="displayGraphData(this, 'month')">月別</button>
+                        @endif
+                        </div>
+                        <canvas id="myLineChart1"></canvas>
+                        <a class="prev" onclick="moveXRange(-1)">❮</a>
+                        <a class="next" onclick="moveXRange(1)">❯</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -235,10 +261,46 @@
         padding-top:2px;
         padding-bottom:2px;
     }
+    .period-select-buttons{
+        position: absolute;
+        right: 10px;
+        top: 45px;
+    }
+    .period-select-buttons > button{
+        padding:3px;
+    }
+    .period-select-buttons > .selected{
+        background: lightgreen;
+    }
+    .prev, .next {
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        width: auto;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top:8px;
+        padding-bottom: 8px;
+        font-weight: bold;
+        font-size: 18px;
+        transition: 0.6s ease;
+        user-select: none;
+    }
+    .prev{
+        left:-20px;
+    }
+    .next {
+        right: -20px;
+    }
+
+    .prev:hover, .next:hover {
+        background-color:lightcoral;
+        color:white;
+        border-radius: 20px;
+    }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
 <script>
-
     function search(){
         $('#form1').submit();
     }
@@ -246,82 +308,410 @@
     function setSelectedSearchOption(value){
         $('#selected_search_option').val(value);
     }
-
-    var starttime = $('#starttime').val();
-    starttime = new Date(starttime);
-    var endtime = $('#endtime').val();
-    endtime = new Date(endtime);
-    var all_data = <?php echo $all_data;?>;
-    var actions = <?php echo json_encode(config('const.action'));?>;
-    var date_labels = [];
-    var totals_by_action = {};
+    var ctx = document.getElementById("myLineChart1");
     var color_set = {
         1:'red',
         2:'#42b688',
         3:'#42539a',
         4:'black',
     }
-    Object.keys(actions).map(id => {
-        totals_by_action[id] = [];
-    })
-    var max_y = 0;
-    for (var d = starttime; d <= endtime; d.setDate(d.getDate() + 1)) {
-        var date_key = d.getFullYear();
-        var month = d.getMonth() + 1 > 9 ? (d.getMonth() + 1).toString(): '0' + (d.getMonth() + 1).toString();
-        var date = d.getDate() > 9 ? (d.getDate()).toString(): '0' + (d.getDate()).toString();
-        date_key += '-' + month + '-' + date;
-        var month_date_label = (d.getMonth() + 1).toString() + '/' + d.getDate();
-        date_labels.push(month_date_label);
-        if (all_data[date_key] == undefined){
-            Object.keys(actions).map(id => {
-                totals_by_action[id].push(0);
-            })
-        } else {
-            Object.keys(actions).map(id => {
-                if (all_data[date_key][id] == undefined){
-                    totals_by_action[id].push(0);
-                } else {
-                    totals_by_action[id].push(all_data[date_key][id].length);
-                    if (all_data[date_key][id].length > max_y) max_y = all_data[date_key][id].length;
-                }
-            })
-        }
-    }
-    var datasets = [];
-    Object.keys(totals_by_action).map(action_id => {
-        datasets.push({
-            label:actions[action_id],
-            data:totals_by_action[action_id],
-            borderColor:color_set[action_id],
-            backgroundColor:'white'
-        })
-    });
+    var search_period = "<?php echo $search_period;?>";
+    var starttime = $('#starttime').val();
+    starttime = new Date(starttime);
+    starttime.setHours(0);
+    starttime.setMinutes(0);
+    starttime.setSeconds(0);
+    var endtime = $('#endtime').val();
+    endtime = new Date(endtime);
+    endtime.setHours(24);
+    endtime.setMinutes(0);
+    endtime.setSeconds(0);
 
-    var ctx = document.getElementById("myLineChart1");
-    var myLineChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: date_labels,
-            datasets
-        },
-        options: {
-            title: {
-                display: true,
-                text: 'NGアクション毎の回数'
-            },
-            scales: {
-                yAxes: [{
-                ticks: {
-                    suggestedMax: max_y + 2,
-                    suggestedMin: 0,
-                    stepSize: parseInt((max_y + 2)/10) + 1,
-                    callback: function(value, index, values){
-                    return  value +  '回'
+    var min_time = new Date(starttime);
+    min_time.setHours(0);
+    min_time.setMinutes(0);
+    min_time.setSeconds(0);
+    var grpah_init_type = 3;
+    var period_unit = 'hour';
+    var displayFormat = {'hour': 'H:mm'};
+    if (search_period < 1){
+        period_unit = 'hour';
+        displayFormat = {'hour': 'H:mm'};
+        grpah_init_type = 3;
+    } else if (search_period < 7){
+        grpah_init_type = 'time';
+        displayFormat = {'minute': 'DD日H時'};
+        period_unit = 'minute';
+    } else if (search_period <= 30){
+        displayFormat = {'minute': 'DD日H時'};
+        grpah_init_type = 'time';
+        period_unit = 'minute';
+    } else if (search_period <= 180){
+        grpah_init_type = 'day';
+        displayFormat = {'day': 'M/dd'};
+        period_unit = 'day';
+    } else {
+        grpah_init_type = 'day';
+        displayFormat = {'day': 'M/dd'};
+        period_unit = 'day';
+    }
+
+    var all_data = <?php echo $all_data;?>;
+    var actions = <?php echo json_encode(config('const.action'));?>;
+
+    function moveXRange(increament = 1){
+        switch(grpah_init_type){
+            case 3:
+                if (increament == 1){
+                    min_time.setHours(min_time.getHours() + 3 >= 24 ? 0 : min_time.getHours() + 3);
+                } else {
+                    min_time.setHours(min_time.getHours() - 3 < 0 ? 21 : min_time.getHours() - 3);
+                }
+                break;
+            case 6:
+                if (increament == 1){
+                    min_time.setHours(min_time.getHours() + 6 >= 24 ? 0 : min_time.getHours() + 6);
+                } else {
+                    min_time.setHours(min_time.getHours() - 6 < 0 ? 18 : min_time.getHours() - 6);
+                }
+                break;
+            case 12:
+                if (increament == 1){
+                    min_time.setHours(min_time.getHours() + 12 >= 24 ? 0 : min_time.getHours() + 12);
+                } else {
+                    min_time.setHours(min_time.getHours() - 12 < 0 ? 12 : min_time.getHours() - 12);
+                }
+                break;
+            case 24:
+                return;
+            case 'time':
+                if (increament == 1){
+                    min_time.setDate(min_time.getDate() + 1);
+                    if (min_time.getTime() >= endtime.getTime()) {
+                        min_time = new Date(starttime);
+                    }
+                } else {
+                    min_time.setDate(min_time.getDate() - 1);
+                    if (min_time.getTime() < starttime.getTime()) {
+                        min_time = new Date(endtime);
+                        min_time.setDate(min_time.getDate() -1);
                     }
                 }
-                }]
-            },
+                break;
+            case 'day':
+                if (search_period < 7) return;
+                if (increament == 1){
+                    min_time.setDate(min_time.getDate() + 7);
+                    if (min_time.getTime() >= endtime.getTime()) {
+                        min_time = new Date(starttime);
+                    }
+                } else {
+                    min_time.setDate(min_time.getDate() - 7);
+                    if (min_time.getTime() < starttime.getTime()) {
+                        min_time = new Date(endtime);
+                        min_time.setDate(min_time.getDate() - 7);
+                    }
+                }
+                break;
+            case 'week':
+                if (increament == 1){
+                    min_time.setDate(min_time.getDate() + 28);
+                    if (min_time.getTime() >= endtime.getTime()) {
+                        min_time = new Date(starttime);
+                    }
+                } else {
+                    min_time.setDate(min_time.getDate() - 28);
+                    if (min_time.getTime() < starttime.getTime()) {
+                        min_time = new Date(endtime);
+                        min_time.setDate(min_time.getDate() - 28);
+                    }
+                }
+                break;
+            case 'month':
+                if (search_period <= 180) return;
+                if (increament == 1){
+                    min_time.setMonth(min_time.getMonth() + 6);
+                    if (min_time.getTime() >= endtime.getTime()) {
+                        min_time = new Date(starttime);
+                    }
+                } else {
+                    min_time.setMonth(min_time.getMonth() - 6);
+                    if (min_time.getTime() < starttime.getTime()) {
+                        min_time = new Date(endtime);
+                        min_time.setMonth(min_time.getMonth() - 6);
+                    }
+                }
+                break;
         }
+        displayGraphData(null, grpah_init_type, false);
+    }
+
+    function resortData(data, time_period){
+        var temp = {};
+        switch(time_period){
+            case 'day':
+                Object.keys(data).map(date_time => {
+                    var date = formatDateLine(date_time);
+                    if (temp[date] == undefined) temp[date] = {};
+                    Object.keys(actions).map(id => {
+                        if (temp[date][id] == undefined) temp[date][id] = 0;
+                    })
+                    Object.keys(data[date_time]).map(action_id => {
+                        temp[date][action_id] += data[date_time][action_id].length;
+                    })
+                })
+                break;
+            case 'week':
+                Object.keys(data).map(date_time => {
+                    var date = formatYearWeekNum(date_time);
+                    if (temp[date] == undefined) temp[date] = {};
+                    Object.keys(actions).map(id => {
+                        if (temp[date][id] == undefined) temp[date][id] = 0;
+                    })
+                    Object.keys(data[date_time]).map(action_id => {
+                        temp[date][action_id] += data[date_time][action_id].length;
+                    })
+                })
+                break;
+            case 'month':
+                Object.keys(data).map(date_time => {
+                    var date = formatYearMonth(date_time);
+                    if (temp[date] == undefined) temp[date] = {};
+                    Object.keys(actions).map(id => {
+                        if (temp[date][id] == undefined) temp[date][id] = 0;
+                    })
+                    Object.keys(data[date_time]).map(action_id => {
+                        temp[date][action_id] += data[date_time][action_id].length;
+                    })
+                })
+                break;
+            default:
+                Object.keys(data).map(date_time => {
+                    if (temp[date_time] == undefined) temp[date_time] = {};
+                    Object.keys(actions).map(id => {
+                        if (temp[date_time][id] == undefined) temp[date_time][id] = 0;
+                    })
+                    Object.keys(data[date_time]).map(action_id => {
+                        temp[date_time][action_id] += data[date_time][action_id].length;
+                    })
+                })
+        }
+        return temp;
+    }
+    function displayGraphData(e = null, time_period = 3, start_init_flag = true){
+        grpah_init_type = time_period;
+        if (start_init_flag){
+            min_time = new Date(starttime);
+            min_time.setHours(0);
+            min_time.setMinutes(0);
+            min_time.setSeconds(0);
+        }
+        var grid_unit = 15;
+        var date_labels = [];
+        var totals_by_action = {};
+        Object.keys(actions).map(id => {
+            totals_by_action[id] = [];
+        });
+        if (e != null){
+            $('.period-button').each(function(){
+                $(this).removeClass('selected');
+            });
+
+            $(e).addClass('selected');
+        }
+        var max_time = new Date(min_time);
+        switch(time_period){
+            case 3:
+                grid_unit = 15;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                max_time.setHours(max_time.getHours() + time_period);
+                break;
+            case 6:
+                grid_unit = 30;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                max_time.setHours(max_time.getHours() + time_period);
+                break;
+            case 12:
+                grid_unit = 60;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                max_time.setHours(max_time.getHours() + time_period);
+                break;
+            case 24:
+                grid_unit = 60;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                max_time.setHours(max_time.getHours() + time_period);
+                break;
+            case 'time':
+                grid_unit = 60;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'DD日H時'};
+                max_time.setDate(max_time.getDate() + 1);
+                break;
+            case 'day':
+                grid_unit = 1;
+                period_unit = 'day';
+                displayFormat = {'day': 'M/DD'};
+                max_time.setDate(max_time.getDate() + 7);
+                break;
+            case 'week':
+                grid_unit = 1;
+                period_unit = 'week';
+                displayFormat = {'week': 'M/DD'};
+                max_time.setDate(max_time.getDate() + 28);
+                break;
+            case 'month':
+                grid_unit = 1;
+                period_unit = 'month';
+                displayFormat = {'month': 'YYYY/MM'};
+                max_time.setMonth(max_time.getMonth() + 6);
+                break;
+        }
+        if (max_time.getTime() > endtime.getTime()) max_time = new Date(endtime);
+        var graph_data = resortData(all_data, time_period);
+
+        var max_y = 0;
+        var cur_time = new Date(min_time);
+        if (time_period == 'week'){
+            var first = cur_time.getDate() - cur_time.getDay();
+            cur_time = new Date(cur_time.setDate(first));
+        } else if (time_period == 'month'){
+            cur_time.setDate(1);
+        } else if (time_period == 'day'){
+            cur_time.setHours(0);
+            cur_time.setMinutes(0);
+            cur_time.setSeconds(0);
+        }
+        while(cur_time.getTime() <= max_time.getTime()){
+            date_labels.push(new Date(cur_time));
+
+            if (time_period == 'day' || time_period == 'week' || time_period == 'month'){
+                var date_key = formatDateLine(cur_time);
+                if (time_period == 'week') date_key = formatYearWeekNum(cur_time);
+                if (time_period == 'month') date_key = formatYearMonth(cur_time);
+                if (graph_data[date_key] == undefined){
+                    Object.keys(actions).map(id => {
+                        totals_by_action[id].push(0);
+                    })
+                } else {
+                    Object.keys(actions).map(id => {
+                        totals_by_action[id].push(graph_data[date_key][id]);
+                        if (max_y < graph_data[date_key][id]) max_y = graph_data[date_key][id];
+                    })
+                }
+
+            } else {
+                var y_add_flag = false;
+                Object.keys(graph_data).map((detect_time, index) => {
+                    var detect_time_object = new Date(detect_time);
+                    if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000){
+                        if (index == 0){
+                            y_add_flag = true;
+                            if  (detect_time_object.getTime() != cur_time.getTime()){
+                                date_labels.push(detect_time_object);
+                                Object.keys(actions).map(id => {
+                                    totals_by_action[id].push(0);
+                                })
+                            }
+                        } else {
+                            date_labels.push(detect_time_object);
+                        }
+                        Object.keys(actions).map(id => {
+                            if (graph_data[detect_time][id] != undefined){
+                                totals_by_action[id].push(graph_data[detect_time][id]);
+                                if (graph_data[detect_time][id] > max_y) max_y = graph_data[detect_time][id];
+                            } else {
+                                totals_by_action[id].push(0);
+                            }
+                        })
+                    }
+                })
+                if (y_add_flag == false){
+                    Object.keys(actions).map(id => {
+                        totals_by_action[id].push(0);
+                    })
+                }
+            }
+            switch(time_period){
+                case 'time':
+                    cur_time.setHours(cur_time.getHours() + 1);
+                    break;
+                case 'day':
+                    cur_time.setDate(cur_time.getDate() + 1);
+                    break;
+                case 'week':
+                    cur_time.setDate(cur_time.getDate() + 7);
+                    break;
+                case 'month':
+                    cur_time.setMonth(cur_time.getMonth() + 1);
+                    break;
+                default:
+                    cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
+                    break;
+            }
+        }
+
+        var datasets = [];
+        Object.keys(totals_by_action).map(action_id => {
+            datasets.push({
+                label:actions[action_id],
+                data:totals_by_action[action_id],
+                borderColor:color_set[action_id],
+                backgroundColor:'white',
+                lineTension:0,
+            })
+        });
+
+        var myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: date_labels,
+                datasets
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'NGアクション毎の回数'
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            suggestedMax: max_y + 1,
+                            suggestedMin: 0,
+                            stepSize: parseInt((max_y + 2)/10) + 1,
+                            callback: function(value, index, values){
+                                return  value +  '回'
+                            }
+                        }
+                    }],
+                    xAxes:[{
+                        type: 'time',
+                        time: {
+                            unit: period_unit,
+                            displayFormats:displayFormat,
+                            // displayFormats: {
+                            //     minute: 'H:mm'
+                            // },
+                            distribution: 'series',
+                            stepSize: grid_unit,
+                            // format:'HH:mm'
+                        },
+                        ticks: {
+                            fontSize: 18,
+                            max: max_time,
+                            min: min_time,
+                        }
+                    }]
+                },
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        displayGraphData(null, grpah_init_type);
     });
-  </script>
-  @endsection
+</script>
+@endsection

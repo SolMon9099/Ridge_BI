@@ -33,14 +33,28 @@
                         </thead>
                         <tbody>
                         @foreach($cameras as $camera)
-                        <tr class="{{count($camera->rules) == config('const.danger_max_figure_numbers')? 'disabled-tr' : ''}}">
+                        @if($from_add_button == true)
+                            <tr class="{{count($camera->rules) == config('const.danger_max_figure_numbers')? 'disabled-tr' : ''}}">
+                        @else
+                            <tr class="{{count($camera->rules) > 0 ? 'disabled-tr' : ''}}">
+                        @endif
                                 <td>
-                                    @if(count($camera->rules) < config('const.danger_max_figure_numbers'))
-                                    <div class="radio">
-                                        <input id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
-                                        <label for="radio-{{$camera->id}}" class="radio-label"></label>
-                                    </div>
+                                    @if($from_add_button == true)
+                                        @if(count($camera->rules) < config('const.danger_max_figure_numbers'))
+                                        <div class="radio">
+                                            <input id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
+                                            <label for="radio-{{$camera->id}}" class="radio-label"></label>
+                                        </div>
+                                        @endif
+                                    @else
+                                        @if(count($camera->rules) == 0)
+                                        <div class="radio">
+                                            <input id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
+                                            <label for="radio-{{$camera->id}}" class="radio-label"></label>
+                                        </div>
+                                        @endif
                                     @endif
+
                                 </td>
                                 <td>{{$camera->camera_id}}</td>
                                 <td>{{isset($locations[$camera->location_id])?$locations[$camera->location_id]:''}}</td>

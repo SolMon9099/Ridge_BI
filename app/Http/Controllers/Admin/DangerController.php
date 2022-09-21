@@ -37,6 +37,10 @@ class DangerController extends AdminController
 
     public function cameras_for_rule(Request $request)
     {
+        $from_add_button = false;
+        if (isset($request['add_button']) && $request['add_button']) {
+            $from_add_button = $request['add_button'];
+        }
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
             abort(403);
         }
@@ -70,6 +74,7 @@ class DangerController extends AdminController
         return view('admin.danger.cameras_for_rule')->with([
             'locations' => $locations,
             'cameras' => $cameras,
+            'from_add_button' => $from_add_button,
         ]);
     }
 
@@ -152,6 +157,10 @@ class DangerController extends AdminController
 
     public function list(Request $request)
     {
+        $from_top = false;
+        if (isset($request['from_top']) && $request['from_top'] == true) {
+            $from_top = true;
+        }
         $danger_detections = DangerService::searchDetections($request)->paginate($this->per_page);
         foreach ($danger_detections as $item) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
@@ -189,11 +198,16 @@ class DangerController extends AdminController
             'danger_detections' => $danger_detections,
             'request' => $request,
             'rules' => $rules,
+            'from_top' => $from_top,
         ]);
     }
 
     public function detail(Request $request)
     {
+        $from_top = false;
+        if (isset($request['from_top']) && $request['from_top'] == true) {
+            $from_top = true;
+        }
         $rules = DangerService::doSearch($request)->orderByDesc('danger_area_detection_rules.id')->get()->all();
         $cameras = DangerService::getAllCameras();
         $request['starttime'] = date('Y-m-d');
@@ -247,11 +261,16 @@ class DangerController extends AdminController
             'cameras' => $cameras,
             'access_token' => $access_token,
             'danger_detections' => $danger_detections,
+            'from_top' => $from_top,
         ]);
     }
 
     public function past_analysis(Request $request)
     {
+        $from_top = false;
+        if (isset($request['from_top']) && $request['from_top'] == true) {
+            $from_top = true;
+        }
         switch ($request['selected_search_option']) {
             case 1:
                 $request['selected_cameras'] = [];
@@ -317,6 +336,7 @@ class DangerController extends AdminController
             'request' => $request,
             'rules' => $rules,
             'cameras' => $cameras,
+            'from_top' => $from_top,
         ]);
     }
 

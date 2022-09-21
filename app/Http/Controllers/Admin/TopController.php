@@ -16,18 +16,18 @@ class TopController extends AdminController
 {
     public function index()
     {
-        $cameras = CameraService::doSearch()->get()->all();
+        // $cameras = CameraService::doSearch()->get()->all();
         $top_blocks = TopService::search()->get()->all();
         foreach ($top_blocks as $item) {
             switch ($item->block_type) {
                 case config('const.top_block_type_codes')['live_video_danger']:
                 case config('const.top_block_type_codes')['recent_detect_danger']:
                 case config('const.top_block_type_codes')['detect_list_danger']:
-                    if (!isset($danger_detections)) {
-                        $danger_detections = DangerService::searchDetections(null)->get();
+                    if (!isset($unlimit_danger_detections)) {
+                        $unlimit_danger_detections = DangerService::searchDetections(null)->get();
                     }
-                    $item->danger_detections = $danger_detections;
-                    $item->danger_detection = count($danger_detections) > 0 ? $danger_detections[0] : null;
+                    $item->danger_detections = $unlimit_danger_detections;
+                    $item->danger_detection = count($unlimit_danger_detections) > 0 ? $unlimit_danger_detections[0] : null;
 
                     if (!isset($danger_cameras)) {
                         $danger_cameras = DangerService::getAllCameras();
@@ -60,12 +60,30 @@ class TopController extends AdminController
                     } else {
                         $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
                     }
-
                     break;
-
                 case config('const.top_block_type_codes')['live_graph_danger']:
+                    $request['starttime'] = date('Y-m-d');
+                    $request['endtime'] = date('Y-m-d');
+                    $danger_detections = DangerService::searchDetections($request)->get()->all();
+                    $all_data = [];
+                    foreach ($danger_detections as $danger_detection_item) {
+                        if ($danger_detection_item->detection_action_id > 0) {
+                            $all_data[date('Y-m-d H:i H:i', strtotime($danger_detection_item->starttime))][$danger_detection_item->detection_action_id][] = $danger_detection_item;
+                        }
+                    }
+                    $item->danger_live_graph_data = $all_data;
                     break;
                 case config('const.top_block_type_codes')['past_graph_danger']:
+                    $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
+                    $request['endtime'] = date('Y-m-d');
+                    $danger_detections = DangerService::searchDetections($request)->get()->all();
+                    $all_data = [];
+                    foreach ($danger_detections as $danger_detection_item) {
+                        if ($danger_detection_item->detection_action_id > 0) {
+                            $all_data[date('Y-m-d H:i', strtotime($danger_detection_item->starttime))][$danger_detection_item->detection_action_id][] = $danger_detection_item;
+                        }
+                    }
+                    $item->danger_past_graph_data = $all_data;
                     break;
                 case config('const.top_block_type_codes')['live_video_pit']:
                 case config('const.top_block_type_codes')['recent_detect_pit']:

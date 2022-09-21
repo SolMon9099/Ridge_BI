@@ -43,10 +43,10 @@
                     @endif
                     <div style="display: flex;">
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_pit']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_pit']}})">ダッシュボートへ追加</button>
                         </div>
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_pit']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_pit']}})">ダッシュボートへ追加</button>
                         </div>
                     </div>
                     <div style="" class="mainbody">
@@ -73,7 +73,7 @@
                     <div class="left-right">
                         <div class="left-box" style="position: relative;">
                             <h3 class="title">ピット内最大時間の超過検知</h3>
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
                             <table class="table2 text-centre top50">
                                 <thead>
                                     <tr>
@@ -198,7 +198,7 @@
                         @foreach ($cameras as $camera)
                         <tr>
                             <td class="stick-t">
-                                <div class="checkbtn-wrap">
+                                <div class="checkbtn-wrap radio-wrap-div">
                                     @if ((int)$camera->id == (int)$selected_camera)
                                         <input name="selected_camera" value = '{{$camera->id}}' type="radio" id="{{'camera'.$camera->id}}" checked>
                                     @else
@@ -283,6 +283,9 @@
     .right-box > .add-to-toppage{
         top:0px;
     }
+    .from_top{
+        background: lightblue;
+    }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
 <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
@@ -345,6 +348,7 @@
                             displayFormats: {
                                 minute: 'H:mm'
                             },
+                            tooltipFormat:"H:mm",
                             distribution: 'series',
                             stepSize: grid_unit,
                             format:'HH:mm'

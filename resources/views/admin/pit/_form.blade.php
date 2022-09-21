@@ -49,8 +49,14 @@
                     <p class="error-message max_permission_time">{{ $message }}</p>
                 @enderror
             </div>
+            <div class="ai-guide-area" style="">
+                <input class="tgl tgl-flat" id="ai_guide" type="checkbox" checked>
+                <label class="tgl-btn" for="ai_guide"></label>
+                <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
+            </div>
             <button type="button" class="clear-btn history" onclick="clearImage()">選択を全てクリア</button>
         </div>
+
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
@@ -87,7 +93,7 @@
                     <small>※何人以上の滞在が何分続いたという検知を行います。</small>
                 </li>
                 <li>③選択が完了したら「決定」ボタンを押下してください。
-                    <small>※「選択をクリア」した際は全ての選択がクリアされます。</small>
+                    <small>※「選択を全てクリア」した際は全ての選択がクリアされます。</small>
                 </li>
             </ul>
         </div>
@@ -153,6 +159,11 @@
     .setting-head{
         display: flex;
     }
+    .ai-guide-area{
+        margin-left: 40px;
+        padding-top:8px;
+        display:inline-flex;
+    }
     @media only screen and (max-width:768px) {
         .btns{
             display: flex;
@@ -172,6 +183,9 @@
         }
         .setting-head{
             display: block;
+        }
+        .ai-guide-area{
+            margin-left: 0px;
         }
     }
 </style>

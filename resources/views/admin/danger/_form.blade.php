@@ -130,6 +130,11 @@
                     <p>画像内をクリックしエリアを選択してください。</p>
                 </div>
             </div>
+            <div class="ai-guide-area" style="">
+                <input class="tgl tgl-flat" id="ai_guide" type="checkbox" checked>
+                <label class="tgl-btn" for="ai_guide"></label>
+                <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
+            </div>
         </div>
         <button type="button" onclick="clearImage()" class="clear-btn history">選択を全てクリア</button>
         <div class="n-area2">
@@ -323,6 +328,11 @@
         font-weight: bold;
         cursor: pointer;
     }
+    .ai-guide-area{
+        margin-left: 40px;
+        padding-top:100px;
+        display:inline-flex;
+    }
     @media only screen and (max-width:768px) {
         .btns{
             display: flex;
@@ -347,6 +357,10 @@
         }
         .add-figure-area{
             margin-top:10px;
+        }
+        .ai-guide-area{
+            margin-left: 0px;
+            padding-top: 10px;
         }
     }
 </style>

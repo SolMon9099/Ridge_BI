@@ -50,7 +50,7 @@
                 <div class="inner active" style="position: relative;">
                     <div style="display: flex; position: relative;">
                         <h3 class="title">ピット内人数推移</h3>
-                        <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_pit']}})">ダッシュボートへ追加</button>
+                        <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_pit']}})">ダッシュボートへ追加</button>
                     </div>
                     <div class="period-select-buttons">
                         <button type="button" class="period-button three selected" onclick="displayGraphData(3)">3時間</button>
@@ -172,7 +172,7 @@
                         @foreach ($cameras as $camera)
                         <tr>
                             <td class="stick-t">
-                                <div class="checkbtn-wrap">
+                                <div class="checkbtn-wrap radio-wrap-div">
                                     @if ((int)$camera->id == (int)$selected_camera)
                                         <input name="selected_camera" value = '{{$camera->id}}' type="radio" id="{{'camera'.$camera->id}}" checked>
                                     @else
@@ -260,6 +260,9 @@
         color:white;
         border-radius: 20px;
     }
+    .from_top{
+        background: lightblue;
+    }
     /* #myLineChart1{
         width:50%!important;
         height: 360px!important;
@@ -340,6 +343,7 @@
                             displayFormats: {
                                 minute: 'H:mm'
                             },
+                            tooltipFormat:"H:mm",
                             distribution: 'series',
                             stepSize: grid_unit,
                             format:'HH:mm'

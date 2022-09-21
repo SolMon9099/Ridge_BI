@@ -6,6 +6,11 @@ $(function () {
     }
   });
 });
+function allVideoStop(){
+    $('video').each(function(){
+        this.pause();
+    })
+}
 $(function () {
   var video = $("video").get(0);
   // スクロールバーの横幅を取得
@@ -15,7 +20,8 @@ $(function () {
   // 「.modal-open」をクリック
   $('.modal-open').click(function () {
 	  if($(this).hasClass('play')){
-      video.play();
+        allVideoStop();
+        video.play();
     }
     $('#modal-open').css('display', 'block');
     // html、bodyを固定（overflow:hiddenにする）
@@ -45,6 +51,7 @@ $(function () {
     // 「.modal-overlay」あるいは「.modal-close」をクリック
     $('.modal-wrap, .modal-close, .ok').off().click(function () {
 		if($('.modal-open').hasClass('play')){
+            allVideoStop();
             if (video != undefined){
                 video.pause();
             }

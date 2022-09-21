@@ -54,7 +54,7 @@
                             <a data-target="action" class="modal-open blue" onclick="setSelectedSearchOption(3)">アクションから選択</a>
                         </li>
                     </ul>
-                    <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_danger']}})">ダッシュボートへ追加</button>
+                    <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_danger']}})">ダッシュボートへ追加</button>
                     <div class="active sp-ma-right">
                         <div class="period-select-buttons">
                         @if ($search_period < 1)
@@ -298,6 +298,9 @@
         color:white;
         border-radius: 20px;
     }
+    .from_top{
+        background: lightblue;
+    }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
 <script>
@@ -334,25 +337,31 @@
     var grpah_init_type = 3;
     var period_unit = 'hour';
     var displayFormat = {'hour': 'H:mm'};
+    var tooltip = "H:mm";
     if (search_period < 1){
         period_unit = 'hour';
         displayFormat = {'hour': 'H:mm'};
+        tooltip = "H:mm";
         grpah_init_type = 3;
     } else if (search_period < 7){
         grpah_init_type = 'time';
         displayFormat = {'minute': 'DD日H時'};
+        tooltip = "MM/DD H:mm";
         period_unit = 'minute';
     } else if (search_period <= 30){
         displayFormat = {'minute': 'DD日H時'};
+        tooltip = "MM/DD H:mm";
         grpah_init_type = 'time';
         period_unit = 'minute';
     } else if (search_period <= 180){
         grpah_init_type = 'day';
-        displayFormat = {'day': 'M/dd'};
+        displayFormat = {'day': 'M/DD'};
+        tooltip = "YY/MM/DD";
         period_unit = 'day';
     } else {
         grpah_init_type = 'day';
-        displayFormat = {'day': 'M/dd'};
+        displayFormat = {'day': 'M/DD'};
+        tooltip = "YY/MM/DD";
         period_unit = 'day';
     }
 
@@ -525,48 +534,56 @@
                 grid_unit = 15;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + time_period);
                 break;
             case 6:
                 grid_unit = 30;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + time_period);
                 break;
             case 12:
                 grid_unit = 60;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + time_period);
                 break;
             case 24:
                 grid_unit = 60;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + time_period);
                 break;
             case 'time':
                 grid_unit = 60;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'DD日H時'};
+                tooltip = "MM/DD H:mm";
                 max_time.setDate(max_time.getDate() + 1);
                 break;
             case 'day':
                 grid_unit = 1;
                 period_unit = 'day';
                 displayFormat = {'day': 'M/DD'};
+                tooltip = "YY/MM/DD";
                 max_time.setDate(max_time.getDate() + 7);
                 break;
             case 'week':
                 grid_unit = 1;
                 period_unit = 'week';
                 displayFormat = {'week': 'M/DD'};
+                tooltip = "YY/MM/DD";
                 max_time.setDate(max_time.getDate() + 28);
                 break;
             case 'month':
                 grid_unit = 1;
                 period_unit = 'month';
                 displayFormat = {'month': 'YYYY/MM'};
+                tooltip = "YY/MM";
                 max_time.setMonth(max_time.getMonth() + 6);
                 break;
         }
@@ -691,6 +708,7 @@
                         type: 'time',
                         time: {
                             unit: period_unit,
+                            tooltipFormat:tooltip,
                             displayFormats:displayFormat,
                             // displayFormats: {
                             //     minute: 'H:mm'

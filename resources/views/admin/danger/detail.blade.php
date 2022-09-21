@@ -43,10 +43,10 @@
                     <h3 class="title">現在の映像</h3>
                     <div style="display: flex;">
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_danger']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_danger']}})">ダッシュボートへ追加</button>
                         </div>
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_danger']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_danger']}})">ダッシュボートへ追加</button>
                         </div>
                     </div>
                     @if(isset($selected_rule))
@@ -75,7 +75,7 @@
             </div>
             <ul class="kenchi-list" style="margin-top: 45px;position: relative;">
                 @if(count($danger_detections) > 0)
-                    <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_danger']}})">ダッシュボートへ追加</button>
+                    <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_danger']}})">ダッシュボートへ追加</button>
                 @endif
                 @foreach ($danger_detections as $item)
                 <?php
@@ -169,7 +169,7 @@
                         @foreach ($cameras as $camera)
                         <tr>
                             <td class="stick-t">
-                                <div class="checkbtn-wrap">
+                                <div class="checkbtn-wrap radio-wrap-div">
                                     @if ((int)$camera->id == (int)$selected_camera)
                                         <input name="selected_cameras[]" value = '{{$camera->id}}' type="radio" id="{{'camera'.$camera->id}}" checked>
                                     @else
@@ -259,6 +259,9 @@
         padding-right:5px;
         padding-top:2px;
         padding-bottom:2px;
+    }
+    .from_top{
+        background: lightblue;
     }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
@@ -418,6 +421,7 @@
                             displayFormats: {
                                 minute: 'H:mm'
                             },
+                            tooltipFormat:"H:mm",
                             distribution: 'series',
                             stepSize: grid_unit,
                             format:'HH:mm'

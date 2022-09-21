@@ -83,7 +83,7 @@
                         @foreach ($cameras as $camera)
                         <tr id="tr_{{$camera->id}}">
                             <td class="stick-t">
-                                <div class="checkbtn-wrap">
+                                <div class="checkbtn-wrap radio-wrap-div">
                                     <input name="selected_camera" type="radio" id="td_{{$camera->id}}" value="{{$camera->id}}">
                                     <label for="td_{{$camera->id}}"></label>
                                 </div>

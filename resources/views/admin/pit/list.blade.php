@@ -44,7 +44,7 @@
         </form>
 
         @if(count($pit_detections) > 0)
-            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['detect_list_pit']}})">ダッシュボートへ追加</button>
+            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['detect_list_pit']}})">ダッシュボートへ追加</button>
         @endif
 
         {{ $pit_detections->appends([
@@ -164,6 +164,9 @@
 <style>
     .notice-area{
         color:#999;
+    }
+    .from_top{
+        background: lightblue;
     }
 </style>
 <script>

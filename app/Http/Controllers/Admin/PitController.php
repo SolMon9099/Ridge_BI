@@ -152,6 +152,10 @@ class PitController extends AdminController
 
     public function list(Request $request)
     {
+        $from_top = false;
+        if (isset($request['from_top']) && $request['from_top'] == true) {
+            $from_top = true;
+        }
         $pit_detections = PitService::searchDetections($request)->paginate($this->per_page);
         foreach ($pit_detections as $item) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
@@ -177,11 +181,16 @@ class PitController extends AdminController
             'pit_detections' => $pit_detections,
             'request' => $request,
             'rules' => $rules,
+            'from_top' => $from_top,
         ]);
     }
 
     public function detail(Request $request)
     {
+        $from_top = false;
+        if (isset($request['from_top']) && $request['from_top'] == true) {
+            $from_top = true;
+        }
         $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
         if ($selected_rule != null) {
             if ($selected_rule->red_points != null && $selected_rule->red_points != '') {
@@ -233,11 +242,16 @@ class PitController extends AdminController
             'selected_rule' => $selected_rule,
             'cameras' => $cameras,
             'access_token' => $access_token,
+            'from_top' => $from_top,
         ]);
     }
 
     public function past_analysis(Request $request)
     {
+        $from_top = false;
+        if (isset($request['from_top']) && $request['from_top'] == true) {
+            $from_top = true;
+        }
         $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
         if ($selected_rule != null) {
             if ($selected_rule->red_points != null && $selected_rule->red_points != '') {
@@ -284,6 +298,7 @@ class PitController extends AdminController
             'request' => $request,
             'cameras' => $cameras,
             'selected_rule' => $selected_rule,
+            'from_top' => $from_top,
         ]);
     }
 

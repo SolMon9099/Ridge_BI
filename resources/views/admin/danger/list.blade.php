@@ -40,7 +40,7 @@
         </form>
 
         @if(count($danger_detections) > 0)
-            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['detect_list_danger']}})">ダッシュボートへ追加</button>
+            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['detect_list_danger']}})">ダッシュボートへ追加</button>
         @endif
 
         {{ $danger_detections->appends([
@@ -201,6 +201,9 @@
     .textarea{
         max-width: 1200px;
         width:100%;
+    }
+    .from_top{
+        background: lightblue;
     }
 </style>
 <script>

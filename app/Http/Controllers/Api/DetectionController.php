@@ -355,4 +355,8 @@ class DetectionController extends Controller
             return ['error' => '送信失敗'];
         }
     }
+
+    public function saveHeatmap(Request $request)
+    {
+    }
 }

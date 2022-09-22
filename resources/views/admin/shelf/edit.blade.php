@@ -6,7 +6,7 @@
     <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.shelf')}}">棚乱れ検知</a></li>
-            <li><a href="{{route('admin.shelf')}}">ルール一覧</a></li>
+            <li><a href="{{route('admin.shelf')}}">ルール一覧・編集</a></li>
             <li>ルール編集</li>
         </ul>
     </div>

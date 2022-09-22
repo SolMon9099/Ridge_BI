@@ -75,7 +75,21 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    <?php $pit_detections = array_reverse($pit_detections); $sum = 0;?>
+                                    @foreach ($pit_detections as $pit_item)
+                                        <?php $sum += ($pit_item->nb_entry - $pit_item->nb_exit); ?>
+                                        <tr>
+                                            <td>{{date('H:i:s', strtotime($pit_item->starttime))}}</td>
+                                            <td>{{$pit_item->nb_entry > $pit_item->nb_exit ? '入場':'退場'}}</td>
+                                            <td>
+                                                <span class="<?php echo ($pit_item->nb_entry > $pit_item->nb_exit)?'f-red':'f-blue'?>">
+                                                    {{($pit_item->nb_entry - $pit_item->nb_exit)}}
+                                                </span>
+                                            </td>
+                                            <td>{{$sum}}</td>
+                                        </tr>
+                                    @endforeach
+                                    {{-- <tr>
                                         <td>9:05:25</td>
                                         <td>入場</td>
                                         <td><span class="f-red">+1</span></td>
@@ -122,7 +136,7 @@
                                         <td>退場</td>
                                         <td><span class="f-blue">-1</span></td>
                                         <td>0</td>
-                                    </tr>
+                                    </tr> --}}
                                 </tbody>
                             </table>
                         </div>
@@ -135,12 +149,12 @@
                                         <th>検知条件</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                {{-- <tbody>
                                     <tr>
                                         <td>9:22</td>
                                         <td>時間オーバー(120)</td>
                                     </tr>
-                                </tbody>
+                                </tbody> --}}
                             </table>
                         </div>
                     </div>

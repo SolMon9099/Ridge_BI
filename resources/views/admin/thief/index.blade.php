@@ -10,12 +10,12 @@
     <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.thief')}}">大量盗難検知</a></li>
-            <li>ルール一覧</li>
+            <li>ルール一覧・編集</li>
         </ul>
     </div>
     <div id="r-content">
         <div class="title-wrap">
-            <h2 class="title">ルール一覧</h2>
+            <h2 class="title">ルール一覧・編集</h2>
             @if(!$super_admin_flag)
             <div class="new-btn">
                 <a href="{{route('admin.thief.cameras_for_rule')}}">

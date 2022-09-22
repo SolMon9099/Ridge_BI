@@ -6,7 +6,7 @@
     <div class="breadcrumb">
       <ul>
         <li>危険エリア侵入検知</li>
-        <li>ルール一覧</li>
+        <li>ルール一覧・編集</li>
         <li>ルール新規作成</li>
       </ul>
     </div>

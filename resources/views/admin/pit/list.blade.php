@@ -70,17 +70,33 @@
                     <a data-target="movie0000" onclick="videoPlay('{{$video_path}}')" class="modal-open setting2 play">
                         <img src="{{$thumb_path}}"/>
                     </a>
+                    <div class="cap">
+                        <time>{{date('Y/m/d H:i', strtotime($item->starttime))}}</time>
+                    </div>
                 </div>
                 <div class="text">
-                    <time>{{date('Y/m/d H:i', strtotime($item->starttime))}}</time>
-                    <table>
-                    <tr>
-                        <td>{{$item->location_name}}</td>
-                        <td>{{$item->floor_number}}</td>
-                        <td>{{$item->installation_position}}</td>
-                        <td>時間オーバー(90分)</td>
-                    </tr>
-                    </table>
+                    <p class="camera-id">カメラID:{{$item->camera_no}}</p>
+                    <ul class="pit-list">
+                        <li>
+                            <h2 class="icon-map">設置場所</h2>
+                            <dl>
+                                <dt>設置エリア</dt>
+                                <dd>{{$item->location_name}}</dd>
+                            </dl>
+                            <dl>
+                                <dt>設置フロア</dt>
+                                <dd>{{$item->floor_number}}</dd>
+                            </dl>
+                            <dl>
+                                <dt>設置場所</dt>
+                                <dd>{{$item->installation_position}}</dd>
+                            </dl>
+                        </li>
+                        <li>
+                            <h2 class="icon-content">検知内容</h2>
+                            <p>{{$item->nb_entry > $item->nb_exit ? 'ピット入場 '.($item->nb_entry - $item->nb_exit) :  'ピット退場 '.($item->nb_exit - $item->nb_entry)}}</p>
+                        </li>
+                    </ul>
                 </div>
             </li>
             @endforeach

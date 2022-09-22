@@ -40,11 +40,12 @@ class TopController extends AdminController
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
                             }
-                            $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                            if ($camera_image_data != null) {
-                                $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
-                            }
-                            $camera->img = $camera_image_data;
+                            // $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                            // if ($camera_image_data != null) {
+                            //     $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+                            // }
+                            // $camera->img = $camera_image_data;
+                            $camera->img = null;
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
                     }
@@ -88,6 +89,11 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['live_video_pit']:
                 case config('const.top_block_type_codes')['recent_detect_pit']:
                 case config('const.top_block_type_codes')['detect_list_pit']:
+                    if (!isset($unlimit_pit_detections)) {
+                        $unlimit_pit_detections = PitService::searchDetections(null)->get();
+                    }
+                    $item->pit_detections = $unlimit_pit_detections;
+                    $item->pit_detection = count($unlimit_pit_detections) > 0 ? $unlimit_pit_detections[0] : null;
                     if (!isset($pit_cameras)) {
                         $pit_cameras = PitService::getAllCameras();
                         $access_tokens = [];
@@ -99,11 +105,12 @@ class TopController extends AdminController
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
                             }
-                            $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                            if ($camera_image_data != null) {
-                                $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
-                            }
-                            $camera->img = $camera_image_data;
+                            // $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                            // if ($camera_image_data != null) {
+                            //     $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+                            // }
+                            // $camera->img = $camera_image_data;
+                            $camera->img = null;
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
                     }

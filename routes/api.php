@@ -32,6 +32,7 @@ Route::group(['prefix' => 'detection'], function () {
     Route::post('/shelf', 'DetectionController@saveShelfDetection')->name('api.detection.shelf');
     Route::post('/pit', 'DetectionController@savePitDetection')->name('api.detection.pit');
     Route::post('/thief', 'DetectionController@saveThiefDetection')->name('api.detection.thief');
+    Route::post('/heatmap', 'DetectionController@saveHeatmap')->name('api.detection.heatmap');
 });
 
 Route::middleware('auth:api')->group(function () {

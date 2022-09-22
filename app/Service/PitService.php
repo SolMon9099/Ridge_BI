@@ -128,28 +128,46 @@ class PitService
             ->leftJoin('pit_detection_rules', 'pit_detection_rules.id', 'pit_detections.rule_id')
             ->leftJoin('cameras', 'cameras.id', 'pit_detections.camera_id')
             ->leftJoin('locations', 'locations.id', 'cameras.location_id');
-        if ($today_flag == true) {
-            $query->whereDate('pit_detections.starttime', date('Y-m-d'));
-        } else {
-            if (isset($params['searchdate']) && $params['searchdate'] != '') {
-                $query->whereDate('pit_detections.starttime', $params['searchdate']);
+        if ($params != null) {
+            if ($today_flag == true) {
+                $query->whereDate('pit_detections.starttime', date('Y-m-d'));
             } else {
+                if (isset($params['searchdate']) && $params['searchdate'] != '') {
+                    $query->whereDate('pit_detections.starttime', $params['searchdate']);
+                } else {
+                    if (isset($params['starttime']) && $params['starttime'] != '') {
+                        $query->whereDate('pit_detections.starttime', '>=', $params['starttime']);
+                    } else {
+                        if ($params != null) {
+                            $query->whereDate('pit_detections.starttime', '>=', date('Y-m-d', strtotime('-1 week')));
+                        }
+                    }
+                    if (isset($params['endtime']) && $params['endtime'] != '') {
+                        $query->whereDate('pit_detections.starttime', '<=', $params['endtime']);
+                    } else {
+                        $query->whereDate('pit_detections.starttime', '<=', date('Y-m-d'));
+                    }
+                }
+            }
+
+            if (isset($params['rule_ids']) && $params['rule_ids'] != '') {
+                $rule_ids = json_decode($params['rule_ids']);
+                if (count($rule_ids) > 0) {
+                    $query->whereIn('pit_detections.rule_id', $rule_ids);
+                }
+            }
+            if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
+                $query->whereIn('pit_detection_rules.camera_id', $params['selected_cameras']);
+            }
+            if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+                $query->where('pit_detection_rules.camera_id', $params['selected_camera']);
+            }
+        } else {
+            if ($today_flag == true) {
                 $query->whereDate('pit_detections.starttime', date('Y-m-d'));
             }
         }
 
-        if (isset($params['rule_ids']) && $params['rule_ids'] != '') {
-            $rule_ids = json_decode($params['rule_ids']);
-            if (count($rule_ids) > 0) {
-                $query->whereIn('pit_detections.rule_id', $rule_ids);
-            }
-        }
-        if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
-            $query->whereIn('pit_detection_rules.camera_id', $params['selected_cameras']);
-        }
-        if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
-            $query->where('pit_detection_rules.camera_id', $params['selected_camera']);
-        }
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }

@@ -83,11 +83,11 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    {{-- <tr>
                                         <td>9:22</td>
                                         <td>時間オーバー(120)</td>
                                         <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
-                                    </tr>
+                                    </tr> --}}
                                 </tbody>
                             </table>
                         </div>

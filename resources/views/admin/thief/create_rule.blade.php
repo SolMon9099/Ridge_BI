@@ -6,7 +6,7 @@
     <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.thief')}}">大量盗難検知</a></li>
-            <li><a href="{{route('admin.thief')}}">ルール一覧</a></li>
+            <li><a href="{{route('admin.thief')}}">ルール一覧・編集</a></li>
             <li>ルール新規作成</li>
         </ul>
     </div>

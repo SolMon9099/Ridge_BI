@@ -266,6 +266,9 @@ class PitController extends AdminController
                 $request['selected_camera'] = $selected_rule->camera_id;
             }
         }
+        if (!isset($request['searchdate'])) {
+            $request['searchdate'] = date('Y-m-d');
+        }
 
         $pit_detections = PitService::searchDetections($request)->get()->all();
         $cameras = PitService::getAllCameras();

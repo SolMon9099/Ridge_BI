@@ -6,7 +6,7 @@
     <div class="breadcrumb">
         <ul>
             <li><a href="{{route('admin.pit')}}">ピット入退場検知</a></li>
-            <li><a href="{{route('admin.pit')}}">ルール一覧</a></li>
+            <li><a href="{{route('admin.pit')}}">ルール一覧・編集</a></li>
             <li> ルール新規作成</li>
         </ul>
     </div>

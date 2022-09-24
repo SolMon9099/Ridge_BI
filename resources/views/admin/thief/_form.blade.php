@@ -401,21 +401,27 @@
             stage.container().style.cursor = 'default';
         });
         circle.on('dragmove', function (e) {
-            if (e.evt.offsetX <= 5 || e.evt.offsetX >= 1275) {
+            var new_x = e.evt.offsetX;
+            var new_y = e.evt.offsetY;
+            if (e.evt.offsetX <= 10 || e.evt.offsetX >= 1270) {
+                new_x = e.evt.offsetX <=10?13:1267;
                 circle.stopDrag();
-                return;
+                circle.absolutePosition({x:new_x, y:e.evt.offsetY});
+                // return;
             }
-            if (e.evt.offsetY <= 5 || e.evt.offsetY >= 715) {
+            if (e.evt.offsetY <= 10 || e.evt.offsetY >= 710) {
                 circle.stopDrag();
-                return;
+                new_y = e.evt.offsetY<=10?13:707;
+                circle.absolutePosition({x:e.evt.offsetX, y:new_y});
+                // return;
             }
             var circle_id = e.target.id();
             var rule_index = parseInt(circle_id.split('_')[0]);
             if (!isNaN(rule_index)){
                 var index = rules_object[rule_index].points.findIndex(x => x.id == circle_id);
                 if (index > -1){
-                    rules_object[rule_index].points[index].x = e.evt.offsetX;
-                    rules_object[rule_index].points[index].y = e.evt.offsetY;
+                    rules_object[rule_index].points[index].x = new_x;
+                    rules_object[rule_index].points[index].y = new_y;
                     if (enable_add_figure_flag == true || rule_index < Math.max(...Object.keys(rules_object))){
                         drawFigure(rule_index, rules_object[rule_index].color);
                     }
@@ -445,7 +451,7 @@
         var figure_area = new Konva.Line({
             points: drawing_point_data,
             stroke: figure_color != null ? figure_color : 'black',
-            strokeWidth: radius - 3 > 0? radius - 3 : 2,
+            strokeWidth: 2,
             lineCap: 'round',
             lineJoin: 'round',
             id:rule_index.toString(),

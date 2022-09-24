@@ -10,8 +10,9 @@ use App\Service\SafieApiService;
 use App\Models\Camera;
 use App\Models\PitDetectionRule;
 use App\Models\CameraMappingDetail;
+use App\Models\SearchOption;
 use App\Service\CameraService;
-// use Illuminate\Support\Facades\Redirect;
+use App\Service\TopService;
 use Illuminate\Support\Facades\Auth;
 
 class PitController extends AdminController
@@ -248,29 +249,6 @@ class PitController extends AdminController
 
     public function past_analysis(Request $request)
     {
-        $from_top = false;
-        if (isset($request['from_top']) && $request['from_top'] == true) {
-            $from_top = true;
-        }
-        $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
-        if ($selected_rule != null) {
-            if ($selected_rule->red_points != null && $selected_rule->red_points != '') {
-                $selected_rule->red_points = json_decode($selected_rule->red_points);
-            }
-            if ($selected_rule->blue_points != null && $selected_rule->blue_points != '') {
-                $selected_rule->blue_points = json_decode($selected_rule->blue_points);
-            }
-        }
-        if (!(isset($request['selected_camera']) && $request['selected_camera'] > 0)) {
-            if ($selected_rule != null) {
-                $request['selected_camera'] = $selected_rule->camera_id;
-            }
-        }
-        if (!isset($request['searchdate'])) {
-            $request['searchdate'] = date('Y-m-d');
-        }
-
-        $pit_detections = PitService::searchDetections($request)->get()->all();
         $cameras = PitService::getAllCameras();
         $camera_imgs = [];
         foreach ($cameras as $camera) {
@@ -295,10 +273,54 @@ class PitController extends AdminController
             }
             $camera->img = $camera_imgs[$camera->camera_id];
         }
+        $from_top = false;
+        if (isset($request['from_top']) && $request['from_top'] == true) {
+            $from_top = true;
+        }
+        $change_search_params_flag = false;
+        if (isset($request['change_params']) && $request['change_params'] == 'change') {
+            $change_search_params_flag = true;
+        }
+
+        $search_options = null;
+        $search_option_record = SearchOption::query()->where('page_name', 'admin.pit.past_analysis')->where('user_id', Auth::guard('admin')->user()->id)->get()->first();
+        if ($search_option_record != null) {
+            $search_options = $search_option_record->options;
+        }
+
+        if ($search_options != null && $change_search_params_flag == false) {
+            $search_options = json_decode($search_options);
+            $search_options = (array) $search_options;
+            $request['selected_camera'] = $search_options['selected_camera'];
+            $request['starttime'] = $search_options['starttime'];
+            $request['endtime'] = $search_options['endtime'];
+            $request['time_period'] = $search_options['time_period'];
+            $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
+        } else {
+            $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
+            if (!(isset($request['selected_camera']) && $request['selected_camera'] > 0)) {
+                if ($selected_rule != null) {
+                    $request['selected_camera'] = $selected_rule->camera_id;
+                }
+            }
+        }
+        $search_params = [
+            'selected_camera' => $request['selected_camera'],
+            'starttime' => isset($request['starttime']) && $request['starttime'] != '' ? $request['starttime'] : date('Y-m-d'),
+            'endtime' => isset($request['endtime']) && $request['endtime'] != '' ? $request['endtime'] : date('Y-m-d'),
+            'time_period' => isset($request['time_period']) ? $request['time_period'] : 3,
+        ];
+        $search_option_params = [
+            'page_name' => 'admin.pit.past_analysis',
+            'search_params' => $search_params,
+        ];
+        TopService::save_search_option($search_option_params);
+
+        $pit_detections = PitService::searchDetections($request)->get()->all();
 
         return view('admin.pit.past_analysis')->with([
             'pit_detections' => $pit_detections,
-            'request' => $request,
+            'request_params' => (array) $search_params,
             'cameras' => $cameras,
             'selected_rule' => $selected_rule,
             'from_top' => $from_top,

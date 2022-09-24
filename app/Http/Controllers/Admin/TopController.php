@@ -201,6 +201,11 @@ class TopController extends AdminController
         return 'すでに登録されています。';
     }
 
+    public function save_search_option(Request $request)
+    {
+        TopService::save_search_option($request);
+    }
+
     public function delete(Request $request, TopBlock $top)
     {
         if (TopService::doDelete($top)) {

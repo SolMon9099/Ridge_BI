@@ -2,12 +2,18 @@
 
 @section('content')
 <?php
-    $starttime = (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week'));
-    $endtime = (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d');
+    $starttime = (isset($request_params) && isset($request_params['starttime']))?date('Y-m-d', strtotime($request_params['starttime'])) :date('Y-m-d');
+    $endtime = (isset($request_params) && isset($request_params['endtime']))?date('Y-m-d', strtotime($request_params['endtime'])):date('Y-m-d');
     $search_period = (strtotime($endtime) - strtotime($starttime))/86400;
+    $selected_search_option = old('selected_search_option', (isset($request_params) && isset($request_params['selected_search_option']))?$request_params['selected_search_option']:1);
+
+    $selected_rule_ids = old('selected_rules', isset($request_params) && isset($request_params['selected_rules'])?$request_params['selected_rules']:[]);
+    $selected_camera_ids = old('selected_cameras', isset($request_params) && isset($request_params['selected_cameras'])?$request_params['selected_cameras']:[]);
+    $selected_action_ids = old('selected_actions', isset($request_params) && isset($request_params['selected_actions'])?$request_params['selected_actions']:[]);
 ?>
 <form action="{{route('admin.danger.past_analysis')}}" method="get" name="form1" id="form1">
 @csrf
+    <input type="hidden" name="change_params" value="change"/>
     <div id="wrapper">
         <div class="breadcrumb">
         <ul>
@@ -26,7 +32,7 @@
                     <li>
                     <h4>検出期間</h4>
                     </li>
-                    <li>
+                    <li style="width:113px;">
                         <input id='starttime' type="date" name='starttime' onchange="search()" value="{{ old('starttime', $starttime)}}">
                     </li>
                     <li>～</li>
@@ -40,9 +46,6 @@
             <div class="list">
                 <div class="inner active">
                     <ul class="tab_sub">
-                        <?php
-                            $selected_search_option = old('selected_search_option', (isset($request) && $request->has('selected_search_option'))?$request->selected_search_option:1);
-                        ?>
                         <input type='hidden' name='selected_search_option' id = 'selected_search_option' value=""/>
                         <li class="{{$selected_search_option == 1 ? 'active':'' }}">
                             <a data-target="rule" class="modal-open blue" onclick="setSelectedSearchOption(1)">ルールから選択</a>
@@ -57,25 +60,52 @@
                     <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_danger']}})">ダッシュボートへ追加</button>
                     <div class="active sp-ma-right">
                         <div class="period-select-buttons">
+                        <?php
+                            $time_period = '3';
+                            if (isset($request_params['time_period']) && $request_params['time_period'] != '') $time_period = $request_params['time_period'];
+
+                            if ($search_period < 1) {
+                                if (!in_array($time_period, ['3', '6', '12', '24'])){
+                                    $time_period = '3';
+                                }
+                            } else if ($search_period < 7 ) {
+                                if (!in_array($time_period, ['time', 'day',])){
+                                    $time_period = 'time';
+                                }
+                            } else if ($search_period <= 30 ) {
+                                if (!in_array($time_period, ['time', 'day',])){
+                                    $time_period = 'time';
+                                }
+                            } else if ($search_period <= 180 ) {
+                                if (!in_array($time_period, ['day', 'week','month'])){
+                                    $time_period = 'day';
+                                }
+                            } else {
+                                if (!in_array($time_period, ['day', 'week','month'])){
+                                    $time_period = 'day';
+                                }
+                            }
+                        ?>
+                        <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
                         @if ($search_period < 1)
-                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 3)">3時間</button>
-                            <button type="button" class="period-button" onclick="displayGraphData(this,6)">6時間</button>
-                            <button type="button" class="period-button" onclick="displayGraphData(this,12)">12時間</button>
-                            <button type="button" class="period-button" onclick="displayGraphData(this,24)">24時間</button>
+                            <button type="button" class="<?php echo $time_period == 3 ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
+                            <button type="button" class="<?php echo $time_period == 6 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'6')">6時間</button>
+                            <button type="button" class="<?php echo $time_period == 12 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'12')">12時間</button>
+                            <button type="button" class="<?php echo $time_period == 24 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'24')">24時間</button>
                         @elseif ($search_period < 7)
-                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 'time')">時間別</button>
-                            <button type="button" class="period-button" onclick="displayGraphData(this, 'day')">日別</button>
+                            <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'time')">時間別</button>
+                            <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
                         @elseif ($search_period <= 30)
-                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 'time')">時間別</button>
-                            <button type="button" class="period-button" onclick="displayGraphData(this, 'day')">日別</button>
+                            <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'time')">時間別</button>
+                            <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
                         @elseif ($search_period <= 180)
-                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 'day')">日別</button>
-                            <button type="button" class="period-button" onclick="displayGraphData(this, 'week')">週別</button>
-                            <button type="button" class="period-button" onclick="displayGraphData(this, 'month')">月別</button>
+                            <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
+                            <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'week')">週別</button>
+                            <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'month')">月別</button>
                         @else
-                            <button type="button" class="period-button selected" onclick="displayGraphData(this, 'day')">日別</button>
-                            <button type="button" class="period-button" onclick="displayGraphData(this, 'week')">週別</button>
-                            <button type="button" class="period-button" onclick="displayGraphData(this, 'month')">月別</button>
+                            <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
+                            <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'week')">週別</button>
+                            <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'month')">月別</button>
                         @endif
                         </div>
                         <canvas id="myLineChart1"></canvas>
@@ -106,9 +136,6 @@
                     </tr>
                     </thead>
                     <tbody>
-                        <?php
-                            $selected_rule_ids = old('selected_rules', (isset($request) && $request->has('selected_rules'))?$request->selected_rules:[]);
-                        ?>
                         @foreach ($rules as $rule)
                         <tr>
                             <td class="stick-t">
@@ -163,9 +190,6 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php
-                            $selected_camera_ids = old('selected_cameras', (isset($request) && $request->has('selected_cameras'))?$request->selected_cameras:[]);
-                        ?>
                         @foreach ($cameras as $camera)
                         <tr>
                             <td class="stick-t">
@@ -210,9 +234,6 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php
-                            $selected_action_ids = old('selected_actions', (isset($request) && $request->has('selected_actions'))?$request->selected_actions:[]);
-                        ?>
                         @foreach (config('const.action') as $id => $action_name)
                         <tr>
                             <td class="stick-t">
@@ -319,13 +340,14 @@
         4:'black',
     }
     var search_period = "<?php echo $search_period;?>";
+
     var starttime = $('#starttime').val();
-    starttime = new Date(starttime);
+    starttime = formatDateTime(starttime);
     starttime.setHours(0);
     starttime.setMinutes(0);
     starttime.setSeconds(0);
     var endtime = $('#endtime').val();
-    endtime = new Date(endtime);
+    endtime = formatDateTime(endtime);
     endtime.setHours(24);
     endtime.setMinutes(0);
     endtime.setSeconds(0);
@@ -334,39 +356,86 @@
     min_time.setHours(0);
     min_time.setMinutes(0);
     min_time.setSeconds(0);
-    var grpah_init_type = 3;
+    var max_time = new Date(min_time);
+
+    var grpah_init_type = "<?php echo $time_period;?>";
     var period_unit = 'hour';
     var displayFormat = {'hour': 'H:mm'};
     var tooltip = "H:mm";
-    if (search_period < 1){
-        period_unit = 'hour';
-        displayFormat = {'hour': 'H:mm'};
-        tooltip = "H:mm";
-        grpah_init_type = 3;
-    } else if (search_period < 7){
-        grpah_init_type = 'time';
-        displayFormat = {'minute': 'DD日H時'};
-        tooltip = "MM/DD H:mm";
-        period_unit = 'minute';
-    } else if (search_period <= 30){
-        displayFormat = {'minute': 'DD日H時'};
-        tooltip = "MM/DD H:mm";
-        grpah_init_type = 'time';
-        period_unit = 'minute';
-    } else if (search_period <= 180){
-        grpah_init_type = 'day';
-        displayFormat = {'day': 'M/DD'};
-        tooltip = "YY/MM/DD";
-        period_unit = 'day';
-    } else {
-        grpah_init_type = 'day';
-        displayFormat = {'day': 'M/DD'};
-        tooltip = "YY/MM/DD";
-        period_unit = 'day';
+    var grid_unit = 15;
+    console.log('grpah_init_type', grpah_init_type);
+    setGraphOptions(grpah_init_type);
+
+    function setGraphOptions(time_period){
+        switch(time_period){
+            case '3':
+                grid_unit = 15;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
+                max_time.setHours(max_time.getHours() + parseInt(time_period));
+                break;
+            case '6':
+                grid_unit = 30;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
+                max_time.setHours(max_time.getHours() + parseInt(time_period));
+                break;
+            case '12':
+                grid_unit = 60;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
+                max_time.setHours(max_time.getHours() + parseInt(time_period));
+                break;
+            case '24':
+                grid_unit = 60;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
+                max_time.setHours(max_time.getHours() + parseInt(time_period));
+                break;
+            case 'time':
+                grid_unit = 60;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'DD日H時'};
+                tooltip = "MM/DD H:mm";
+                max_time.setDate(max_time.getDate() + 1);
+                break;
+            case 'day':
+                grid_unit = 1;
+                period_unit = 'day';
+                displayFormat = {'day': 'M/DD'};
+                tooltip = "YY/MM/DD";
+                max_time.setDate(max_time.getDate() + 7);
+                break;
+            case 'week':
+                grid_unit = 1;
+                period_unit = 'week';
+                displayFormat = {'week': 'M/DD'};
+                tooltip = "YY/MM/DD";
+                max_time.setDate(max_time.getDate() + 28);
+                break;
+            case 'month':
+                grid_unit = 1;
+                period_unit = 'month';
+                displayFormat = {'month': 'YYYY/MM'};
+                tooltip = "YY/MM";
+                max_time.setMonth(max_time.getMonth() + 6);
+                break;
+        }
     }
 
+    var selected_search_option = "<?php echo $selected_search_option;?>"
     var all_data = <?php echo $all_data;?>;
     var actions = <?php echo json_encode(config('const.action'));?>;
+    var selected_rules = <?php echo json_encode($selected_rule_ids);?>;
+    var selected_cameras = <?php echo json_encode($selected_camera_ids);?>;
+    var selected_actions = <?php echo json_encode($selected_action_ids);?>;
+    console.log('selected_rules', selected_rules);
+    console.log('selected_cameras', selected_cameras);
+    console.log('selected_actions', selected_actions);
 
     function moveXRange(increament = 1){
         switch(grpah_init_type){
@@ -509,13 +578,14 @@
     }
     function displayGraphData(e = null, time_period = 3, start_init_flag = true){
         grpah_init_type = time_period;
+        console.log('time', time_period);
+
         if (start_init_flag){
             min_time = new Date(starttime);
             min_time.setHours(0);
             min_time.setMinutes(0);
             min_time.setSeconds(0);
         }
-        var grid_unit = 15;
         var date_labels = [];
         var totals_by_action = {};
         Object.keys(actions).map(id => {
@@ -528,65 +598,8 @@
 
             $(e).addClass('selected');
         }
-        var max_time = new Date(min_time);
-        switch(time_period){
-            case 3:
-                grid_unit = 15;
-                period_unit = 'minute';
-                displayFormat = {'minute': 'H:mm'};
-                tooltip = "H:mm";
-                max_time.setHours(max_time.getHours() + time_period);
-                break;
-            case 6:
-                grid_unit = 30;
-                period_unit = 'minute';
-                displayFormat = {'minute': 'H:mm'};
-                tooltip = "H:mm";
-                max_time.setHours(max_time.getHours() + time_period);
-                break;
-            case 12:
-                grid_unit = 60;
-                period_unit = 'minute';
-                displayFormat = {'minute': 'H:mm'};
-                tooltip = "H:mm";
-                max_time.setHours(max_time.getHours() + time_period);
-                break;
-            case 24:
-                grid_unit = 60;
-                period_unit = 'minute';
-                displayFormat = {'minute': 'H:mm'};
-                tooltip = "H:mm";
-                max_time.setHours(max_time.getHours() + time_period);
-                break;
-            case 'time':
-                grid_unit = 60;
-                period_unit = 'minute';
-                displayFormat = {'minute': 'DD日H時'};
-                tooltip = "MM/DD H:mm";
-                max_time.setDate(max_time.getDate() + 1);
-                break;
-            case 'day':
-                grid_unit = 1;
-                period_unit = 'day';
-                displayFormat = {'day': 'M/DD'};
-                tooltip = "YY/MM/DD";
-                max_time.setDate(max_time.getDate() + 7);
-                break;
-            case 'week':
-                grid_unit = 1;
-                period_unit = 'week';
-                displayFormat = {'week': 'M/DD'};
-                tooltip = "YY/MM/DD";
-                max_time.setDate(max_time.getDate() + 28);
-                break;
-            case 'month':
-                grid_unit = 1;
-                period_unit = 'month';
-                displayFormat = {'month': 'YYYY/MM'};
-                tooltip = "YY/MM";
-                max_time.setMonth(max_time.getMonth() + 6);
-                break;
-        }
+        max_time = new Date(min_time);
+        setGraphOptions(time_period);
         if (max_time.getTime() > endtime.getTime()) max_time = new Date(endtime);
         var graph_data = resortData(all_data, time_period);
 
@@ -710,12 +723,8 @@
                             unit: period_unit,
                             tooltipFormat:tooltip,
                             displayFormats:displayFormat,
-                            // displayFormats: {
-                            //     minute: 'H:mm'
-                            // },
                             distribution: 'series',
                             stepSize: grid_unit,
-                            // format:'HH:mm'
                         },
                         ticks: {
                             fontSize: 18,
@@ -726,6 +735,17 @@
                 },
             }
         });
+
+        var search_params = {
+            starttime:formatDateLine(new Date($('#starttime').val())),
+            endtime:formatDateLine(new Date($('#endtime').val())),
+            time_period:grpah_init_type,
+            selected_rules:selected_rules.length == 0?{}:selected_rules,
+            selected_cameras:selected_cameras.length == 0?{}:selected_cameras,
+            selected_actions:selected_actions.length == 0?{}:selected_actions,
+            selected_search_option:parseInt(selected_search_option)
+        };
+        saveSearchOptions('admin.danger.past_analysis', search_params);
     }
 
     $(document).ready(function() {

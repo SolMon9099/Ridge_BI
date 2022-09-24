@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\TopBlock;
+use App\Models\SearchOption;
 
 class TopService
 {
@@ -116,14 +117,20 @@ class TopService
         }
     }
 
-    public static function getAllAccountNames()
+    public static function save_search_option($params)
     {
-        $admins = Admin::orderBy('id', 'asc')->get();
-        $admins_array = [];
-        foreach ($admins as $admin_user) {
-            $admins_array[$admin_user->id] = $admin_user->name;
+        $page_name = $params['page_name'];
+        $options = $params['search_params'];
+        $search_option_record = SearchOption::query()->where('page_name', $page_name)->where('user_id', Auth::guard('admin')->user()->id)->get()->first();
+        if ($search_option_record != null) {
+            $search_option_record->options = json_encode($options);
+            $search_option_record->save();
+        } else {
+            $search_option_record = new SearchOption();
+            $search_option_record->user_id = Auth::guard('admin')->user()->id;
+            $search_option_record->options = json_encode($options);
+            $search_option_record->page_name = $page_name;
+            $search_option_record->save();
         }
-
-        return $admins_array;
     }
 }

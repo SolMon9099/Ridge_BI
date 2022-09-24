@@ -17,7 +17,7 @@ return [
     ],
 
     //カメラ表示マークのサイズ
-    'camera_mark_radius' => 5,
+    'camera_mark_radius' => 7,
 
     //アクション
     'action' => [

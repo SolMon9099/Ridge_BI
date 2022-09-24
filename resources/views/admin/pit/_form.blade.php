@@ -394,19 +394,25 @@
             stage.container().style.cursor = 'default';
         });
         circle.on('dragmove', function (e) {
-            if (e.evt.offsetX <= 5 || e.evt.offsetX >= 1275) {
+            var new_x = e.evt.offsetX;
+            var new_y = e.evt.offsetY;
+            if (e.evt.offsetX <= 10 || e.evt.offsetX >= 1270) {
                 circle.stopDrag();
-                return;
+                new_x = e.evt.offsetX <=10 ? 13 : 1267;
+                circle.absolutePosition({x:new_x, y:e.evt.offsetY});
+                // return;
             }
-            if (e.evt.offsetY <= 5 || e.evt.offsetY >= 715) {
+            if (e.evt.offsetY <= 10 || e.evt.offsetY >= 710) {
                 circle.stopDrag();
-                return;
+                new_y = e.evt.offsetY<=10?13:707;
+                circle.absolutePosition({x:e.evt.offsetX, y:new_y});
+                // return;
             }
             if (color == null){
                 var index = red_points.findIndex(point => point.id == e.target.id());
                 if (index > -1){
-                    red_points[index].x = e.evt.offsetX;
-                    red_points[index].y = e.evt.offsetY;
+                    red_points[index].x = new_x;
+                    red_points[index].y = new_y;
                     if (point_numbers == 4){
                         drawRect(red_points);
                     }
@@ -414,8 +420,8 @@
             } else {
                 index = blue_points.findIndex(point => point.id == e.target.id());
                 if (index > -1){
-                    blue_points[index].x = e.evt.offsetX;
-                    blue_points[index].y = e.evt.offsetY;
+                    blue_points[index].x = new_x;
+                    blue_points[index].y = new_y;
                     if (point_numbers == 4){
                         drawRect(red_points, blue_points);
                     }
@@ -460,7 +466,7 @@
                 rect_points[0].x, rect_points[0].y
             ],
             stroke: 'red',
-            strokeWidth: radius - 3 > 0? radius - 3 : 2,
+            strokeWidth: 2,
             lineCap: 'round',
             lineJoin: 'round',
         });
@@ -482,7 +488,7 @@
                 blue_points[0].x, blue_points[0].y
             ],
             stroke: 'blue',
-            strokeWidth: radius - 3 > 0? radius - 3 : 2,
+            strokeWidth: 2,
             lineCap: 'round',
             lineJoin: 'round',
         });
@@ -518,18 +524,24 @@
                 stage.container().style.cursor = 'default';
             });
             circle.on('dragmove', function (e) {
-                if (e.evt.offsetX <= 5 || e.evt.offsetX >= 1275) {
+                var new_x = e.evt.offsetX;
+                var new_y = e.evt.offsetY;
+                if (e.evt.offsetX <= 10 || e.evt.offsetX >= 1270) {
                     circle.stopDrag();
-                    return;
+                    new_x = e.evt.offsetX <=10 ? 13 : 1267;
+                    circle.absolutePosition({x:new_x, y:e.evt.offsetY});
+                    // return;
                 }
-                if (e.evt.offsetY <= 5 || e.evt.offsetY >= 715) {
+                if (e.evt.offsetY <= 10 || e.evt.offsetY >= 710) {
                     circle.stopDrag();
-                    return;
+                    new_y = e.evt.offsetY<=10?13:707;
+                    circle.absolutePosition({x:e.evt.offsetX, y:new_y});
+                    // return;
                 }
                 var index = red_points.findIndex(point => point.id == e.target.id());
                 if (index > -1){
-                    red_points[index].x = e.evt.offsetX;
-                    red_points[index].y = e.evt.offsetY;
+                    red_points[index].x = new_x;
+                    red_points[index].y = new_y;
                     if (point_numbers == 4){
                         drawRect(red_points);
                     }

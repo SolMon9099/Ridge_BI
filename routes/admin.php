@@ -31,6 +31,7 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
         Route::post('/update', 'TopController@update')->name('admin.top.update');
         Route::post('/AjaxUpdate', 'TopController@AjaxUpdate')->name('admin.top.AjaxUpdate');
         Route::delete('/delete/{top}', 'TopController@delete')->name('admin.top.delete');
+        Route::post('/save_search_option', 'TopController@save_search_option')->name('admin.top.save_search_option');
 
         Route::group(['prefix' => 'account'], function () {
             Route::get('/', 'AccountController@index')->name('admin.account');

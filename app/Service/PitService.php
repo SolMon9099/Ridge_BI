@@ -132,21 +132,15 @@ class PitService
             if ($today_flag == true) {
                 $query->whereDate('pit_detections.starttime', date('Y-m-d'));
             } else {
-                if (isset($params['searchdate']) && $params['searchdate'] != '') {
-                    $query->whereDate('pit_detections.starttime', $params['searchdate']);
+                if (isset($params['starttime']) && $params['starttime'] != '') {
+                    $query->whereDate('pit_detections.starttime', '>=', $params['starttime']);
                 } else {
-                    if (isset($params['starttime']) && $params['starttime'] != '') {
-                        $query->whereDate('pit_detections.starttime', '>=', $params['starttime']);
-                    } else {
-                        if ($params != null) {
-                            $query->whereDate('pit_detections.starttime', '>=', date('Y-m-d', strtotime('-1 week')));
-                        }
-                    }
-                    if (isset($params['endtime']) && $params['endtime'] != '') {
-                        $query->whereDate('pit_detections.starttime', '<=', $params['endtime']);
-                    } else {
-                        $query->whereDate('pit_detections.starttime', '<=', date('Y-m-d'));
-                    }
+                    $query->whereDate('pit_detections.starttime', '>=', date('Y-m-d'));
+                }
+                if (isset($params['endtime']) && $params['endtime'] != '') {
+                    $query->whereDate('pit_detections.starttime', '<=', $params['endtime']);
+                } else {
+                    $query->whereDate('pit_detections.starttime', '<=', date('Y-m-d'));
                 }
             }
 

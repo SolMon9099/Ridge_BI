@@ -10,7 +10,9 @@ use App\Service\SafieApiService;
 use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
 use App\Models\CameraMappingDetail;
+use App\Models\SearchOption;
 use App\Service\CameraService;
+use App\Service\TopService;
 // use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 
@@ -271,6 +273,27 @@ class DangerController extends AdminController
         if (isset($request['from_top']) && $request['from_top'] == true) {
             $from_top = true;
         }
+        $change_search_params_flag = false;
+        if (isset($request['change_params']) && $request['change_params'] == 'change') {
+            $change_search_params_flag = true;
+        }
+        $search_options = null;
+        $search_option_record = SearchOption::query()->where('page_name', 'admin.danger.past_analysis')->where('user_id', Auth::guard('admin')->user()->id)->get()->first();
+        if ($search_option_record != null) {
+            $search_options = $search_option_record->options;
+        }
+
+        if ($search_options != null && $change_search_params_flag == false) {
+            $search_options = json_decode($search_options);
+            $search_options = (array) $search_options;
+            $request['starttime'] = $search_options['starttime'];
+            $request['endtime'] = $search_options['endtime'];
+            $request['time_period'] = $search_options['time_period'];
+            $request['selected_search_option'] = $search_options['selected_search_option'];
+            $request['selected_rules'] = isset($search_options['selected_rules']) ? $search_options['selected_rules'] : [];
+            $request['selected_cameras'] = isset($search_options['selected_cameras']) ? $search_options['selected_cameras'] : [];
+            $request['selected_actions'] = isset($search_options['selected_actions']) ? $search_options['selected_actions'] : [];
+        }
         switch ($request['selected_search_option']) {
             case 1:
                 $request['selected_cameras'] = [];
@@ -285,6 +308,21 @@ class DangerController extends AdminController
                 $request['selected_cameras'] = [];
                 break;
         }
+        $search_params = [
+            'starttime' => isset($request['starttime']) && $request['starttime'] != '' ? $request['starttime'] : date('Y-m-d', strtotime('-1 week')),
+            'endtime' => isset($request['endtime']) && $request['endtime'] != '' ? $request['endtime'] : date('Y-m-d'),
+            'time_period' => isset($request['time_period']) ? $request['time_period'] : 'time',
+            'selected_search_option' => isset($request['selected_search_option']) ? $request['selected_search_option'] : 1,
+            'selected_rules' => isset($request['selected_rules']) ? $request['selected_rules'] : [],
+            'selected_cameras' => isset($request['selected_cameras']) ? $request['selected_cameras'] : [],
+            'selected_actions' => isset($request['selected_actions']) ? $request['selected_actions'] : [],
+        ];
+        $search_option_params = [
+            'page_name' => 'admin.danger.past_analysis',
+            'search_params' => $search_params,
+        ];
+        TopService::save_search_option($search_option_params);
+
         $danger_detections = DangerService::searchDetections($request)->get()->all();
         $all_data = [];
         foreach ($danger_detections as $item) {
@@ -294,7 +332,6 @@ class DangerController extends AdminController
         }
         $rules = DangerService::doSearch($request)->get()->all();
         $cameras = DangerService::getAllCameras();
-
         $camera_imgs = [];
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
@@ -333,7 +370,7 @@ class DangerController extends AdminController
 
         return view('admin.danger.past_analysis')->with([
             'all_data' => json_encode(array_reverse($all_data)),
-            'request' => $request,
+            'request_params' => (array) $search_params,
             'rules' => $rules,
             'cameras' => $cameras,
             'from_top' => $from_top,

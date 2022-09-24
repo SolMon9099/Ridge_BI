@@ -197,6 +197,25 @@ function addToToppage(block_type){
         }});
 }
 
+function saveSearchOptions(page_name, search_params){
+    let token = $('meta[name="csrf-token"]').attr('content');
+    jQuery.ajax({
+        url : '/admin/save_search_option',
+        method: 'post',
+        data: {
+            page_name:page_name,
+            search_params,
+            _token:token,
+        },
+
+        error : function(){
+            console.log('failed');
+        },
+        success: function(result){
+            console.log(result);
+        }});
+}
+
 function isLeft(p0, a, b) {
     return (a.x-p0.x)*(b.y-p0.y) - (b.x-p0.x)*(a.y-p0.y);
 }
@@ -263,3 +282,52 @@ function formatYearWeekNum(val){    //// format : 2018/42
     var result = y + '/' + w;
     return result;
 }
+
+function formatDateTime(val) {
+    if(val == undefined || val == null || val == "") return "";
+
+    if(val instanceof Date) {
+        var y = val.getFullYear();
+        var m = ("00" + (val.getMonth() + 1)).slice(-2);
+        var d = ("00" + val.getDate()).slice(-2);
+        var h = ("00" + val.getHours()).slice(-2);
+        var min = ("00" + val.getMinutes()).slice(-2);
+        var s = ("00" + val.getSeconds()).slice(-2);
+        var result = y + "/" + m + "/" + d + " " + h + ":" + min + ":" + s;
+        return new Date(result);
+    }
+
+    var datas = val.split(" ");
+    var ymd = datas[0].split("-");
+    var temp = "";
+    if(parseInt(ymd[1]) < 10) {
+        temp = parseInt(ymd[1]);
+        ymd[1] = "0" + temp.toString();
+    }
+    if(parseInt(ymd[2]) < 10) {
+        temp = parseInt(ymd[2]);
+        ymd[2] = "0" + temp.toString();
+    }
+    var dt_str = ymd.join("/");
+    if(datas.length>1){
+        dt_str = dt_str +" "+ datas[1];
+    }
+    return new Date(dt_str);
+};
+function formatDateTimeStr (val) {
+    if(val == undefined || val == null || val == "")
+        return "";
+
+    if(val instanceof Date) {
+        var y = val.getFullYear();
+        var m = ("00" + (val.getMonth() + 1)).slice(-2);
+        var d = ("00" + val.getDate()).slice(-2);
+        var h = ("00" + val.getHours()).slice(-2);
+        var min = ("00" + val.getMinutes()).slice(-2);
+        var s = ("00" + val.getSeconds()).slice(-2);
+        var result = y + "-" + m + "-" + d + " " + h + ":" + min + ":" + s;
+        return result;
+    } else {
+        return "";
+    }
+};

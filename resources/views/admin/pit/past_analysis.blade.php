@@ -2,15 +2,21 @@
 
 @section('content')
 <?php
+    $starttime = (isset($request_params) && isset($request_params['starttime']))?date('Y-m-d', strtotime($request_params['starttime'])) :date('Y-m-d');
+    $endtime = (isset($request_params) && isset($request_params['endtime']))?date('Y-m-d', strtotime($request_params['endtime'])):date('Y-m-d');
+    $search_period = (strtotime($endtime) - strtotime($starttime))/86400;
+    $selected_camera = old('selected_camera', (isset($request_params) && isset($request_params['selected_camera']))?$request_params['selected_camera']:null);
     $total_data = array();
     $sum = 0;
+    $pit_detections = array_reverse($pit_detections);
     foreach ($pit_detections as $item) {
-        $sum += ($item->nb_entry - $item->nb_exit);
-        $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
+        $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $item->nb_entry - $item->nb_exit;
     }
+
 ?>
 <form action="{{route('admin.pit.past_analysis')}}" method="get" name="form1" id="form1">
 @csrf
+    <input type="hidden" name="change_params" value="change"/>
     <div id="wrapper">
         <div class="breadcrumb">
         <ul>
@@ -27,11 +33,16 @@
                     <div class="sort">
                     <ul class="date-list">
                         <li>
-                        <h4>検出日</h4>
+                        <h4>検出期間</h4>
                         </li>
+                        <li style="width:113px;">
+                            <input id='starttime' type="date" name='starttime' onchange="search()"
+                                value="{{ old('starttime', $starttime)}}"/>
+                        </li>
+                        <li>～</li>
                         <li>
-                            <input id='searchdate' type="date" name='searchdate' onchange="search()"
-                                value="{{ old('searchdate', (isset($request) && $request->has('searchdate'))?$request->searchdate:date('Y-m-d'))}}">
+                            <input id='endtime' type="date" name='endtime' onchange="search()"
+                                value="{{ old('endtime', $endtime)}}"/>
                         </li>
                     </ul>
                     <ul class="date-list">
@@ -47,39 +58,82 @@
                 </div>
             </div>
             <div class="list">
-                <div class="inner active" style="position: relative;">
+                <div class="inner active">
                     <div style="display: flex; position: relative;">
                         <h3 class="title">ピット内人数推移</h3>
                         <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_pit']}})">ダッシュボートへ追加</button>
                     </div>
-                    <div class="period-select-buttons">
-                        <button type="button" class="period-button three selected" onclick="displayGraphData(3)">3時間</button>
-                        <button type="button" class="period-button six" onclick="displayGraphData(6)">6時間</button>
-                        <button type="button" class="period-button twelve" onclick="displayGraphData(12)">12時間</button>
-                        <button type="button" class="period-button twofour" onclick="displayGraphData(24)">24時間</button>
-                    </div>
-                    <a class="prev" onclick="moveXRange(-1)">❮</a>
-                    <a class="next" onclick="moveXRange(1)">❯</a>
-                    <canvas id="myLineChart1"></canvas>
+                    <div class="chart-area" style="position: relative;">
+                        <div class="period-select-buttons">
+                            <?php
+                                $time_period = '3';
+                                if (isset($request_params['time_period']) && $request_params['time_period'] != '') $time_period = $request_params['time_period'];
 
+                                if ($search_period < 1) {
+                                    if (!in_array($time_period, ['3', '6', '12', '24'])){
+                                        $time_period = '3';
+                                    }
+                                } else if ($search_period < 7 ) {
+                                    if (!in_array($time_period, ['time', 'day',])){
+                                        $time_period = 'time';
+                                    }
+                                } else if ($search_period <= 30 ) {
+                                    if (!in_array($time_period, ['time', 'day',])){
+                                        $time_period = 'time';
+                                    }
+                                } else if ($search_period <= 180 ) {
+                                    if (!in_array($time_period, ['day', 'week','month'])){
+                                        $time_period = 'day';
+                                    }
+                                } else {
+                                    if (!in_array($time_period, ['day', 'week','month'])){
+                                        $time_period = 'day';
+                                    }
+                                }
+                            ?>
+                            <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
+                            @if ($search_period < 1)
+                                <button type="button" class="<?php echo $time_period == 3 ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
+                                <button type="button" class="<?php echo $time_period == 6 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'6')">6時間</button>
+                                <button type="button" class="<?php echo $time_period == 12 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'12')">12時間</button>
+                                <button type="button" class="<?php echo $time_period == 24 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'24')">24時間</button>
+                            @elseif ($search_period < 7)
+                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'time')">時間別</button>
+                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
+                            @elseif ($search_period <= 30)
+                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'time')">時間別</button>
+                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
+                            @elseif ($search_period <= 180)
+                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
+                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'week')">週別</button>
+                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'month')">月別</button>
+                            @else
+                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
+                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'week')">週別</button>
+                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'month')">月別</button>
+                            @endif
+                        </div>
+                        <a class="prev" onclick="moveXRange(-1)">❮</a>
+                        <a class="next" onclick="moveXRange(1)">❯</a>
+                        <canvas id="myLineChart1"></canvas>
+                    </div>
                     <div class="left-right">
                         <div class="left-box">
                             <h3 class="title">入退場履歴</h3>
                             <table class="table2 text-centre top50">
                                 <thead>
                                     <tr>
-                                        <th>時間</th>
+                                        <th>日時</th>
                                         <th>検知条件</th>
                                         <th>人数変化</th>
                                         <th>ピット内人数</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $pit_detections = array_reverse($pit_detections); $sum = 0;?>
                                     @foreach ($pit_detections as $pit_item)
                                         <?php $sum += ($pit_item->nb_entry - $pit_item->nb_exit); ?>
                                         <tr>
-                                            <td>{{date('H:i:s', strtotime($pit_item->starttime))}}</td>
+                                            <td>{{date('Y-m-d H:i:s', strtotime($pit_item->starttime))}}</td>
                                             <td>{{$pit_item->nb_entry > $pit_item->nb_exit ? '入場':'退場'}}</td>
                                             <td>
                                                 <span class="<?php echo ($pit_item->nb_entry > $pit_item->nb_exit)?'f-red':'f-blue'?>">
@@ -89,54 +143,6 @@
                                             <td>{{$sum}}</td>
                                         </tr>
                                     @endforeach
-                                    {{-- <tr>
-                                        <td>9:05:25</td>
-                                        <td>入場</td>
-                                        <td><span class="f-red">+1</span></td>
-                                        <td>1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>9:22:12</td>
-                                        <td>入場</td>
-                                        <td><span class="f-red">+1</span></td>
-                                        <td>2</td>
-                                    </tr>
-                                    <tr>
-                                        <td>11:23:17</td>
-                                        <td>退場</td>
-                                        <td><span class="f-blue">-1</span></td>
-                                        <td>1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>12:33:41</td>
-                                        <td>退場</td>
-                                        <td><span class="f-blue">-1</span></td>
-                                        <td>0</td>
-                                    </tr>
-                                    <tr>
-                                        <td>14:25:32</td>
-                                        <td>入場</td>
-                                        <td><span class="f-blue">+1</span></td>
-                                        <td>1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>15:31:45</td>
-                                        <td>退場</td>
-                                        <td><span class="f-blue">-1</span></td>
-                                        <td>0</td>
-                                    </tr>
-                                    <tr>
-                                        <td>18:23:14</td>
-                                        <td>入場</td>
-                                        <td><span class="f-blue">+1</span></td>
-                                        <td>1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>19:47:51</td>
-                                        <td>退場</td>
-                                        <td><span class="f-blue">-1</span></td>
-                                        <td>0</td>
-                                    </tr> --}}
                                 </tbody>
                             </table>
                         </div>
@@ -180,9 +186,6 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php
-                            $selected_camera = old('selected_camera', (isset($request) && $request['selected_camera'] > 0)?$request['selected_camera']:null);
-                        ?>
                         @foreach ($cameras as $camera)
                         <tr>
                             <td class="stick-t">
@@ -238,7 +241,7 @@
     .period-select-buttons{
         position: absolute;
         right: 10px;
-        top: 45px;
+        top: 0;
     }
     .period-select-buttons > button{
         padding:3px;
@@ -249,7 +252,7 @@
     .prev, .next {
         cursor: pointer;
         position: absolute;
-        top: 25%;
+        top: 50%;
         width: auto;
         padding-left: 15px;
         padding-right: 15px;
@@ -292,27 +295,308 @@
     function search(){
         $('#form1').submit();
     }
-    var x_range = 3;
-    var start_x = 0;
-
     var ctx = document.getElementById("myLineChart1");
+    var search_period = "<?php echo $search_period;?>";
+    var selected_camera = "<?php echo $selected_camera;?>";
+    var starttime = $('#starttime').val();
+    starttime = formatDateTime(starttime);
+    starttime.setHours(0);
+    starttime.setMinutes(0);
+    starttime.setSeconds(0);
+    var endtime = $('#endtime').val();
+    endtime = formatDateTime(endtime);
+    endtime.setHours(24);
+    endtime.setMinutes(0);
+    endtime.setSeconds(0);
+
+    var min_time = new Date(starttime);
+    min_time.setHours(0);
+    min_time.setMinutes(0);
+    min_time.setSeconds(0);
+    var max_time = new Date(min_time);
+
+    var grpah_init_type = "<?php echo $time_period;?>";
+    var period_unit = 'hour';
+    var displayFormat = {'hour': 'H:mm'};
+    var tooltip = "H:mm";
+    var grid_unit = 15;
+    setGraphOptions(grpah_init_type);
+
+    function setGraphOptions(time_period){
+        switch(time_period){
+            case '3':
+                grid_unit = 15;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
+                max_time.setHours(max_time.getHours() + parseInt(time_period));
+                break;
+            case '6':
+                grid_unit = 30;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
+                max_time.setHours(max_time.getHours() + parseInt(time_period));
+                break;
+            case '12':
+                grid_unit = 60;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
+                max_time.setHours(max_time.getHours() + parseInt(time_period));
+                break;
+            case '24':
+                grid_unit = 60;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'H:mm'};
+                tooltip = "H:mm";
+                max_time.setHours(max_time.getHours() + parseInt(time_period));
+                break;
+            case 'time':
+                grid_unit = 60;
+                period_unit = 'minute';
+                displayFormat = {'minute': 'DD日H時'};
+                tooltip = "MM/DD H:mm";
+                max_time.setDate(max_time.getDate() + 1);
+                break;
+            case 'day':
+                grid_unit = 1;
+                period_unit = 'day';
+                displayFormat = {'day': 'M/DD'};
+                tooltip = "YY/MM/DD";
+                max_time.setDate(max_time.getDate() + 7);
+                break;
+            case 'week':
+                grid_unit = 1;
+                period_unit = 'week';
+                displayFormat = {'week': 'M/DD'};
+                tooltip = "YY/MM/DD";
+                max_time.setDate(max_time.getDate() + 28);
+                break;
+            case 'month':
+                grid_unit = 1;
+                period_unit = 'month';
+                displayFormat = {'month': 'YYYY/MM'};
+                tooltip = "YY/MM";
+                max_time.setMonth(max_time.getMonth() + 6);
+                break;
+        }
+    }
+
+    function moveXRange(increament = 1){
+        switch(grpah_init_type){
+            case '3':
+                if (increament == 1){
+                    min_time.setHours(min_time.getHours() + 3 >= 24 ? 0 : min_time.getHours() + 3);
+                } else {
+                    min_time.setHours(min_time.getHours() - 3 < 0 ? 21 : min_time.getHours() - 3);
+                }
+                break;
+            case '6':
+                if (increament == 1){
+                    min_time.setHours(min_time.getHours() + 6 >= 24 ? 0 : min_time.getHours() + 6);
+                } else {
+                    min_time.setHours(min_time.getHours() - 6 < 0 ? 18 : min_time.getHours() - 6);
+                }
+                break;
+            case '12':
+                if (increament == 1){
+                    min_time.setHours(min_time.getHours() + 12 >= 24 ? 0 : min_time.getHours() + 12);
+                } else {
+                    min_time.setHours(min_time.getHours() - 12 < 0 ? 12 : min_time.getHours() - 12);
+                }
+                break;
+            case '24':
+                return;
+            case 'time':
+                if (increament == 1){
+                    min_time.setDate(min_time.getDate() + 1);
+                    if (min_time.getTime() >= endtime.getTime()) {
+                        min_time = new Date(starttime);
+                    }
+                } else {
+                    min_time.setDate(min_time.getDate() - 1);
+                    if (min_time.getTime() < starttime.getTime()) {
+                        min_time = new Date(endtime);
+                        min_time.setDate(min_time.getDate() -1);
+                    }
+                }
+                break;
+            case 'day':
+                if (search_period < 7) return;
+                if (increament == 1){
+                    min_time.setDate(min_time.getDate() + 7);
+                    if (min_time.getTime() >= endtime.getTime()) {
+                        min_time = new Date(starttime);
+                    }
+                } else {
+                    min_time.setDate(min_time.getDate() - 7);
+                    if (min_time.getTime() < starttime.getTime()) {
+                        min_time = new Date(endtime);
+                        min_time.setDate(min_time.getDate() - 7);
+                    }
+                }
+                break;
+            case 'week':
+                if (increament == 1){
+                    min_time.setDate(min_time.getDate() + 28);
+                    if (min_time.getTime() >= endtime.getTime()) {
+                        min_time = new Date(starttime);
+                    }
+                } else {
+                    min_time.setDate(min_time.getDate() - 28);
+                    if (min_time.getTime() < starttime.getTime()) {
+                        min_time = new Date(endtime);
+                        min_time.setDate(min_time.getDate() - 28);
+                    }
+                }
+                break;
+            case 'month':
+                if (search_period <= 180) return;
+                if (increament == 1){
+                    min_time.setMonth(min_time.getMonth() + 6);
+                    if (min_time.getTime() >= endtime.getTime()) {
+                        min_time = new Date(starttime);
+                    }
+                } else {
+                    min_time.setMonth(min_time.getMonth() - 6);
+                    if (min_time.getTime() < starttime.getTime()) {
+                        min_time = new Date(endtime);
+                        min_time.setMonth(min_time.getMonth() - 6);
+                    }
+                }
+                break;
+        }
+        displayGraphData(null, grpah_init_type, false);
+    }
+
+    function resortData(data, time_period){
+        var temp = {};
+        var sum = 0;
+        switch(time_period){
+            case 'day':
+                Object.keys(data).map(date_time => {
+                    var date = formatDateLine(date_time);
+                    if (temp[date] == undefined) temp[date] = 0;
+                    temp[date] += data[date_time];
+                })
+                break;
+            case 'week':
+                Object.keys(data).map(date_time => {
+                    var date = formatYearWeekNum(date_time);
+                    if (temp[date] == undefined) temp[date] = 0;
+                    temp[date] += data[date_time];
+                })
+                break;
+            case 'month':
+                Object.keys(data).map(date_time => {
+                    var date = formatYearMonth(date_time);
+                    if (temp[date] == undefined) temp[date] = 0;
+                    temp[date] += data[date_time];
+                })
+                break;
+            default:
+                Object.keys(data).map(date_time => {
+                    sum += data[date_time];
+                    temp[date_time] = sum;
+                })
+        }
+        return temp;
+    }
+
     var total_data = <?php echo json_encode($total_data);?>;
 
-    // var time_labels = ['09:05:25', '09:22:12', '11:23:17', '12:33:41', '14:25:32', '15:31:45', '18:23:14', '19:47:51'];
-    // var y_data = [1,2,1,0,1,0,1,0];
-    // for(var i = 0; i<time_labels.length; i++){
-    //     time_labels[i] = new Date('2022-07-12 ' + time_labels[i]);
-    // }
-    // time_labels.unshift(new Date('2022-07-12 08:00:00'));
-    // time_labels.push(new Date('2022-07-12 20:00:00'));
-    // y_data.unshift(null);
-    // y_data.push(null);
+    function displayGraphData(e = null, time_period = '3', start_init_flag = true){
+        var time_labels = [];
+        var y_data = [];
+        grpah_init_type = time_period;
+        $('#time_period').val(time_period);
+        if (start_init_flag){
+            min_time = new Date(starttime);
+            min_time.setHours(0);
+            min_time.setMinutes(0);
+            min_time.setSeconds(0);
+        }
 
-    function drawGraph(x_data, y_data, grid_unit){
+        if (e != null){
+            $('.period-button').each(function(){
+                $(this).removeClass('selected');
+            });
+
+            $(e).addClass('selected');
+        }
+        max_time = new Date(min_time);
+        setGraphOptions(time_period);
+        if (max_time.getTime() > endtime.getTime()) max_time = new Date(endtime);
+        var cur_time = new Date(min_time);
+        if (time_period == 'week'){
+            var first = cur_time.getDate() - cur_time.getDay();
+            cur_time = new Date(cur_time.setDate(first));
+        } else if (time_period == 'month'){
+            cur_time.setDate(1);
+        } else if (time_period == 'day'){
+            cur_time.setHours(0);
+            cur_time.setMinutes(0);
+            cur_time.setSeconds(0);
+        }
+        var graph_data = resortData(total_data, time_period);
+
+        while(cur_time.getTime() <= max_time.getTime()){
+            time_labels.push(new Date(cur_time));
+
+            if (time_period == 'day' || time_period == 'week' || time_period == 'month'){
+                var date_key = formatDateLine(cur_time);
+                if (time_period == 'week') date_key = formatYearWeekNum(cur_time);
+                if (time_period == 'month') date_key = formatYearMonth(cur_time);
+                if (graph_data[date_key] == undefined){
+                    y_data.push(null);
+                } else {
+                    y_data.push(graph_data[date_key]);
+                }
+            } else {
+                var y_add_flag = false;
+                Object.keys(graph_data).map((time, index) => {
+                    if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000){
+                        if (index == 0){
+                            y_add_flag = true;
+                            if (new Date(time).getTime() != cur_time.getTime()) {
+                                time_labels.push(new Date(time));
+                                y_data.push(null);
+                            }
+                        } else {
+                            time_labels.push(new Date(time));
+                        }
+                        y_data.push(graph_data[time]);
+                    }
+                })
+                if (y_add_flag == false){
+                    y_data.push(null);
+                }
+            }
+
+            switch(time_period){
+                case 'time':
+                    cur_time.setHours(cur_time.getHours() + 1);
+                    break;
+                case 'day':
+                    cur_time.setDate(cur_time.getDate() + 1);
+                    break;
+                case 'week':
+                    cur_time.setDate(cur_time.getDate() + 7);
+                    break;
+                case 'month':
+                    cur_time.setMonth(cur_time.getMonth() + 1);
+                    break;
+                default:
+                    cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
+                    break;
+            }
+        }
+
         var myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels:x_data,
+                labels:time_labels,
                 datasets: [{
                     label: '人',
                     steppedLine:true,
@@ -342,7 +626,7 @@
                     yAxes: [{
                         ticks: {
                             suggestedMax: Math.max(...y_data) + 1,
-                            suggestedMin: 0,
+                            suggestedMin: Math.min(...y_data) - 1,
                             stepSize: 1,
                             fontSize: 20,
                             callback: function(value, index, values){
@@ -353,110 +637,32 @@
                     xAxes:[{
                         type: 'time',
                         time: {
-                            unit: 'minute',
-                            displayFormats: {
-                                minute: 'H:mm'
-                            },
-                            tooltipFormat:"H:mm",
+                            unit: period_unit,
+                            tooltipFormat:tooltip,
+                            displayFormats:displayFormat,
                             distribution: 'series',
                             stepSize: grid_unit,
-                            format:'HH:mm'
                         },
                         ticks: {
-                            fontSize: 15,
-                            // max: max_time,
-                            // min: min_time,
+                            fontSize: 18,
+                            max: max_time,
+                            min: min_time,
                         }
                     }]
                 },
-
             }
         });
-    }
 
-    function moveXRange(increament = 1){
-        if (x_range == 24) return;
-        if (increament == 1){
-            start_x = start_x + x_range;
-            if (start_x >= 24) start_x = 0;
-        } else {
-            start_x = start_x - x_range;
-            if (start_x < 0) start_x += 24;
+        var search_params = {
+            starttime:formatDateLine(new Date($('#starttime').val())),
+            endtime:formatDateLine(new Date($('#endtime').val())),
+            time_period:grpah_init_type,
+            selected_camera:selected_camera
         }
-
-        displayGraphData(x_range, false);
-    }
-
-    function displayGraphData(time_period = 3, start_x_init = true){
-        var grid_unit = 15;
-        x_range = time_period;
-        if (start_x_init) start_x = 0;
-        $('.period-button').each(function(){
-            $(this).removeClass('selected');
-        });
-        switch(time_period){
-            case 3:
-                $('.three').addClass('selected');
-                grid_unit = 15;
-                break;
-            case 6:
-                $('.six').addClass('selected');
-                grid_unit = 30;
-                break;
-            case 12:
-                $('.twelve').addClass('selected');
-                grid_unit = 60;
-                break;
-            case 24:
-                $('.twofour').addClass('selected');
-                grid_unit = 60;
-                break;
-        }
-        var search_date = $('#searchdate').val();
-        var min_time = new Date(search_date);
-        min_time.setHours(start_x);
-        min_time.setMinutes(0);
-        min_time.setSeconds(0);
-        var max_time = new Date(search_date);
-        max_time.setHours(start_x + time_period);
-        max_time.setMinutes(0);
-        max_time.setSeconds(0);
-
-        var cur_time = new Date(search_date);
-        cur_time.setHours(min_time.getHours());
-        cur_time.setMinutes(0);
-        cur_time.setSeconds(0);
-
-        var time_labels = [];
-        var y_data = [];
-
-        while(cur_time.getTime() <= max_time.getTime()){
-            time_labels.push(new Date(cur_time));
-            var y_add_flag = false;
-            Object.keys(total_data).map((time, index) => {
-                if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000){
-                    if (index == 0){
-                        y_add_flag = true;
-                        if (new Date(time).getTime() != cur_time.getTime()) {
-                            time_labels.push(new Date(time));
-                            y_data.push(null);
-                        }
-                    } else {
-                        time_labels.push(new Date(time));
-                    }
-                    y_data.push(total_data[time]);
-                }
-            })
-            if (y_add_flag == false){
-                y_data.push(null);
-            }
-            cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
-        }
-
-        drawGraph(time_labels, y_data, grid_unit);
+        saveSearchOptions('admin.pit.past_analysis', search_params);
     }
     $(document).ready(function() {
-        displayGraphData();
+        displayGraphData(null, grpah_init_type);
     });
 </script>
 @endsection

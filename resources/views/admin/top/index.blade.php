@@ -130,6 +130,8 @@
         font-size: 18px;
         width:100%;
         text-align: center;
+        padding-left:24px;
+        padding-right:24px;
     }
     .camera-id{
         font-size:14px;
@@ -247,6 +249,17 @@
         margin-bottom: 10px;
         font-size:20px;
     }
+    .grid-stack-item-content::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    .grid-stack-item-content::-webkit-scrollbar-thumb {
+        background: lightgray;
+        border-radius: 3px;
+    }
+    .grid-stack-item-content::-webkit-scrollbar-track {
+        background:white;
+    }
 </style>
 <?php
     $login_user = Auth::guard('admin')->user();
@@ -263,10 +276,9 @@
             <div class="title-area">
                 <h2 class="title">ダッシュボード</h2>
                 <div class="add-widget">
-                    <a class="total-menu-letter" onClick="showEditMenu(this)" href="#">編集</a>
+                    <a class="total-menu-letter" onClick="showEditMenu(this)" href="#">表示項目を追加</a>
                 </div>
                 <ul class="user-menu">
-                    <h2>表示項目を追加</h2>
                     @foreach (config('const.header_menus') as $code => $header_name)
                     @if ($super_admin_flag || in_array($code, $headers))
                         <h2>{{$header_name}}</h2>
@@ -477,7 +489,7 @@
                             <th>カメラNo</th>
                             <th>設置エリア</th>
                             <th>設置場所</th>
-                            {{-- <th>カメラ画像確認</th> --}}
+                            <th>カメラ画像確認</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -606,7 +618,7 @@
         if ($(e).hasClass('on')){
             $('.total-menu-letter').html('閉じる');
         } else {
-            $('.total-menu-letter').html('編集');
+            $('.total-menu-letter').html('表示項目を追加');
         }
     }
 
@@ -660,7 +672,7 @@
                         tr_record += '<td>' + camera.camera_id + '</td>';
                         tr_record += '<td>' + camera.location_name + '</td>';
                         tr_record += '<td>' + camera.installation_position + '</td>';
-                        // tr_record += '<td><img width="100px" src="' + camera.img + '"/></td>';
+                        tr_record += '<td><img width="100px" src="' + '<?php echo asset("storage/recent_camera_image/") ;?>' + '/' + camera.camera_id + '.jpeg"/></td>';
                         tr_record += '</tr>';
                         $('tbody', $('#camera')).append(tr_record);
                         $('.selected_camera').click(function(){

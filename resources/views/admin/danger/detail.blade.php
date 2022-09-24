@@ -1,4 +1,5 @@
 <?php
+    $selected_camera = old('selected_camera', (isset($request_params) && isset($request_params['selected_camera']))?$request_params['selected_camera']:null);
     $selected_rule = null;
     foreach ($rules as $rule) {
         if ($rule->points != null && $rule->points != '') $rule->points = json_decode($rule->points);
@@ -11,6 +12,7 @@
 
 <form action="{{route('admin.danger.detail')}}" method="get" name="form1" id="form1">
 @csrf
+    <input type="hidden" name="change_params" value="change"/>
     <div id="wrapper">
         <div class="breadcrumb">
         <ul>
@@ -64,9 +66,14 @@
                         </div>
                         @if(isset($selected_rule))
                             <div class="period-select-buttons">
-                                <button type="button" class="period-button three selected" onclick="displayGraphData(3)">3時間</button>
-                                <button type="button" class="period-button six" onclick="displayGraphData(6)">6時間</button>
-                                <button type="button" class="period-button twelve" onclick="displayGraphData(12)">12時間</button>
+                                <?php
+                                    $time_period = '3';
+                                    if (isset($request_params['time_period']) && $request_params['time_period'] != '') $time_period = $request_params['time_period'];
+                                ?>
+                                <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
+                                <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
+                                <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '6')">6時間</button>
+                                <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '12')">12時間</button>
                             </div>
                             <canvas id="myLineChart1" onclick="location.href='{{route('admin.danger.past_analysis')}}'"></canvas>
                         @endif
@@ -161,7 +168,6 @@
                         </thead>
                         <tbody>
                         <?php
-                            $selected_camera = old('selected_camera', (isset($request) && $request['selected_camera'] > 0)?$request['selected_camera']:null);
                             if ($selected_camera == null && $selected_rule != null){
                                 $selected_camera = $selected_rule->camera_id;
                             }
@@ -171,9 +177,9 @@
                             <td class="stick-t">
                                 <div class="checkbtn-wrap radio-wrap-div">
                                     @if ((int)$camera->id == (int)$selected_camera)
-                                        <input name="selected_cameras[]" value = '{{$camera->id}}' type="radio" id="{{'camera'.$camera->id}}" checked>
+                                        <input name="selected_camera" value = '{{$camera->id}}' type="radio" id="{{'camera'.$camera->id}}" checked>
                                     @else
-                                        <input name="selected_cameras[]" value = '{{$camera->id}}' type="radio" id="{{'camera'.$camera->id}}">
+                                        <input name="selected_camera" value = '{{$camera->id}}' type="radio" id="{{'camera'.$camera->id}}">
                                     @endif
                                     <label class="" for="{{'camera'.$camera->id}}"></label>
                                 </div>
@@ -182,7 +188,7 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
-                            <td><img width="100px" src="{{$camera->img}}"/></td>
+                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
                         </tbody>
@@ -282,25 +288,32 @@
         4:'black',
     }
     var ctx = document.getElementById("myLineChart1");
+    var time_period = "<?php echo $time_period;?>";
+    var selected_camera = "<?php echo $selected_camera;?>";
+    var grid_unit = 15;
+
     var all_data = <?php echo $all_data;?>;
     var actions = <?php echo json_encode(config('const.action'));?>;
 
-    function displayGraphData(time_period = 3){
-        $('.period-button').each(function(){
-            $(this).removeClass('selected');
-        });
-        var grid_unit = 15;
-        switch(time_period){
+    function displayGraphData(e = null, x_range = '3'){
+        if (e != null){
+            $('.period-button').each(function(){
+                $(this).removeClass('selected');
+            });
+
+            $(e).addClass('selected');
+        }
+        time_period = x_range;
+        $('#time_period').val(time_period);
+        x_range = parseInt(x_range);
+        switch(x_range){
             case 3:
-                $('.three').addClass('selected');
                 grid_unit = 15;
                 break;
             case 6:
-                $('.six').addClass('selected');
                 grid_unit = 30;
                 break;
             case 12:
-                $('.twelve').addClass('selected');
                 grid_unit = 60;
                 break;
         }
@@ -312,7 +325,7 @@
         max_time.setMinutes(0);
         max_time.setSeconds(0);
 
-        min_time.setHours((now.getHours() - (time_period -1 )) < 0 ? 0 : now.getHours() -(time_period -1 ));
+        min_time.setHours((now.getHours() - (x_range -1 )) < 0 ? 0 : now.getHours() -(x_range -1 ));
         min_time.setMinutes(0);
         min_time.setSeconds(0);
 
@@ -435,6 +448,12 @@
                 },
             }
         });
+
+        var search_params = {
+            time_period:time_period,
+            selected_camera:selected_camera
+        }
+        saveSearchOptions('admin.danger.detail', search_params);
     }
 
     let safieStreamingPlayerElement;
@@ -504,7 +523,7 @@
                 }
             })
         }
-        displayGraphData();
+        displayGraphData(null, time_period);
     });
 </script>
 @endsection

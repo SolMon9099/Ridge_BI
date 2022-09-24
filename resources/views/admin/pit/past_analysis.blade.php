@@ -93,10 +93,10 @@
                             ?>
                             <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
                             @if ($search_period < 1)
-                                <button type="button" class="<?php echo $time_period == 3 ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
-                                <button type="button" class="<?php echo $time_period == 6 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'6')">6時間</button>
-                                <button type="button" class="<?php echo $time_period == 12 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'12')">12時間</button>
-                                <button type="button" class="<?php echo $time_period == 24 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'24')">24時間</button>
+                                <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
+                                <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'6')">6時間</button>
+                                <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'12')">12時間</button>
+                                <button type="button" class="<?php echo $time_period == '24' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'24')">24時間</button>
                             @elseif ($search_period < 7)
                                 <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'time')">時間別</button>
                                 <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
@@ -202,7 +202,7 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
-                            <td><img width="100px" src="{{$camera->img}}"/></td>
+                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
                         </tbody>

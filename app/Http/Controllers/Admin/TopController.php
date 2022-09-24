@@ -5,18 +5,18 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Models\AuthorityGroup;
 use App\Models\TopBlock;
-use App\Service\CameraService;
 use Illuminate\Support\Facades\Auth;
 use App\Service\DangerService;
 use App\Service\PitService;
 use App\Service\SafieApiService;
 use App\Service\TopService;
+use Illuminate\Support\Facades\Storage;
 
 class TopController extends AdminController
 {
     public function index()
     {
-        // $cameras = CameraService::doSearch()->get()->all();
+        $camera_imgs = [];
         $top_blocks = TopService::search()->get()->all();
         foreach ($top_blocks as $item) {
             switch ($item->block_type) {
@@ -24,7 +24,9 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['recent_detect_danger']:
                 case config('const.top_block_type_codes')['detect_list_danger']:
                     if (!isset($unlimit_danger_detections)) {
-                        $unlimit_danger_detections = DangerService::searchDetections(null)->get();
+                        $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
+                        $request['endtime'] = date('Y-m-d');
+                        $unlimit_danger_detections = DangerService::searchDetections($request)->get();
                     }
                     $item->danger_detections = $unlimit_danger_detections;
                     $item->danger_detection = count($unlimit_danger_detections) > 0 ? $unlimit_danger_detections[0] : null;
@@ -40,12 +42,11 @@ class TopController extends AdminController
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
                             }
-                            // $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                            // if ($camera_image_data != null) {
-                            //     $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
-                            // }
-                            // $camera->img = $camera_image_data;
-                            $camera->img = null;
+                            if (!isset($camera_imgs[$camera->camera_id])) {
+                                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                                $camera_imgs[$camera->camera_id] = $camera_image_data;
+                                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
+                            }
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
                     }
@@ -63,11 +64,13 @@ class TopController extends AdminController
                     }
                     break;
                 case config('const.top_block_type_codes')['live_graph_danger']:
-                    $request['starttime'] = date('Y-m-d');
-                    $request['endtime'] = date('Y-m-d');
-                    $danger_detections = DangerService::searchDetections($request)->get()->all();
+                    if (!isset($live_danger_detections)) {
+                        $request['starttime'] = date('Y-m-d');
+                        $request['endtime'] = date('Y-m-d');
+                        $live_danger_detections = DangerService::searchDetections($request)->get()->all();
+                    }
                     $all_data = [];
-                    foreach ($danger_detections as $danger_detection_item) {
+                    foreach ($live_danger_detections as $danger_detection_item) {
                         if ($danger_detection_item->detection_action_id > 0) {
                             $all_data[date('Y-m-d H:i H:i', strtotime($danger_detection_item->starttime))][$danger_detection_item->detection_action_id][] = $danger_detection_item;
                         }
@@ -75,11 +78,13 @@ class TopController extends AdminController
                     $item->danger_live_graph_data = $all_data;
                     break;
                 case config('const.top_block_type_codes')['past_graph_danger']:
-                    $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
-                    $request['endtime'] = date('Y-m-d');
-                    $danger_detections = DangerService::searchDetections($request)->get()->all();
+                    if (!isset($past_danger_detections)) {
+                        $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
+                        $request['endtime'] = date('Y-m-d');
+                        $past_danger_detections = DangerService::searchDetections($request)->get()->all();
+                    }
                     $all_data = [];
-                    foreach ($danger_detections as $danger_detection_item) {
+                    foreach ($past_danger_detections as $danger_detection_item) {
                         if ($danger_detection_item->detection_action_id > 0) {
                             $all_data[date('Y-m-d H:i', strtotime($danger_detection_item->starttime))][$danger_detection_item->detection_action_id][] = $danger_detection_item;
                         }
@@ -90,6 +95,8 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['recent_detect_pit']:
                 case config('const.top_block_type_codes')['detect_list_pit']:
                     if (!isset($unlimit_pit_detections)) {
+                        $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
+                        $request['endtime'] = date('Y-m-d');
                         $unlimit_pit_detections = PitService::searchDetections(null)->get();
                     }
                     $item->pit_detections = $unlimit_pit_detections;
@@ -105,12 +112,10 @@ class TopController extends AdminController
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
                             }
-                            // $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                            // if ($camera_image_data != null) {
-                            //     $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
-                            // }
-                            // $camera->img = $camera_image_data;
-                            $camera->img = null;
+                            if (!isset($camera_imgs[$camera->camera_id])) {
+                                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
+                            }
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
                     }
@@ -185,20 +190,20 @@ class TopController extends AdminController
                 $x = $item->gs_x + $item->gs_w;
             }
         }
-        if ($enable_add_flag) {
-            $new_block = new TopBlock();
-            $new_block->user_id = $login_user->id;
-            $new_block->block_type = $block_type;
-            $new_block->gs_x = $x >= 12 ? 0 : $x;
-            $new_block->gs_y = $y;
-            $new_block->gs_w = 4;
-            $new_block->gs_h = 3;
-            $new_block->save();
+        // if ($enable_add_flag) {
+        $new_block = new TopBlock();
+        $new_block->user_id = $login_user->id;
+        $new_block->block_type = $block_type;
+        $new_block->gs_x = $x >= 12 ? 0 : $x;
+        $new_block->gs_y = $y;
+        $new_block->gs_w = 4;
+        $new_block->gs_h = 3;
+        $new_block->save();
 
-            return 'TOPページに追加しました。';
-        }
+        return 'TOPページに追加しました。';
+        // }
 
-        return 'すでに登録されています。';
+        // return 'すでに登録されています。';
     }
 
     public function save_search_option(Request $request)

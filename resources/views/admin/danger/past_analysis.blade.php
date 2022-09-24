@@ -88,10 +88,10 @@
                         ?>
                         <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
                         @if ($search_period < 1)
-                            <button type="button" class="<?php echo $time_period == 3 ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
-                            <button type="button" class="<?php echo $time_period == 6 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'6')">6時間</button>
-                            <button type="button" class="<?php echo $time_period == 12 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'12')">12時間</button>
-                            <button type="button" class="<?php echo $time_period == 24 ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'24')">24時間</button>
+                            <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
+                            <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'6')">6時間</button>
+                            <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'12')">12時間</button>
+                            <button type="button" class="<?php echo $time_period == '24' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'24')">24時間</button>
                         @elseif ($search_period < 7)
                             <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'time')">時間別</button>
                             <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
@@ -158,7 +158,7 @@
                                 @endforeach
                             </td>
                             <td><input disabled type="color" value = "{{$rule->color}}"></td>
-                            <td><img width="100px" src="{{$rule->img}}"/></td>
+                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$rule->camera_no.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -206,7 +206,7 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
-                            <td><img width="100px" src="{{$camera->img}}"/></td>
+                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
                         </tbody>
@@ -363,7 +363,6 @@
     var displayFormat = {'hour': 'H:mm'};
     var tooltip = "H:mm";
     var grid_unit = 15;
-    console.log('grpah_init_type', grpah_init_type);
     setGraphOptions(grpah_init_type);
 
     function setGraphOptions(time_period){
@@ -433,9 +432,6 @@
     var selected_rules = <?php echo json_encode($selected_rule_ids);?>;
     var selected_cameras = <?php echo json_encode($selected_camera_ids);?>;
     var selected_actions = <?php echo json_encode($selected_action_ids);?>;
-    console.log('selected_rules', selected_rules);
-    console.log('selected_cameras', selected_cameras);
-    console.log('selected_actions', selected_actions);
 
     function moveXRange(increament = 1){
         switch(grpah_init_type){
@@ -578,8 +574,7 @@
     }
     function displayGraphData(e = null, time_period = 3, start_init_flag = true){
         grpah_init_type = time_period;
-        console.log('time', time_period);
-
+        $('#time_period').val(time_period);
         if (start_init_flag){
             min_time = new Date(starttime);
             min_time.setHours(0);

@@ -14,6 +14,7 @@ use App\Models\SearchOption;
 use App\Service\CameraService;
 use App\Service\TopService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PitController extends AdminController
 {
@@ -157,6 +158,9 @@ class PitController extends AdminController
         if (isset($request['from_top']) && $request['from_top'] == true) {
             $from_top = true;
         }
+        if (!(isset($request['starttime']) && $request['starttime'] != '')) {
+            $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
+        }
         $pit_detections = PitService::searchDetections($request)->paginate($this->per_page);
         foreach ($pit_detections as $item) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
@@ -192,7 +196,41 @@ class PitController extends AdminController
         if (isset($request['from_top']) && $request['from_top'] == true) {
             $from_top = true;
         }
-        $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
+        $change_search_params_flag = false;
+        if (isset($request['change_params']) && $request['change_params'] == 'change') {
+            $change_search_params_flag = true;
+        }
+
+        $search_options = null;
+        $search_option_record = SearchOption::query()->where('page_name', 'admin.pit.detail')->where('user_id', Auth::guard('admin')->user()->id)->get()->first();
+        if ($search_option_record != null) {
+            $search_options = $search_option_record->options;
+        }
+        if ($search_options != null && $change_search_params_flag == false) {
+            $search_options = json_decode($search_options);
+            $search_options = (array) $search_options;
+            $request['selected_camera'] = $search_options['selected_camera'];
+            $request['time_period'] = $search_options['time_period'];
+            $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
+        } else {
+            $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
+            if (!(isset($request['selected_camera']) && $request['selected_camera'] > 0)) {
+                if ($selected_rule != null) {
+                    $request['selected_camera'] = $selected_rule->camera_id;
+                }
+            }
+        }
+
+        $search_params = [
+            'selected_camera' => $request['selected_camera'],
+            'time_period' => isset($request['time_period']) ? $request['time_period'] : 3,
+        ];
+        $search_option_params = [
+            'page_name' => 'admin.pit.detail',
+            'search_params' => $search_params,
+        ];
+        TopService::save_search_option($search_option_params);
+
         if ($selected_rule != null) {
             if ($selected_rule->red_points != null && $selected_rule->red_points != '') {
                 $selected_rule->red_points = json_decode($selected_rule->red_points);
@@ -201,15 +239,9 @@ class PitController extends AdminController
                 $selected_rule->blue_points = json_decode($selected_rule->blue_points);
             }
         }
-        if (!(isset($request['selected_camera']) && $request['selected_camera'] > 0)) {
-            if ($selected_rule != null) {
-                $request['selected_camera'] = $selected_rule->camera_id;
-            }
-        }
 
         $pit_detections = PitService::searchDetections($request, true)->get()->all();
         $cameras = PitService::getAllCameras();
-
         $access_token = '';
         $camera_imgs = [];
         foreach ($cameras as $camera) {
@@ -229,17 +261,14 @@ class PitController extends AdminController
 
             if (!isset($camera_imgs[$camera->camera_id])) {
                 $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                if ($camera_image_data != null) {
-                    $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
-                }
                 $camera_imgs[$camera->camera_id] = $camera_image_data;
+                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
             }
-            $camera->img = $camera_imgs[$camera->camera_id];
         }
 
         return view('admin.pit.detail')->with([
             'pit_detections' => $pit_detections,
-            'request' => $request,
+            'request_params' => $search_params,
             'selected_rule' => $selected_rule,
             'cameras' => $cameras,
             'access_token' => $access_token,
@@ -266,12 +295,9 @@ class PitController extends AdminController
 
             if (!isset($camera_imgs[$camera->camera_id])) {
                 $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                if ($camera_image_data != null) {
-                    $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
-                }
                 $camera_imgs[$camera->camera_id] = $camera_image_data;
+                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
             }
-            $camera->img = $camera_imgs[$camera->camera_id];
         }
         $from_top = false;
         if (isset($request['from_top']) && $request['from_top'] == true) {

@@ -2,11 +2,13 @@
 
 @section('content')
 <?php
+    $selected_camera = old('selected_camera', (isset($request_params) && isset($request_params['selected_camera']))?$request_params['selected_camera']:null);
     $total_data = array();
     $sum = 0;
 ?>
 <form action="{{route('admin.pit.detail')}}" method="get" name="form1" id="form1">
 @csrf
+    <input type="hidden" name="change_params" value="change"/>
     <div id="wrapper">
         <div class="breadcrumb">
         <ul>
@@ -61,9 +63,14 @@
                         </div>
                         @if($selected_rule != null)
                             <div class="period-select-buttons">
-                                <button type="button" class="period-button three selected" onclick="displayGraphData(3)">3時間</button>
-                                <button type="button" class="period-button six" onclick="displayGraphData(6)">6時間</button>
-                                <button type="button" class="period-button twelve" onclick="displayGraphData(12)">12時間</button>
+                                <?php
+                                    $time_period = '3';
+                                    if (isset($request_params['time_period']) && $request_params['time_period'] != '') $time_period = $request_params['time_period'];
+                                ?>
+                                <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
+                                <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
+                                <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '6')">6時間</button>
+                                <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '12')">12時間</button>
                             </div>
                             <canvas id="myLineChart1" onclick="location.href='{{route('admin.pit.past_analysis')}}'"></canvas>
                         @endif
@@ -118,54 +125,6 @@
                                         </tr>
                                         @endif
                                     @endforeach
-                                    {{-- <tr>
-                                        <td>9:05:25</td>
-                                        <td>入場</td>
-                                        <td><span class="f-red">+1</span></td>
-                                        <td>1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>9:22:12</td>
-                                        <td>入場</td>
-                                        <td><span class="f-red">+1</span></td>
-                                        <td>2</td>
-                                    </tr>
-                                    <tr>
-                                        <td>11:23:17</td>
-                                        <td>退場</td>
-                                        <td><span class="f-blue">-1</span></td>
-                                        <td>1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>12:33:41</td>
-                                        <td>退場</td>
-                                        <td><span class="f-blue">-1</span></td>
-                                        <td>0</td>
-                                    </tr>
-                                    <tr>
-                                        <td>14:25:32</td>
-                                        <td>入場</td>
-                                        <td><span class="f-blue">+1</span></td>
-                                        <td>1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>15:31:45</td>
-                                        <td>退場</td>
-                                        <td><span class="f-blue">-1</span></td>
-                                        <td>0</td>
-                                    </tr>
-                                    <tr>
-                                        <td>18:23:14</td>
-                                        <td>入場</td>
-                                        <td><span class="f-blue">+1</span></td>
-                                        <td>1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>19:47:51</td>
-                                        <td>退場</td>
-                                        <td><span class="f-blue">-1</span></td>
-                                        <td>0</td>
-                                    </tr> --}}
                                 </tbody>
                             </table>
                         </div>
@@ -192,9 +151,6 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php
-                            $selected_camera = old('selected_camera', (isset($request) && $request['selected_camera'] > 0)?$request['selected_camera']:null);
-                        ?>
                         @foreach ($cameras as $camera)
                         <tr>
                             <td class="stick-t">
@@ -211,7 +167,7 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
-                            <td><img width="100px" src="{{$camera->img}}"/></td>
+                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
                         </tbody>
@@ -291,15 +247,12 @@
 <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <script>
     var ctx = document.getElementById("myLineChart1");
+    var time_period = "<?php echo $time_period;?>";
+    var selected_camera = "<?php echo $selected_camera;?>";
+    var grid_unit = 15;
     var total_data = <?php echo json_encode($total_data);?>;
 
-    // var time_labels = ['09:05:25', '09:22:12', '11:23:17', '12:33:41', '14:25:32', '15:31:45', '18:23:14', '19:47:51'];
-    // var y_data = [1,2,1,0,1,0,1,0];
-    // for(var i = 0; i<time_labels.length; i++){
-    //     time_labels[i] = new Date('2022-07-12 ' + time_labels[i]);
-    // }
-
-    function drawGraph(x_data, y_data, grid_unit){
+    function drawGraph(x_data, y_data){
         var myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -363,25 +316,34 @@
 
             }
         });
+
+        var search_params = {
+            time_period:time_period,
+            selected_camera:selected_camera
+        }
+        saveSearchOptions('admin.pit.detail', search_params);
     }
 
-    function displayGraphData(time_period = 3){
-        $('.period-button').each(function(){
-            $(this).removeClass('selected');
-        });
-        var grid_unit = 15;
-        switch(time_period){
+    function displayGraphData(e = null, x_range = '3'){
+        if (e != null){
+            $('.period-button').each(function(){
+                $(this).removeClass('selected');
+            });
+
+            $(e).addClass('selected');
+        }
+        time_period = x_range;
+        $('#time_period').val(time_period);
+        x_range = parseInt(x_range);
+        switch(x_range){
             case 3:
-                $('.three').addClass('selected');
                 grid_unit = 15;
                 break;
             case 6:
-                $('.six').addClass('selected');
                 grid_unit = 30;
                 break;
             case 12:
                 grid_unit = 60;
-                $('.twelve').addClass('selected');
                 break;
         }
         var time_labels = [];
@@ -395,7 +357,7 @@
         max_time.setMinutes(0);
         max_time.setSeconds(0);
 
-        min_time.setHours((now.getHours() - (time_period - 1) < 0 ? 0 : now.getHours() - (time_period - 1)));
+        min_time.setHours((now.getHours() - (x_range - 1) < 0 ? 0 : now.getHours() - (x_range - 1)));
         min_time.setMinutes(0);
         min_time.setSeconds(0);
 
@@ -427,29 +389,11 @@
             cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
         }
 
-        drawGraph(time_labels, y_data, grid_unit);
+        drawGraph(time_labels, y_data);
     }
 
     $(document).ready(function() {
-        displayGraphData();
-        // setInterval(() => {
-        //     for (var i = 0; i < y_data.length; i++){
-        //         y_data[i] = Math.floor(Math.random() * 5);
-        //     }
-        //     $.ajax({
-        //         type:'GET',
-        //         url:'{{ route("admin.pit.ajaxGetData") }}',
-        //         data:{
-        //             selected_camera:<?php echo $selected_camera;?>,
-        //         }
-        //     }).then(
-        //         function(res){
-
-        //         }
-        //     )
-        //     drawGraph(time_labels, y_data);
-        //     $('#form1').submit();
-        // }, 30000);
+        displayGraphData(null, time_period);
     })
 </script>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>

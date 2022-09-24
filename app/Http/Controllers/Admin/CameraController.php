@@ -13,6 +13,7 @@ use App\Models\CameraMappingDetail;
 use App\Models\LocationDrawing;
 use App\Service\SafieApiService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class CameraController extends AdminController
 {
@@ -41,10 +42,11 @@ class CameraController extends AdminController
                 $safie_service = new SafieApiService($camera->contract_no);
             }
             $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-            if ($camera_image_data != null) {
-                $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
-            }
-            $camera->img = $camera_image_data;
+            // if ($camera_image_data != null) {
+            //     $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            // }
+            Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
+            $camera->img = $camera_image_data != null ? true : null;
         }
 
         return view('admin.camera.index')->with([

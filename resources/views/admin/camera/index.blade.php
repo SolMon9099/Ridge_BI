@@ -85,7 +85,15 @@
         <ul class="camera-list">
         @foreach($cameras as $camera)
             <li class="camera-item">
-                <div class="pic"><img src="{{isset($camera->img) && $camera->img != ''? $camera->img :asset('assets/admin/img/samplepic.png') }}"></div>
+                <?php
+                    $camera_img_path = '';
+                    if (isset($camera->img) && $camera->img == true){
+                        $camera_img_path = asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg';
+                    } else {
+                        $camera_img_path = asset('assets/admin/img/samplepic.png');
+                    }
+                ?>
+                <div class="pic"><img src="{{$camera_img_path}}"></div>
                 <div class="text">
                 <button style="background:transparent;border:none;" class="edit2" onclick="location.href='{{route('admin.camera.edit', ['camera' => $camera->id])}}'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="fill: rgba(46, 191, 67, 1);transform: ;msFilter:;">

@@ -68,6 +68,10 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public/thumb'),
         ],
+        'recent_camera_image' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/recent_camera_image'),
+        ],
     ],
 
     /*

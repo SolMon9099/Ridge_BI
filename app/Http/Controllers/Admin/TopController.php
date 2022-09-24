@@ -132,6 +132,30 @@ class TopController extends AdminController
                         $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
                     }
                     break;
+                case config('const.top_block_type_codes')['live_graph_pit']:
+                    if (!isset($live_pit_detections)) {
+                        $live_pit_detections = PitService::searchDetections(null, true)->get()->all();
+                    }
+                    $total_data = [];
+                    $sum = 0;
+                    foreach ($live_pit_detections as $pit_item) {
+                        $sum += ($pit_item->nb_entry - $pit_item->nb_exit);
+                        $total_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))] = $sum;
+                    }
+                    $item->pit_live_graph_data = $total_data;
+                    break;
+                case config('const.top_block_type_codes')['past_graph_pit']:
+                    if (!isset($past_pit_detections)) {
+                        $past_pit_detections = PitService::searchDetections(null, true)->get()->all();
+                    }
+                    $total_data = [];
+                    $sum = 0;
+                    foreach ($past_pit_detections as $pit_item) {
+                        $sum += ($pit_item->nb_entry - $pit_item->nb_exit);
+                        $total_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))] = $sum;
+                    }
+                    $item->pit_past_graph_data = $total_data;
+                    break;
             }
         }
 

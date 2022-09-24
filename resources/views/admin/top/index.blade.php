@@ -447,6 +447,16 @@
                                     @else
                                         <div class="no-data">検知データがありません。</div>
                                     @endif
+                                @elseif ($item->block_type == config('const.top_block_type_codes')['live_graph_pit'])
+                                    <?php $pit_live_graph_data = $item->pit_live_graph_data;?>
+                                    <div class="graph-area">
+                                        <canvas id="live_graph_pit" class="graph-canvas"></canvas>
+                                    </div>
+                                @elseif ($item->block_type == config('const.top_block_type_codes')['past_graph_pit'])
+                                    <?php $pit_past_graph_data = $item->pit_past_graph_data;?>
+                                    <div class="graph-area">
+                                        <canvas id="past_graph_pit" class="graph-canvas"></canvas>
+                                    </div>
                                 @else
                                     <div class="no-data">検知データがありません。</div>
                                 @endif
@@ -777,13 +787,14 @@
                 safieStreamingPlayer.defaultProperties = {
                     defaultAccessToken: access_token,
                     defaultDeviceId: camera_id,
-                    defaultAutoPlay:true
+                    defaultAutoPlay:true,
+                    defaultUserInteractions:false
                 };
             }
         })
 
     }
-    function resortData(data, time_period){
+    function resortDangerData(data, time_period){
         var temp = {};
         switch(time_period){
             case 'day':
@@ -836,6 +847,131 @@
         return temp;
     }
 
+    function drawPitGraph(ctx, graph_data){
+        var graph_id = $(ctx).attr('id');
+        var time_period = 6;
+        var grid_unit = 60;
+        var x_unit = 'minute';
+        var x_display_format = {'minute': 'H:mm'};
+        var tooltipFormat = 'H:mm';
+        var now = new Date();
+        var min_time = new Date();
+        var max_time = new Date();
+        switch(graph_id){
+            case 'live_graph_pit':
+                // max_time.setHours(now.getHours() + 1);
+                // max_time.setMinutes(0);
+                // max_time.setSeconds(0);
+
+                // min_time.setHours((now.getHours() - (time_period -1 )) < 0 ? 0 : now.getHours() -(time_period -1 ));
+                // min_time.setMinutes(0);
+                // min_time.setSeconds(0);
+                break;
+            case 'past_graph_pit':
+                time_period = 12;
+                break;
+        }
+        max_time.setHours(now.getHours() + 1);
+        max_time.setMinutes(0);
+        max_time.setSeconds(0);
+        min_time.setHours((now.getHours() - (time_period -1 )) < 0 ? 0 : now.getHours() -(time_period -1 ));
+        min_time.setMinutes(0);
+        min_time.setSeconds(0);
+
+        var cur_time = new Date();
+        cur_time.setHours(min_time.getHours());
+        cur_time.setMinutes(0);
+        cur_time.setSeconds(0);
+
+        var time_labels = [];
+        var y_data = [];
+
+        while(cur_time.getTime() <= max_time.getTime()){
+            time_labels.push(new Date(cur_time));
+            var y_add_flag = false;
+            Object.keys(graph_data).map((time, index) => {
+                if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000){
+                    if (index == 0){
+                        y_add_flag = true;
+                        if (new Date(time).getTime() != cur_time.getTime()) {
+                            time_labels.push(new Date(time));
+                            y_data.push(null);
+                        }
+                    } else {
+                        time_labels.push(new Date(time));
+                    }
+                    y_data.push(graph_data[time]);
+                }
+            })
+            if (y_add_flag == false){
+                y_data.push(null);
+            }
+            cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
+        }
+
+        var myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels:time_labels,
+                datasets: [{
+                    label: '人',
+                    steppedLine:true,
+                    data: y_data,
+                    borderColor: "#42b688",
+                    backgroundColor: "rgba(66,182,136, 0.3)",
+                    pointBackgroundColor:'red',
+                    fill:true
+                }]
+            },
+            options: {
+                legend: {
+                    labels: {
+                        fontSize: 12
+                    }
+                },
+                title: {
+                    display: false,
+                    text: 'ピット内人数推移'
+                },
+                responsive: true,
+                interaction: {
+                    intersect: false,
+                    axis: 'x'
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            suggestedMax: Math.max(...y_data) + 1,
+                            suggestedMin: 0,
+                            stepSize: 1,
+                            fontSize: 12,
+                            callback: function(value, index, values){
+                                return  value +  '人'
+                            }
+                        }
+                    }],
+                    xAxes:[{
+                        type: 'time',
+                        time: {
+                            unit: x_unit,
+                            displayFormats: x_display_format,
+                            tooltipFormat:tooltipFormat,
+                            distribution: 'series',
+                            stepSize: grid_unit,
+                            format:'HH:mm'
+                        },
+                        ticks: {
+                            fontSize: 12,
+                            // max: max_time,
+                            // min: min_time,
+                        }
+                    }]
+                },
+
+            }
+        });
+    }
+
     function drawDangerGraph(ctx, graph_data){
         var graph_id = $(ctx).attr('id');
         var time_period = 6;
@@ -855,7 +991,7 @@
                 min_time.setHours((now.getHours() - (time_period -1 )) < 0 ? 0 : now.getHours() -(time_period -1 ));
                 min_time.setMinutes(0);
                 min_time.setSeconds(0);
-                graph_data = resortData(graph_data, 'time');
+                graph_data = resortDangerData(graph_data, 'time');
                 break;
             case 'past_graph_danger':
                 x_unit = 'day';
@@ -869,7 +1005,7 @@
                 max_time.setMinutes(0);
                 max_time.setSeconds(0);
                 grid_unit = 1;
-                graph_data = resortData(graph_data, 'day');
+                graph_data = resortDangerData(graph_data, 'day');
                 break;
         }
         var cur_time = new Date(min_time);
@@ -1049,6 +1185,14 @@
                 case 'past_graph_danger':
                     graph_data = <?php echo isset($danger_past_graph_data) ? json_encode($danger_past_graph_data) : json_encode([]);?>;
                     drawDangerGraph($(this), graph_data);
+                    break;
+                case 'live_graph_pit':
+                    graph_data = <?php echo isset($pit_live_graph_data) ? json_encode($pit_live_graph_data) : json_encode([]);?>;
+                    drawPitGraph($(this), graph_data);
+                    break;
+                case 'past_graph_pit':
+                    graph_data = <?php echo isset($pit_past_graph_data) ? json_encode($pit_past_graph_data) : json_encode([]);?>;
+                    drawPitGraph($(this), graph_data);
                     break;
             }
         })

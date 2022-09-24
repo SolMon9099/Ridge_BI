@@ -193,31 +193,6 @@
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
 
 <script>
-    let safieStreamingPlayerElement;
-    let safieStreamingPlayer;
-    function load() {
-        safieStreamingPlayerElement = document.querySelector('safie-streaming-player');
-        if(safieStreamingPlayerElement != undefined && safieStreamingPlayerElement != null){
-            safieStreamingPlayer = safieStreamingPlayerElement.instance;
-            safieStreamingPlayer.on('error', (error) => {
-                console.error(error);
-            });
-            // 初期化
-            safieStreamingPlayer.defaultProperties = {
-                defaultAccessToken: '<?php echo $access_token;?>',
-                defaultDeviceId: '<?php echo $device_id;?>',
-            };
-        }
-    }
-    function play() {
-        safieStreamingPlayer.play();
-    }
-    function pause() {
-        safieStreamingPlayer.pause();
-    }
-</script>
-
-<script>
     var stage = null;
     var layer = null;
     var radius = "<?php echo config('const.camera_mark_radius');?>";

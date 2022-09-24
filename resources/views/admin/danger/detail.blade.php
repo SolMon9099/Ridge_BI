@@ -469,7 +469,8 @@
             safieStreamingPlayer.defaultProperties = {
                 defaultAccessToken: '<?php echo $access_token;?>',
                 defaultDeviceId: '<?php echo isset($selected_rule) ? $selected_rule->camera_no : '';?>',
-                defaultAutoPlay:true
+                defaultAutoPlay:true,
+                defaultUserInteractions:false
             };
         }
     }

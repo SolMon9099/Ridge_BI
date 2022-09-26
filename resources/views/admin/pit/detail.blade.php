@@ -40,25 +40,24 @@
             <div class="list">
                 <div class="inner active">
                     <h3 class="title">ピット内人数推移</h3>
-                    @if($selected_rule != null)
-                        <div id="image-container" onclick="location.href='{{route('admin.pit.edit', ['pit' => $selected_rule->id])}}'"></div>
-                    @endif
+
                     <div style="display: flex;">
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_pit']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_video_pit']}})">ダッシュボートへ追加</button>
                         </div>
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_pit']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_graph_pit']}})">ダッシュボートへ追加</button>
                         </div>
                     </div>
                     <div style="" class="mainbody">
-                        <div class='video-show' style="width:54%;">
+                        <div class='video-show' style="width:54%;padding-top:40px;">
                             @if($selected_rule != null)
-                            <div class="streaming-video" style="height:360px;width:640px;">
-                                <safie-streaming-player></safie-streaming-player>
-                                {{-- <input type="button" value='再生' onClick="play()">
-                                <input type="button" value='停止' onClick="pause()"> --}}
-                            </div>
+                                <div id="image-container" onclick="location.href='{{route('admin.pit.edit', ['pit' => $selected_rule->id])}}'"></div>
+                                <div class="streaming-video" style="height:360px;width:640px;">
+                                    <safie-streaming-player></safie-streaming-player>
+                                    {{-- <input type="button" value='再生' onClick="play()">
+                                    <input type="button" value='停止' onClick="pause()"> --}}
+                                </div>
                             @endif
                         </div>
                         @if($selected_rule != null)
@@ -80,7 +79,7 @@
                     <div class="left-right">
                         <div class="left-box" style="position: relative;">
                             <h3 class="title">ピット内最大時間の超過検知</h3>
-                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
                             <table class="table2 text-centre top50">
                                 <thead>
                                     <tr>
@@ -100,7 +99,7 @@
                         </div>
                         <div class="right-box" style="position: relative;">
                             <h3 class="title">入退場履歴</h3>
-                            <button type="button" class="add-to-toppage" onclick="addToToppage({{config('const.top_block_type_codes')['pit_history']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage" onclick="addDashboard({{config('const.top_block_type_codes')['pit_history']}})">ダッシュボートへ追加</button>
                             <table class="table2 text-centre top50">
                                 <thead>
                                     <tr>
@@ -198,12 +197,6 @@
         right: 10px;
         top: -10px;
     }
-    .period-select-buttons > button{
-        padding:2px;
-    }
-    .period-select-buttons > .selected{
-        background: lightgreen;
-    }
     #myLineChart1{
         width:46%!important;
         height: 400px!important;
@@ -228,10 +221,6 @@
         position: absolute;
         right: 0;
         top:-50px;
-        padding-left: 5px;
-        padding-right:5px;
-        padding-top:2px;
-        padding-bottom:2px;
     }
     .left-box > .add-to-toppage{
         top:0px;
@@ -390,6 +379,14 @@
         }
 
         drawGraph(time_labels, y_data);
+    }
+
+    function addDashboard(block_type){
+        var options = {
+            selected_camera:selected_camera,
+            time_period:time_period,
+        };
+        addToToppage(block_type, options);
     }
 
     $(document).ready(function() {

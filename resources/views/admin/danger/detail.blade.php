@@ -45,18 +45,16 @@
                     <h3 class="title">現在の映像</h3>
                     <div style="display: flex;">
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['live_video_danger']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_video_danger']}})">ダッシュボートへ追加</button>
                         </div>
                         <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['live_graph_danger']}})">ダッシュボートへ追加</button>
+                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_graph_danger']}})">ダッシュボートへ追加</button>
                         </div>
                     </div>
-                    @if(isset($selected_rule))
-                        <div id="image-container" onclick="location.href='{{route('admin.danger.edit', ['danger' => $selected_rule->id])}}'"></div>
-                    @endif
                     <div class="mainbody">
-                        <div class='video-show' style="width:54%;">
+                        <div class='video-show' style="width:54%;padding-top:40px;">
                             @if(isset($selected_rule))
+                            <div id="image-container" onclick="location.href='{{route('admin.danger.edit', ['danger' => $selected_rule->id])}}'"></div>
                             <div class="streaming-video" style="height:360px;width:640px;">
                                 <safie-streaming-player></safie-streaming-player>
                                 {{-- <input type="button" value='再生' onClick="play()">
@@ -82,7 +80,7 @@
             </div>
             <ul class="kenchi-list" style="margin-top: 45px;position: relative;">
                 @if(count($danger_detections) > 0)
-                    <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['recent_detect_danger']}})">ダッシュボートへ追加</button>
+                    <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_danger']}})">ダッシュボートへ追加</button>
                 @endif
                 @foreach ($danger_detections as $item)
                 <?php
@@ -231,12 +229,6 @@
         right: 10px;
         top: -10px;
     }
-    .period-select-buttons > button{
-        padding:2px;
-    }
-    .period-select-buttons > .selected{
-        background: lightgreen;
-    }
     #myLineChart1{
         width:46%!important;
         height: 400px!important;
@@ -261,10 +253,6 @@
         position: absolute;
         right: 0;
         top:-50px;
-        padding-left: 5px;
-        padding-right:5px;
-        padding-top:2px;
-        padding-bottom:2px;
     }
     .from_top{
         background: lightblue;
@@ -514,6 +502,14 @@
         });
         layer.add(figure_area);
 
+    }
+
+    function addDashboard(block_type){
+        var options = {
+            selected_camera:selected_camera,
+            time_period:time_period,
+        };
+        addToToppage(block_type, options);
     }
 
     $(document).ready(function() {

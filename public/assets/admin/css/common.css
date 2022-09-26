@@ -480,6 +480,7 @@ input[type=text], input[type=password], input[type=number] {
 #dropmenu li a:hover{
     color: #FFF;
 }
+/*
 #dropmenu li a:after {
     content: ">";
     float: right;
@@ -488,6 +489,7 @@ input[type=text], input[type=password], input[type=number] {
     font-size: 80%;
     margin: 2px 0 0 5px;
 }
+*/
 #dropmenu li > div span {
     font-weight: bold;
 }
@@ -5201,12 +5203,14 @@ ul.camera-list li table td{
 	border: none;
 }
 ul.kenchi-list{
-	display: flex;	justify-content: space-between;
+	display: flex;
+    /* justify-content: space-between; */
 	flex-wrap:wrap;
 }
 ul.kenchi-list li{
     background: #FFF;
     margin-bottom: 25px;
+    margin-right: 5px;
     width:32%;
     border-radius:0 50px 0 20px / 0 50px 0 20px;
     box-shadow: 0px 10px 10px -3px rgb(1 24 54 / 10%);
@@ -5726,4 +5730,86 @@ box-sizing: border-box;
 }
 .toggle-wrap .tgl + .tgl-btn:before{
 	right:2px;
+}
+.login-user-name{
+    background: none !important;
+    font-size: 12px;
+}
+.add-to-toppage,
+.add-widget a{
+    background: #2ebf43;
+    color: #FFF !important;
+    text-decoration: none !important;
+    padding: 10px 30px !important;
+    border-radius: 50px;
+    box-shadow: 0px 10px 10px -3px rgb(1 24 54 / 10%);
+    border: none !important;
+}
+.grid-stack{
+    background: none !important;
+}
+.grid-stack-instance-1112 > .grid-stack-item > .grid-stack-item-content{
+    box-shadow: 0px 10px 10px -3px rgb(1 24 54 / 10%);
+}
+.menu-li{
+    padding-left: 0 !important;
+    font-size:14px;
+    padding-top: 5px;
+}
+.menu-li:before{
+    content:">";
+    transform: scale(0.7,1);
+    display: inline-block;
+    margin: 0 5px 0 0;
+}
+.period-select-buttons > button {
+    border: none;
+    background: #FFF;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 50px;
+}
+.notice-area {
+    color: #999;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+.notice-area + .flow{
+    border-top: 1px solid #CCC;
+    padding-top: 15px;
+}
+.period-select-buttons > .selected{
+    background:linear-gradient(-135deg, #0062de , #3682fa) !important;
+    color: #FFF;
+}
+
+.chartjs-render-monitor{
+    margin-top: 15px;
+}
+.mainbody{
+    margin-top: 20px !important;
+}
+
+table.pit-detect-list th{
+    font-size: 13px;
+    padding: 10px 0;
+}
+table.pit-detect-list td{
+    font-size:14px;
+    padding: 10px;
+}
+.live-stream-title{
+    padding-bottom: 12px;
+    font-size:16px !important;
+}
+.no-data{
+    padding: 30px 10px;
+    color: #999;
+    font-size:14px;
+}
+input[type="color"]{
+    min-height:30px;
+}
+button.add-btn{
+    padding: 10px;
 }

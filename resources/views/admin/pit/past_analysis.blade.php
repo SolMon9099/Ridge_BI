@@ -61,7 +61,7 @@
                 <div class="inner active">
                     <div style="display: flex; position: relative;">
                         <h3 class="title">ピット内人数推移</h3>
-                        <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_pit']}})">ダッシュボートへ追加</button>
+                        <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['past_graph_pit']}})">ダッシュボートへ追加</button>
                     </div>
                     <div class="chart-area" style="position: relative;">
                         <div class="period-select-buttons">
@@ -233,21 +233,11 @@
         position: absolute;
         right:0px;
         top:0px;
-        padding-left: 5px;
-        padding-right:5px;
-        padding-top:2px;
-        padding-bottom:2px;
     }
     .period-select-buttons{
         position: absolute;
         right: 10px;
-        top: 0;
-    }
-    .period-select-buttons > button{
-        padding:3px;
-    }
-    .period-select-buttons > .selected{
-        background: lightgreen;
+        top: 0!important;
     }
     .prev, .next {
         cursor: pointer;
@@ -660,6 +650,15 @@
             selected_camera:selected_camera
         }
         saveSearchOptions('admin.pit.past_analysis', search_params);
+    }
+    function addDashboard(block_type){
+        var options = {
+            starttime:formatDateLine(new Date($('#starttime').val())),
+            endtime:formatDateLine(new Date($('#endtime').val())),
+            time_period:grpah_init_type,
+            selected_camera:selected_camera
+        };
+        addToToppage(block_type, options);
     }
     $(document).ready(function() {
         displayGraphData(null, grpah_init_type);

@@ -30,6 +30,7 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
         Route::post('/save_block', 'TopController@save_block')->name('admin.top.save_block');
         Route::post('/update', 'TopController@update')->name('admin.top.update');
         Route::post('/AjaxUpdate', 'TopController@AjaxUpdate')->name('admin.top.AjaxUpdate');
+        Route::post('/AjaxDelete', 'TopController@AjaxDelete')->name('admin.top.AjaxDelete');
         Route::delete('/delete/{top}', 'TopController@delete')->name('admin.top.delete');
         Route::post('/save_search_option', 'TopController@save_search_option')->name('admin.top.save_search_option');
 

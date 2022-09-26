@@ -174,8 +174,10 @@
         z-index: 1000;
     }
     .hidden-gear-box > li{
-        margin: 0 0 10px 0;
+        margin: 0 0 0 0;
         cursor: pointer;
+        padding-top: 3px;
+        padding-bottom: 3px;
     }
     .hidden-gear-box > li:hover{
         background: lightblue;
@@ -260,6 +262,48 @@
     .grid-stack-item-content::-webkit-scrollbar-track {
         background:white;
     }
+    .search-period-area{
+        font-size:14px;
+        text-align: center;
+        margin-top: 3px;
+        margin-bottom: 3px;
+    }
+    .period-select-buttons{
+        text-align: right;
+        margin-top: 3px;
+    }
+    .period-select-buttons > button{
+        font-size: 12px;
+        background:lightcyan;
+    }
+    .prev, .next {
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        width: auto;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top:8px;
+        padding-bottom: 8px;
+        font-weight: bold;
+        font-size: 18px;
+        transition: 0.6s ease;
+        user-select: none;
+    }
+    .prev{
+        left:-10px;
+    }
+    .next {
+        right: -10px;
+    }
+    .prev:hover, .next:hover {
+        background-color:lightcoral;
+        color:white;
+        border-radius: 20px;
+    }
+    .graph-area{
+        position: relative;
+    }
 </style>
 <?php
     $login_user = Auth::guard('admin')->user();
@@ -306,7 +350,6 @@
                     <path d="M3 16c0 1.103.897 2 2 2h3.586L12 21.414 15.414 18H19c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2v12zM5 4h14v12h-4.414L12 18.586 9.414 16H5V4z"></path>
                     <path d="M11 14h2v-3h3V9h-3V6h-2v3H8v2h3z"></path>
                 </svg> --}}
-
             @include('admin.layouts.flash-message')
             @if (count($top_blocks) > 0)
                 <div class="grid-stack">
@@ -320,7 +363,7 @@
                             </div>
                             <div class="gear-block">
                                 <button type="" class="top-gear" onclick="toggleMenu(this, {{$item->id}})">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="fill: rgba(0, 98, 222, 1);transform: ;msFilter:;">
+                                    <svg class='gear-button' xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="fill: rgba(0, 98, 222, 1);transform: ;msFilter:;">
                                         <path d="M12 16c2.206 0 4-1.794 4-4s-1.794-4-4-4-4 1.794-4 4 1.794 4 4 4zm0-6c1.084 0 2 .916 2 2s-.916 2-2 2-2-.916-2-2 .916-2 2-2z"></path>
                                         <path d="m2.845 16.136 1 1.73c.531.917 1.809 1.261 2.73.73l.529-.306A8.1 8.1 0 0 0 9 19.402V20c0 1.103.897 2 2 2h2c1.103 0 2-.897 2-2v-.598a8.132 8.132 0 0 0 1.896-1.111l.529.306c.923.53 2.198.188 2.731-.731l.999-1.729a2.001 2.001 0 0 0-.731-2.732l-.505-.292a7.718 7.718 0 0 0 0-2.224l.505-.292a2.002 2.002 0 0 0 .731-2.732l-.999-1.729c-.531-.92-1.808-1.265-2.731-.732l-.529.306A8.1 8.1 0 0 0 15 4.598V4c0-1.103-.897-2-2-2h-2c-1.103 0-2 .897-2 2v.598a8.132 8.132 0 0 0-1.896 1.111l-.529-.306c-.924-.531-2.2-.187-2.731.732l-.999 1.729a2.001 2.001 0 0 0 .731 2.732l.505.292a7.683 7.683 0 0 0 0 2.223l-.505.292a2.003 2.003 0 0 0-.731 2.733zm3.326-2.758A5.703 5.703 0 0 1 6 12c0-.462.058-.926.17-1.378a.999.999 0 0 0-.47-1.108l-1.123-.65.998-1.729 1.145.662a.997.997 0 0 0 1.188-.142 6.071 6.071 0 0 1 2.384-1.399A1 1 0 0 0 11 5.3V4h2v1.3a1 1 0 0 0 .708.956 6.083 6.083 0 0 1 2.384 1.399.999.999 0 0 0 1.188.142l1.144-.661 1 1.729-1.124.649a1 1 0 0 0-.47 1.108c.112.452.17.916.17 1.378 0 .461-.058.925-.171 1.378a1 1 0 0 0 .471 1.108l1.123.649-.998 1.729-1.145-.661a.996.996 0 0 0-1.188.142 6.071 6.071 0 0 1-2.384 1.399A1 1 0 0 0 13 18.7l.002 1.3H11v-1.3a1 1 0 0 0-.708-.956 6.083 6.083 0 0 1-2.384-1.399.992.992 0 0 0-1.188-.141l-1.144.662-1-1.729 1.124-.651a1 1 0 0 0 .471-1.108z"></path>
                                     </svg>
@@ -334,10 +377,6 @@
                                     @endforeach
                                 </ul>
                             </div>
-                            <form id="frm_delete_{{ $item->id }}" action="{{ route('admin.top.delete', ['top'=> $item->id]) }}" method="POST" style="display: none;">
-                                @csrf
-                                @method('delete')
-                            </form>
                             <div class="live-stream-title">{{config('const.top_block_titles')[$item->block_type]}}</div>
                             <div class='grid-contents'>
                                 @if($item->block_type == config('const.top_block_type_codes')['live_video_danger'] || $item->block_type == config('const.top_block_type_codes')['live_video_pit'])
@@ -384,6 +423,13 @@
                                         <div class="no-data">検知データがありません。</div>
                                     @endif
                                 @elseif($item->block_type == config('const.top_block_type_codes')['detect_list_danger'])
+                                    @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
+                                        <div class="search-period-area">
+                                            <span>{{date('Y/m/d', strtotime($item->starttime))}}</span>
+                                            <span>～</span>
+                                            <span>{{date('Y/m/d', strtotime($item->endtime))}}</span>
+                                        </div>
+                                    @endif
                                     @if (isset($item->danger_detections) && count($item->danger_detections) > 0)
                                         <table class="danger-detect-list list-table">
                                             <thead>
@@ -409,18 +455,129 @@
                                         <div class="no-data">検知データがありません。</div>
                                     @endif
                                 @elseif($item->block_type == config('const.top_block_type_codes')['live_graph_danger'])
-                                    <?php $danger_live_graph_data = $item->danger_live_graph_data;?>
+                                    @if(isset($item->selected_camera))
+                                        <div class="camera-id">カメラID：{{$item->selected_camera->camera_id}}</div>
+                                    @endif
+                                    <div class="period-select-buttons">
+                                        <?php
+                                            $time_period = '3';
+                                            if (isset($item->time_period) && $item->time_period != '') $time_period = $item->time_period;
+                                        ?>
+                                        <button onclick="changeXlength(this, '3')" type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>">3時間</button>
+                                        <button onclick="changeXlength(this, '6')" type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>">6時間</button>
+                                        <button onclick="changeXlength(this, '12')" type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>">12時間</button>
+                                    </div>
                                     <div class="graph-area">
                                         <canvas id="live_graph_danger" class="graph-canvas"></canvas>
+                                        <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
+                                        <input type="hidden" class="time_period" value="{{$time_period}}"/>
                                     </div>
-                                    {{-- <div class="no-data">検知データがありません。</div> --}}
                                 @elseif($item->block_type == config('const.top_block_type_codes')['past_graph_danger'])
-                                    <?php $danger_past_graph_data = $item->danger_past_graph_data;?>
-                                    <div class="graph-area">
-                                        <canvas id="past_graph_danger" class="graph-canvas"></canvas>
-                                    </div>
-                                    {{-- <div class="no-data">検知データがありません。</div> --}}
+                                    @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
+                                        <?php
+                                            $time_period = '3';
+                                            if (isset($item->time_period) && $item->time_period != '') $time_period = $item->time_period;
+                                            $starttime = date('Y-m-d', strtotime($item->starttime));
+                                            $endtime = date('Y-m-d', strtotime($item->endtime));
+                                            $search_period = (strtotime($endtime) - strtotime($starttime))/86400;
+                                            if ($search_period < 1) {
+                                                if (!in_array($time_period, ['3', '6', '12', '24'])){
+                                                    $time_period = '3';
+                                                }
+                                            } else if ($search_period < 7 ) {
+                                                if (!in_array($time_period, ['time', 'day',])){
+                                                    $time_period = 'time';
+                                                }
+                                            } else if ($search_period <= 30 ) {
+                                                if (!in_array($time_period, ['time', 'day',])){
+                                                    $time_period = 'time';
+                                                }
+                                            } else if ($search_period <= 180 ) {
+                                                if (!in_array($time_period, ['day', 'week','month'])){
+                                                    $time_period = 'day';
+                                                }
+                                            } else {
+                                                if (!in_array($time_period, ['day', 'week','month'])){
+                                                    $time_period = 'day';
+                                                }
+                                            }
+                                        ?>
+                                        <div class="search-period-area">
+                                            <span>{{date('Y/m/d', strtotime($item->starttime))}}</span>
+                                            <span>～</span>
+                                            <span>{{date('Y/m/d', strtotime($item->endtime))}}</span>
+                                        </div>
+                                        <div class="period-select-buttons">
+                                            @if ($search_period < 1)
+                                                <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>"  onclick="changeXlength(this, '3')">3時間</button>
+                                                <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this,'6')">6時間</button>
+                                                <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this,'12')">12時間</button>
+                                                <button type="button" class="<?php echo $time_period == '24' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this,'24')">24時間</button>
+                                            @elseif ($search_period < 7)
+                                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'time')">時間別</button>
+                                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'day')">日別</button>
+                                            @elseif ($search_period <= 30)
+                                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'time')">時間別</button>
+                                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'day')">日別</button>
+                                            @elseif ($search_period <= 180)
+                                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'day')">日別</button>
+                                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'week')">週別</button>
+                                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'month')">月別</button>
+                                            @else
+                                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'day')">日別</button>
+                                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'week')">週別</button>
+                                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'month')">月別</button>
+                                            @endif
+                                        </div>
+
+                                        <div class="graph-area">
+                                            <input type="hidden" class="min-time" value="{{date('Y-m-d H:i:s', strtotime($item->starttime))}}"/>
+                                            <a class="prev" onclick="moveXRange(this, -1)">❮</a>
+                                            <a class="next" onclick="moveXRange(this, 1)">❯</a>
+                                            <canvas id="past_graph_danger" class="graph-canvas"></canvas>
+                                            <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
+                                            <input type="hidden" class="time_period" value="{{$time_period}}"/>
+                                        </div>
+                                    @endif
+                                @elseif($item->block_type == config('const.top_block_type_codes')['pit_history'])
+                                    @if(isset($item->selected_camera))
+                                        <div class="camera-id">カメラID：{{$item->selected_camera->camera_id}}</div>
+                                    @endif
+                                    @if (isset($item->pit_detections) && count($item->pit_detections) > 0)
+                                        <table class="pit-detect-list list-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="time">時間</th>
+                                                    <th class="area">設置エリア</th>
+                                                    <th class="location">設置場所</th>
+                                                    <th class="action">検知内容</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            @foreach ($item->pit_detections as $detection_item)
+                                                <tr>
+                                                    <td>{{date('Y/m/d H:i', strtotime($detection_item->starttime))}}</td>
+                                                    <td>{{$detection_item->location_name}}</td>
+                                                    <td>{{$detection_item->installation_position}}</td>
+                                                    <td>
+                                                        {{$detection_item->nb_entry > $detection_item->nb_exit ? '入場 '.($detection_item->nb_entry - $detection_item->nb_exit) :  '退場 '.($detection_item->nb_exit - $detection_item->nb_entry)}}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                            </tbody>
+                                        </table>
+                                    @else
+                                        <div class="no-data">検知データがありません。</div>
+                                    @endif
+
                                 @elseif($item->block_type == config('const.top_block_type_codes')['detect_list_pit'])
+                                    @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
+                                    <div class="search-period-area">
+                                        <span>{{date('Y/m/d', strtotime($item->starttime))}}</span>
+                                        <span>～</span>
+                                        <span>{{date('Y/m/d', strtotime($item->endtime))}}</span>
+                                    </div>
+                                    @endif
                                     @if (isset($item->pit_detections) && count($item->pit_detections) > 0)
                                         <table class="pit-detect-list list-table">
                                             <thead>
@@ -448,15 +605,89 @@
                                         <div class="no-data">検知データがありません。</div>
                                     @endif
                                 @elseif ($item->block_type == config('const.top_block_type_codes')['live_graph_pit'])
-                                    <?php $pit_live_graph_data = $item->pit_live_graph_data;?>
+                                    @if(isset($item->selected_camera))
+                                        <div class="camera-id">カメラID：{{$item->selected_camera->camera_id}}</div>
+                                    @endif
+                                    <div class="period-select-buttons">
+                                        <?php
+                                            $time_period = '3';
+                                            if (isset($item->time_period) && $item->time_period != '') $time_period = $item->time_period;
+                                        ?>
+                                        <button onclick="changeXlength(this, '3')" type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>">3時間</button>
+                                        <button onclick="changeXlength(this, '6')" type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>">6時間</button>
+                                        <button onclick="changeXlength(this, '12')" type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>">12時間</button>
+                                    </div>
                                     <div class="graph-area">
                                         <canvas id="live_graph_pit" class="graph-canvas"></canvas>
+                                        <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
+                                        <input type="hidden" class="time_period" value="{{$time_period}}"/>
                                     </div>
                                 @elseif ($item->block_type == config('const.top_block_type_codes')['past_graph_pit'])
-                                    <?php $pit_past_graph_data = $item->pit_past_graph_data;?>
-                                    <div class="graph-area">
-                                        <canvas id="past_graph_pit" class="graph-canvas"></canvas>
-                                    </div>
+                                    @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
+                                        <?php
+                                            $time_period = '3';
+                                            if (isset($item->time_period) && $item->time_period != '') $time_period = $item->time_period;
+                                            $starttime = date('Y-m-d', strtotime($item->starttime));
+                                            $endtime = date('Y-m-d', strtotime($item->endtime));
+                                            $search_period = (strtotime($endtime) - strtotime($starttime))/86400;
+                                            if ($search_period < 1) {
+                                                if (!in_array($time_period, ['3', '6', '12', '24'])){
+                                                    $time_period = '3';
+                                                }
+                                            } else if ($search_period < 7 ) {
+                                                if (!in_array($time_period, ['time', 'day',])){
+                                                    $time_period = 'time';
+                                                }
+                                            } else if ($search_period <= 30 ) {
+                                                if (!in_array($time_period, ['time', 'day',])){
+                                                    $time_period = 'time';
+                                                }
+                                            } else if ($search_period <= 180 ) {
+                                                if (!in_array($time_period, ['day', 'week','month'])){
+                                                    $time_period = 'day';
+                                                }
+                                            } else {
+                                                if (!in_array($time_period, ['day', 'week','month'])){
+                                                    $time_period = 'day';
+                                                }
+                                            }
+                                        ?>
+                                        <div class="search-period-area">
+                                            <span>{{date('Y/m/d', strtotime($item->starttime))}}</span>
+                                            <span>～</span>
+                                            <span>{{date('Y/m/d', strtotime($item->endtime))}}</span>
+                                        </div>
+                                        <div class="period-select-buttons">
+                                            @if ($search_period < 1)
+                                                <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>"  onclick="changeXlength(this, '3')">3時間</button>
+                                                <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this,'6')">6時間</button>
+                                                <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this,'12')">12時間</button>
+                                                <button type="button" class="<?php echo $time_period == '24' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this,'24')">24時間</button>
+                                            @elseif ($search_period < 7)
+                                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'time')">時間別</button>
+                                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'day')">日別</button>
+                                            @elseif ($search_period <= 30)
+                                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'time')">時間別</button>
+                                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'day')">日別</button>
+                                            @elseif ($search_period <= 180)
+                                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'day')">日別</button>
+                                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'week')">週別</button>
+                                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'month')">月別</button>
+                                            @else
+                                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'day')">日別</button>
+                                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'week')">週別</button>
+                                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="changeXlength(this, 'month')">月別</button>
+                                            @endif
+                                        </div>
+                                        <div class="graph-area">
+                                            <input type="hidden" class="min-time" value="{{date('Y-m-d H:i:s', strtotime($item->starttime))}}"/>
+                                            <a class="prev" onclick="moveXRange(this, -1)">❮</a>
+                                            <a class="next" onclick="moveXRange(this, 1)">❯</a>
+                                            <canvas id="past_graph_pit" class="graph-canvas"></canvas>
+                                            <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
+                                            <input type="hidden" class="time_period" value="{{$time_period}}"/>
+                                        </div>
+                                    @endif
                                 @else
                                     <div class="no-data">検知データがありません。</div>
                                 @endif
@@ -528,7 +759,7 @@
 </div>
 <script src="{{ asset('assets/admin/js/gridstack-all.js?2') }}"></script>
 <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}" defer></script>
-<script src="{{ asset('assets/admin/js/helper.js?2') }}" defer></script>
+<script src="{{ asset('assets/admin/js/helper.js?25') }}" defer></script>
 <script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js" defer></script>
@@ -640,8 +871,8 @@
             case 'delete':
                 delete_id = block_item.id;
                 helper_confirm("dialog-confirm", "削除", "削除します。<br />よろしいですか？", 300, "確認", "閉じる", function(){
-                    var frm_id = "#frm_delete_" + delete_id;
-                    $(frm_id).submit();
+                    $('[data-id="'+ block_item.id + '"]').remove();
+                    deleteTopBlock(block_item.id);
                 });
                 break;
             case 'change_camera':
@@ -670,7 +901,7 @@
                     $('#selected_top_block').val(block_item.id);
                     block_item.cameras.map(camera => {
                         var checked = '';
-                        if (camera.id == block_item.selected_camera.id) checked = 'checked';
+                        if (block_item.selected_camera != undefined && block_item.selected_camera != null && camera.id == block_item.selected_camera.id) checked = 'checked';
                         var tr_record = '<tr>';
                         tr_record += '<td class="stick-t">';
                         tr_record += '<div class="checkbtn-wrap radio-wrap-div">';
@@ -688,9 +919,7 @@
                         $('.selected_camera').click(function(){
                             var selected_camera_id = $(this).attr('id');
                             selected_camera_id = selected_camera_id.replace('camera', '');
-                            var selected_camera = block_item.cameras.find(x => x.id == selected_camera_id);
-                            delete selected_camera.img;
-                            $('#selected_camera').val(JSON.stringify(selected_camera));
+                            $('#selected_camera').val(selected_camera_id);
                         })
                     })
                 }
@@ -762,13 +991,17 @@
 
     function toggleMenu(e, id){
         $(e).toggleClass("on");
-        $('[data-menu-id="'+ id + '"]').fadeToggle(5);
+        $('.gear-menu').hide();
+        $('.close-gear-icon').hide();
+        $('.gear-button').show();
         if ($(e).hasClass('on')){
             $('svg', $(e)).hide();
             $('.close-gear-icon', $(e)).show();
+            $('[data-menu-id="'+ id + '"]').show();
         } else {
             $('svg', $(e)).show();
             $('.close-gear-icon', $(e)).hide();
+            $('[data-menu-id="'+ id + '"]').hide();
         }
     }
 
@@ -794,9 +1027,9 @@
         })
 
     }
-    function resortDangerData(data, time_period){
+    function resortDangerData(data, x_range){
         var temp = {};
-        switch(time_period){
+        switch(x_range){
             case 'day':
                 Object.keys(data).map(date_time => {
                     var date = formatDateLine(date_time);
@@ -847,9 +1080,42 @@
         return temp;
     }
 
-    function drawPitGraph(ctx, graph_data){
+    function resortPitData(data, time_period){
+        var temp = {};
+        var sum = 0;
+        switch(time_period){
+            case 'day':
+                Object.keys(data).map(date_time => {
+                    var date = formatDateLine(date_time);
+                    if (temp[date] == undefined) temp[date] = 0;
+                    temp[date] += data[date_time];
+                })
+                break;
+            case 'week':
+                Object.keys(data).map(date_time => {
+                    var date = formatYearWeekNum(date_time);
+                    if (temp[date] == undefined) temp[date] = 0;
+                    temp[date] += data[date_time];
+                })
+                break;
+            case 'month':
+                Object.keys(data).map(date_time => {
+                    var date = formatYearMonth(date_time);
+                    if (temp[date] == undefined) temp[date] = 0;
+                    temp[date] += data[date_time];
+                })
+                break;
+            default:
+                Object.keys(data).map(date_time => {
+                    sum += data[date_time];
+                    temp[date_time] = sum;
+                })
+        }
+        return temp;
+    }
+
+    function drawPitGraph(ctx, block_data, x_range, min_x_time = ''){
         var graph_id = $(ctx).attr('id');
-        var time_period = 6;
         var grid_unit = 60;
         var x_unit = 'minute';
         var x_display_format = {'minute': 'H:mm'};
@@ -857,28 +1123,93 @@
         var now = new Date();
         var min_time = new Date();
         var max_time = new Date();
+        var graph_data = null;
         switch(graph_id){
             case 'live_graph_pit':
-                // max_time.setHours(now.getHours() + 1);
-                // max_time.setMinutes(0);
-                // max_time.setSeconds(0);
-
-                // min_time.setHours((now.getHours() - (time_period -1 )) < 0 ? 0 : now.getHours() -(time_period -1 ));
-                // min_time.setMinutes(0);
-                // min_time.setSeconds(0);
+                graph_data = block_data.pit_live_graph_data != undefined ? block_data.pit_live_graph_data : {};
+                x_range = parseInt(x_range);
+                max_time.setHours(now.getHours() + 1);
+                max_time.setMinutes(0);
+                max_time.setSeconds(0);
+                min_time.setHours((now.getHours() - (x_range -1 )) < 0 ? 0 : now.getHours() -(x_range -1 ));
+                min_time.setMinutes(0);
+                min_time.setSeconds(0);
+                if (x_range == 6) grid_unit = 30;
+                if (x_range == 12 || x_range == 24) grid_unit = 60;
                 break;
             case 'past_graph_pit':
-                time_period = 12;
+                graph_data = block_data.pit_past_graph_data != undefined ? block_data.pit_past_graph_data : {};
+                min_time = min_time != '' ? new Date(min_x_time): new Date();
+                max_time = new Date(min_time);
+                switch(x_range){
+                    case '3':
+                        grid_unit = 15;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'H:mm'};
+                        tooltipFormat = "H:mm";
+                        max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        break;
+                    case '6':
+                        grid_unit = 30;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'H:mm'};
+                        tooltipFormat = "H:mm";
+                        max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        break;
+                    case '12':
+                        grid_unit = 60;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'H:mm'};
+                        tooltipFormat = "H:mm";
+                        max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        break;
+                    case '24':
+                        grid_unit = 60;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'H:mm'};
+                        tooltipFormat = "H:mm";
+                        max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        break;
+                    case 'time':
+                        grid_unit = 60;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'DD日H時'};
+                        tooltipFormat = "MM/DD H:mm";
+                        max_time.setDate(max_time.getDate() + 1);
+                        break;
+                    case 'day':
+                        grid_unit = 1;
+                        x_unit = 'day';
+                        x_display_format = {'day': 'M/DD'};
+                        tooltipFormat = "YY/MM/DD";
+                        max_time.setDate(max_time.getDate() + 7);
+                        break;
+                    case 'week':
+                        grid_unit = 1;
+                        x_unit = 'week';
+                        x_display_format = {'week': 'M/DD'};
+                        tooltipFormat = "YY/MM/DD";
+                        max_time.setDate(max_time.getDate() + 28);
+                        break;
+                    case 'month':
+                        grid_unit = 1;
+                        x_unit = 'month';
+                        x_display_format = {'month': 'YYYY/MM'};
+                        tooltipFormat = "YY/MM";
+                        max_time.setMonth(max_time.getMonth() + 6);
+                        break;
+                }
+                if (block_data.endtime != undefined && block_data.endtime != null){
+                    var endtime = new Date(block_data.endtime);
+                    endtime.setHours(24);
+                    endtime.setMinutes(0);
+                    endtime.setSeconds(0);
+                    if (max_time.getTime() > endtime.getTime()) max_time = new Date(endtime);
+                }
                 break;
         }
-        max_time.setHours(now.getHours() + 1);
-        max_time.setMinutes(0);
-        max_time.setSeconds(0);
-        min_time.setHours((now.getHours() - (time_period -1 )) < 0 ? 0 : now.getHours() -(time_period -1 ));
-        min_time.setMinutes(0);
-        min_time.setSeconds(0);
-
-        var cur_time = new Date();
+        graph_data = resortPitData(graph_data, x_range);
+        var cur_time = new Date(min_time);
         cur_time.setHours(min_time.getHours());
         cur_time.setMinutes(0);
         cur_time.setSeconds(0);
@@ -888,25 +1219,54 @@
 
         while(cur_time.getTime() <= max_time.getTime()){
             time_labels.push(new Date(cur_time));
-            var y_add_flag = false;
-            Object.keys(graph_data).map((time, index) => {
-                if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000){
-                    if (index == 0){
-                        y_add_flag = true;
-                        if (new Date(time).getTime() != cur_time.getTime()) {
-                            time_labels.push(new Date(time));
-                            y_data.push(null);
-                        }
-                    } else {
-                        time_labels.push(new Date(time));
-                    }
-                    y_data.push(graph_data[time]);
+
+            if (x_range == 'day' || x_range == 'week' || x_range == 'month'){
+                var date_key = formatDateLine(cur_time);
+                if (x_range == 'week') date_key = formatYearWeekNum(cur_time);
+                if (x_range == 'month') date_key = formatYearMonth(cur_time);
+                if (graph_data[date_key] == undefined){
+                    y_data.push(null);
+                } else {
+                    y_data.push(graph_data[date_key]);
                 }
-            })
-            if (y_add_flag == false){
-                y_data.push(null);
+            } else {
+                var y_add_flag = false;
+                Object.keys(graph_data).map((time, index) => {
+                    if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000){
+                        if (index == 0){
+                            y_add_flag = true;
+                            if (new Date(time).getTime() != cur_time.getTime()) {
+                                time_labels.push(new Date(time));
+                                y_data.push(null);
+                            }
+                        } else {
+                            time_labels.push(new Date(time));
+                        }
+                        y_data.push(graph_data[time]);
+                    }
+                })
+                if (y_add_flag == false){
+                    y_data.push(null);
+                }
             }
-            cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
+
+            switch(x_range){
+                case 'time':
+                    cur_time.setHours(cur_time.getHours() + 1);
+                    break;
+                case 'day':
+                    cur_time.setDate(cur_time.getDate() + 1);
+                    break;
+                case 'week':
+                    cur_time.setDate(cur_time.getDate() + 7);
+                    break;
+                case 'month':
+                    cur_time.setMonth(cur_time.getMonth() + 1);
+                    break;
+                default:
+                    cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
+                    break;
+            }
         }
 
         var myLineChart = new Chart(ctx, {
@@ -972,10 +1332,10 @@
         });
     }
 
-    function drawDangerGraph(ctx, graph_data){
+    function drawDangerGraph(ctx, block_data, x_range, min_x_time = ''){
         var graph_id = $(ctx).attr('id');
-        var time_period = 6;
-        var grid_unit = 30;
+        var graph_data = null;
+        var grid_unit = 15;
         var x_unit = 'minute';
         var x_display_format = {'minute': 'H:mm'};
         var tooltipFormat = 'H:mm';
@@ -984,28 +1344,89 @@
         var max_time = new Date();
         switch(graph_id){
             case 'live_graph_danger':
+                graph_data = block_data.danger_live_graph_data != undefined ? block_data.danger_live_graph_data : {};
                 max_time.setHours(now.getHours() + 1);
                 max_time.setMinutes(0);
                 max_time.setSeconds(0);
 
-                min_time.setHours((now.getHours() - (time_period -1 )) < 0 ? 0 : now.getHours() -(time_period -1 ));
+                x_range = parseInt(x_range);
+                min_time.setHours((now.getHours() - (x_range -1 )) < 0 ? 0 : now.getHours() -(x_range -1 ));
                 min_time.setMinutes(0);
                 min_time.setSeconds(0);
-                graph_data = resortDangerData(graph_data, 'time');
+                graph_data = resortDangerData(graph_data, x_range);
+                if (x_range == 6) grid_unit = 30;
+                if (x_range == 12 || x_range == 24) grid_unit = 60;
                 break;
             case 'past_graph_danger':
-                x_unit = 'day';
-                x_display_format = {'day': 'M/DD'};
-                tooltipFormat = "YY/MM/DD";
-                min_time.setDate(min_time.getDate() - 7);
-                min_time.setHours(0);
-                min_time.setMinutes(0);
-                min_time.setSeconds(0);
-                max_time.setHours(0);
-                max_time.setMinutes(0);
-                max_time.setSeconds(0);
-                grid_unit = 1;
-                graph_data = resortDangerData(graph_data, 'day');
+                graph_data = block_data.danger_past_graph_data != undefined ? block_data.danger_past_graph_data : {};
+                min_time = min_time != '' ? new Date(min_x_time): new Date();
+                max_time = new Date(min_time);
+                switch(x_range){
+                    case '3':
+                        grid_unit = 15;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'H:mm'};
+                        tooltipFormat = "H:mm";
+                        max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        break;
+                    case '6':
+                        grid_unit = 30;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'H:mm'};
+                        tooltipFormat = "H:mm";
+                        max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        break;
+                    case '12':
+                        grid_unit = 60;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'H:mm'};
+                        tooltipFormat = "H:mm";
+                        max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        break;
+                    case '24':
+                        grid_unit = 60;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'H:mm'};
+                        tooltipFormat = "H:mm";
+                        max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        break;
+                    case 'time':
+                        grid_unit = 60;
+                        x_unit = 'minute';
+                        x_display_format = {'minute': 'DD日H時'};
+                        tooltipFormat = "MM/DD H:mm";
+                        max_time.setDate(max_time.getDate() + 1);
+                        break;
+                    case 'day':
+                        grid_unit = 1;
+                        x_unit = 'day';
+                        x_display_format = {'day': 'M/DD'};
+                        tooltipFormat = "YY/MM/DD";
+                        max_time.setDate(max_time.getDate() + 7);
+                        break;
+                    case 'week':
+                        grid_unit = 1;
+                        x_unit = 'week';
+                        x_display_format = {'week': 'M/DD'};
+                        tooltipFormat = "YY/MM/DD";
+                        max_time.setDate(max_time.getDate() + 28);
+                        break;
+                    case 'month':
+                        grid_unit = 1;
+                        x_unit = 'month';
+                        x_display_format = {'month': 'YYYY/MM'};
+                        tooltipFormat = "YY/MM";
+                        max_time.setMonth(max_time.getMonth() + 6);
+                        break;
+                }
+                if (block_data.endtime != undefined && block_data.endtime != null){
+                    var endtime = new Date(block_data.endtime);
+                    endtime.setHours(24);
+                    endtime.setMinutes(0);
+                    endtime.setSeconds(0);
+                    if (max_time.getTime() > endtime.getTime()) max_time = new Date(endtime);
+                }
+                graph_data = resortDangerData(graph_data, x_range);
                 break;
         }
         var cur_time = new Date(min_time);
@@ -1019,27 +1440,60 @@
             totals_by_action[id] = [];
         })
         var max_y = 0;
-        var props = 1;
-        if (graph_id == 'past_graph_danger') props = 1440;
         while(cur_time.getTime() <= max_time.getTime()){
             date_labels.push(new Date(cur_time));
             if (graph_id == 'past_graph_danger'){
-                var date_key = formatDateLine(cur_time);
-                if (graph_data[date_key] == undefined){
-                    Object.keys(actions).map(id => {
-                        totals_by_action[id].push(0);
-                    })
+                if (x_range == 'day' || x_range == 'week' || x_range == 'month'){
+                    var date_key = formatDateLine(cur_time);
+                    if (x_range == 'week') date_key = formatYearWeekNum(cur_time);
+                    if (x_range == 'month') date_key = formatYearMonth(cur_time);
+                    if (graph_data[date_key] == undefined){
+                        Object.keys(actions).map(id => {
+                            totals_by_action[id].push(0);
+                        })
+                    } else {
+                        Object.keys(actions).map(id => {
+                            totals_by_action[id].push(graph_data[date_key][id]);
+                            if (max_y < graph_data[date_key][id]) max_y = graph_data[date_key][id];
+                        })
+                    }
                 } else {
-                    Object.keys(actions).map(id => {
-                        totals_by_action[id].push(graph_data[date_key][id]);
-                        if (max_y < graph_data[date_key][id]) max_y = graph_data[date_key][id];
+                    var y_add_flag = false;
+                    Object.keys(graph_data).map((detect_time, index) => {
+                        var detect_time_object = new Date(detect_time);
+                        if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000){
+                            if (index == 0){
+                                y_add_flag = true;
+                                if  (detect_time_object.getTime() != cur_time.getTime()){
+                                    date_labels.push(detect_time_object);
+                                    Object.keys(actions).map(id => {
+                                        totals_by_action[id].push(0);
+                                    })
+                                }
+                            } else {
+                                date_labels.push(detect_time_object);
+                            }
+                            Object.keys(actions).map(id => {
+                                if (graph_data[detect_time][id] != undefined){
+                                    totals_by_action[id].push(graph_data[detect_time][id]);
+                                    if (graph_data[detect_time][id] > max_y) max_y = graph_data[detect_time][id];
+                                } else {
+                                    totals_by_action[id].push(0);
+                                }
+                            })
+                        }
                     })
+                    if (y_add_flag == false){
+                        Object.keys(actions).map(id => {
+                            totals_by_action[id].push(0);
+                        })
+                    }
                 }
             } else {
                 var y_add_flag = false;
                 Object.keys(graph_data).map((detect_time, index) => {
                     var detect_time_object = new Date(detect_time);
-                    if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * props * 60 * 1000){
+                    if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000){
                         if (index == 0){
                             y_add_flag = true;
                             if  (detect_time_object.getTime() != cur_time.getTime()){
@@ -1067,8 +1521,23 @@
                     })
                 }
             }
-            cur_time.setMinutes(cur_time.getMinutes() + grid_unit * props);
-
+            switch(x_range){
+                case 'time':
+                    cur_time.setHours(cur_time.getHours() + 1);
+                    break;
+                case 'day':
+                    cur_time.setDate(cur_time.getDate() + 1);
+                    break;
+                case 'week':
+                    cur_time.setDate(cur_time.getDate() + 7);
+                    break;
+                case 'month':
+                    cur_time.setMonth(cur_time.getMonth() + 1);
+                    break;
+                default:
+                    cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
+                    break;
+            }
         }
         var datasets = [];
         Object.keys(totals_by_action).map(action_id => {
@@ -1099,7 +1568,7 @@
                         axis: 'x'
                     },
                     title: {
-                        display: true,
+                        display: false,
                         text: 'NGアクション毎の回数',
                         fontSize:12,
                     },
@@ -1147,21 +1616,7 @@
                 gs_h:$(this).attr('gs-h'),
             });
         })
-        jQuery.ajax({
-            url : '/admin/AjaxUpdate',
-            method: 'post',
-            data: {
-                changed_data,
-                _token:$('meta[name="csrf-token"]').attr('content'),
-            },
-
-            error : function(){
-                console.log('failed');
-            },
-            success: function(result){
-                console.log(result);
-            }
-        });
+        updateTopBlockData(changed_data);
         $('.image-container').each(function(){
             var image_container_id = $(this).attr('id');
             var streaming_video_id = 'streaming_video_' + image_container_id.replace('image_container_', '');
@@ -1177,26 +1632,138 @@
         //draw graph-----------------
         $('.graph-canvas').each(function(){
             var graph_id = $(this).attr('id');
+            var block_data = JSON.parse($(this).next().val());
+            var time_period = $(this).next().next().val();
+            var min_x_time = $('.min-time', $(this).parent()).val();
             switch(graph_id){
                 case 'live_graph_danger':
-                    graph_data = <?php echo isset($danger_live_graph_data) ? json_encode($danger_live_graph_data) : json_encode([]);?>;
-                    drawDangerGraph($(this), graph_data);
-                    break;
                 case 'past_graph_danger':
-                    graph_data = <?php echo isset($danger_past_graph_data) ? json_encode($danger_past_graph_data) : json_encode([]);?>;
-                    drawDangerGraph($(this), graph_data);
+                    drawDangerGraph($(this), block_data, time_period, formatDateTime(min_x_time));
                     break;
                 case 'live_graph_pit':
-                    graph_data = <?php echo isset($pit_live_graph_data) ? json_encode($pit_live_graph_data) : json_encode([]);?>;
-                    drawPitGraph($(this), graph_data);
-                    break;
                 case 'past_graph_pit':
-                    graph_data = <?php echo isset($pit_past_graph_data) ? json_encode($pit_past_graph_data) : json_encode([]);?>;
-                    drawPitGraph($(this), graph_data);
+                    drawPitGraph($(this), block_data, time_period, formatDateTime(min_x_time));
                     break;
             }
         })
         //----------------------------------
+    }
+    function moveXRange(e, increament = 1){
+        var min_time = $('.min-time', $(e).parent()).val();
+        var time_period = $('.time_period', $(e).parent()).val();
+        var block_data = JSON.parse($('.block-data', $(e).parent()).val());
+        if (min_time != undefined && min_time != '' && time_period != undefined && time_period != ''){
+            min_time = formatDateTime(min_time);
+            var endtime = formatDateTime(block_data.endtime);
+            var starttime = formatDateTime(block_data.starttime);
+            switch(time_period){
+                case '3':
+                    if (increament == 1){
+                        min_time.setHours(min_time.getHours() + 3 >= 24 ? 0 : min_time.getHours() + 3);
+                    } else {
+                        min_time.setHours(min_time.getHours() - 3 < 0 ? 21 : min_time.getHours() - 3);
+                    }
+                    break;
+                case '6':
+                    if (increament == 1){
+                        min_time.setHours(min_time.getHours() + 6 >= 24 ? 0 : min_time.getHours() + 6);
+                    } else {
+                        min_time.setHours(min_time.getHours() - 6 < 0 ? 18 : min_time.getHours() - 6);
+                    }
+                    break;
+                case '12':
+                    if (increament == 1){
+                        min_time.setHours(min_time.getHours() + 12 >= 24 ? 0 : min_time.getHours() + 12);
+                    } else {
+                        min_time.setHours(min_time.getHours() - 12 < 0 ? 12 : min_time.getHours() - 12);
+                    }
+                    break;
+                case '24':
+                    return;
+                case 'time':
+                    if (increament == 1){
+                        min_time.setDate(min_time.getDate() + 1);
+                        if (min_time.getTime() >= endtime.getTime()) {
+                            min_time = new Date(starttime);
+                        }
+                    } else {
+                        min_time.setDate(min_time.getDate() - 1);
+                        if (min_time.getTime() < starttime.getTime()) {
+                            min_time = new Date(endtime);
+                            min_time.setDate(min_time.getDate() -1);
+                        }
+                    }
+                    break;
+                case 'day':
+                    // if (search_period < 7) return;
+                    if (increament == 1){
+                        min_time.setDate(min_time.getDate() + 7);
+                        if (min_time.getTime() >= endtime.getTime()) {
+                            min_time = new Date(starttime);
+                        }
+                    } else {
+                        min_time.setDate(min_time.getDate() - 7);
+                        if (min_time.getTime() < starttime.getTime()) {
+                            min_time = new Date(endtime);
+                            min_time.setDate(min_time.getDate() - 7);
+                        }
+                    }
+                    break;
+                case 'week':
+                    if (increament == 1){
+                        min_time.setDate(min_time.getDate() + 28);
+                        if (min_time.getTime() >= endtime.getTime()) {
+                            min_time = new Date(starttime);
+                        }
+                    } else {
+                        min_time.setDate(min_time.getDate() - 28);
+                        if (min_time.getTime() < starttime.getTime()) {
+                            min_time = new Date(endtime);
+                            min_time.setDate(min_time.getDate() - 28);
+                        }
+                    }
+                    break;
+                case 'month':
+                    // if (search_period <= 180) return;
+                    if (increament == 1){
+                        min_time.setMonth(min_time.getMonth() + 6);
+                        if (min_time.getTime() >= endtime.getTime()) {
+                            min_time = new Date(starttime);
+                        }
+                    } else {
+                        min_time.setMonth(min_time.getMonth() - 6);
+                        if (min_time.getTime() < starttime.getTime()) {
+                            min_time = new Date(endtime);
+                            min_time.setMonth(min_time.getMonth() - 6);
+                        }
+                    }
+                    break;
+            }
+            $('.min-time', $(e).parent()).val(formatDateTimeStr(min_time));
+        }
+        refreshGraph();
+    }
+
+    function changeXlength(e, x_range){
+        $('.period-button', $(e).parent()).each(function(){
+            $(this).removeClass('selected');
+        });
+        $(e).addClass('selected');
+        $('.time_period', $(e).parent().next()).val(x_range);
+        refreshGraph();
+
+        var block_data = JSON.parse($('.block-data', $(e).parent().next()).val());
+        if (block_data.options != null){
+            var options = JSON.parse(block_data.options);
+            options.time_period = x_range;
+
+            var changed_data = [];
+            changed_data.push({
+                id:block_data.id,
+                options:JSON.stringify(options)
+            });
+            updateTopBlockData(changed_data);
+        }
     }
 
     $(document).ready(function() {

@@ -50,7 +50,7 @@
                 @enderror
             </div>
             <div class="ai-guide-area" style="">
-                <input class="tgl tgl-flat" id="ai_guide" type="checkbox" checked>
+                <input onchange="changeHeatMap(this)" class="tgl tgl-flat" id="ai_guide" type="checkbox">
                 <label class="tgl-btn" for="ai_guide"></label>
                 <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
             </div>
@@ -59,6 +59,11 @@
 
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
+                <div class="grid-area">
+                    @for ($i = 0; $i < 100; $i++)
+                        <div class='{{"grid grid_".$i}}'></div>
+                    @endfor
+                </div>
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
                 <p class="error-message area" style="display: none">エリアを選択してください。</p>
                 <div id="debug"></div>
@@ -125,6 +130,20 @@
     .image-record{
         display: none;
     }
+    .grid-area{
+        width:1280px;
+        height:720px;
+        margin-left: auto;
+        margin-right: auto;
+        background-color:transparent;
+        position: absolute;
+        display: grid;
+        grid-template-columns: auto auto auto auto auto auto auto auto auto auto;
+    }
+    .grid-area > div{
+        opacity: 0;
+        background: lightgray;
+    }
     #image-container{
         /* background-size:100%; */
         width:1280px;
@@ -190,7 +209,6 @@
     }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
-<script src="https://swc.safie.link/latest/" onLoad="load()" defer></script>
 
 <script>
     var stage = null;
@@ -564,6 +582,16 @@
         layer.draw();
         $('#red_points_data').val('');
         $('#blue_points_data').val('');
+    }
+
+    function changeHeatMap(e){
+        if (e.checked){
+            for (var i = 0; i < 100; i++){
+                $('.grid_' + i).css('opacity', Math.random());
+            }
+        } else {
+            $('.grid').css('opacity', 0);
+        }
     }
 
     $(document).ready(function() {

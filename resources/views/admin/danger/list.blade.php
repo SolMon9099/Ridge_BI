@@ -21,11 +21,11 @@
                         <ul class="date-list">
                             <li><h4>検出期間</h4></li>
                             <li>
-                                <input type="date" name='starttime' value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')))}}">
+                                <input type="date" id="starttime" name='starttime' value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')))}}">
                             </li>
                             <li>～</li>
                             <li>
-                                <input type="date" name='endtime' value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'))}}">
+                                <input type="date" id="endtime" name='endtime' value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'))}}">
                             </li>
                         </ul>
                         <ul class="date-list">
@@ -40,7 +40,7 @@
         </form>
 
         @if(count($danger_detections) > 0)
-            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['detect_list_danger']}})">ダッシュボートへ追加</button>
+            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_danger']}})">ダッシュボートへ追加</button>
         @endif
 
         {{ $danger_detections->appends([
@@ -222,6 +222,13 @@
         video.pause();
         $('#video-container').attr('src', path);
         video.play();
+    }
+    function addDashboard(block_type){
+        var options = {
+            starttime:formatDateLine($('#starttime').val()),
+            endtime:formatDateLine($('#endtime').val())
+        };
+        addToToppage(block_type, options);
     }
 </script>
 @endsection

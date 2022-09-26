@@ -57,7 +57,7 @@
                             <a data-target="action" class="modal-open blue" onclick="setSelectedSearchOption(3)">アクションから選択</a>
                         </li>
                     </ul>
-                    <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addToToppage({{config('const.top_block_type_codes')['past_graph_danger']}})">ダッシュボートへ追加</button>
+                    <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['past_graph_danger']}})">ダッシュボートへ追加</button>
                     <div class="active sp-ma-right">
                         <div class="period-select-buttons">
                         <?php
@@ -277,21 +277,11 @@
         position: absolute;
         right:0px;
         top:0px;
-        padding-left: 5px;
-        padding-right:5px;
-        padding-top:2px;
-        padding-bottom:2px;
     }
     .period-select-buttons{
         position: absolute;
         right: 10px;
-        top: 45px;
-    }
-    .period-select-buttons > button{
-        padding:3px;
-    }
-    .period-select-buttons > .selected{
-        background: lightgreen;
+        top: 45px!important;
     }
     .prev, .next {
         cursor: pointer;
@@ -741,6 +731,19 @@
             selected_search_option:parseInt(selected_search_option)
         };
         saveSearchOptions('admin.danger.past_analysis', search_params);
+    }
+
+    function addDashboard(block_type){
+        var options = {
+            starttime:formatDateLine(new Date($('#starttime').val())),
+            endtime:formatDateLine(new Date($('#endtime').val())),
+            time_period:grpah_init_type,
+            selected_rules:selected_rules.length == 0?{}:selected_rules,
+            selected_cameras:selected_cameras.length == 0?{}:selected_cameras,
+            selected_actions:selected_actions.length == 0?{}:selected_actions,
+            selected_search_option:parseInt(selected_search_option)
+        };
+        addToToppage(block_type, options);
     }
 
     $(document).ready(function() {

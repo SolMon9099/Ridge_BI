@@ -176,7 +176,7 @@ $('.video-pit').hover( function() {
 );
 	 });
 
-function addToToppage(block_type){
+function addToToppage(block_type, options = null){
     let token = $('meta[name="csrf-token"]').attr('content');
 
     jQuery.ajax({
@@ -184,6 +184,7 @@ function addToToppage(block_type){
         method: 'post',
         data: {
             block_type,
+            options,
             _token:token,
         },
 
@@ -214,6 +215,40 @@ function saveSearchOptions(page_name, search_params){
         success: function(result){
             console.log(result);
         }});
+}
+
+function updateTopBlockData(changed_data){
+    jQuery.ajax({
+        url : '/admin/AjaxUpdate',
+        method: 'post',
+        data: {
+            changed_data,
+            _token:$('meta[name="csrf-token"]').attr('content'),
+        },
+        error : function(){
+            console.log('failed');
+        },
+        success: function(result){
+            console.log(result);
+        }
+    });
+}
+
+function deleteTopBlock(block_id){
+    jQuery.ajax({
+        url : '/admin/AjaxDelete',
+        method: 'post',
+        data: {
+            id:block_id,
+            _token:$('meta[name="csrf-token"]').attr('content'),
+        },
+        error : function(){
+            console.log('failed');
+        },
+        success: function(result){
+            console.log(result);
+        }
+    });
 }
 
 function isLeft(p0, a, b) {

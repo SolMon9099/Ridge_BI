@@ -9,7 +9,7 @@ function helper_confirm(id, title, content, width, btnConfirm, btnClose, callbac
         confirm_buttons[btnConfirm] = function() {
             if(callback)
                 callback();
-            // $( this ).dialog( "close" );
+                $( this ).dialog( "close" );
         };
     }
     if(btnClose){

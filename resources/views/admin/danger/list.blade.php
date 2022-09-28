@@ -202,9 +202,6 @@
         max-width: 1200px;
         width:100%;
     }
-    .from_top{
-        background: lightblue;
-    }
 </style>
 <script>
     function selectRule(){

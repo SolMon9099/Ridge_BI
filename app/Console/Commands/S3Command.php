@@ -136,7 +136,7 @@ class S3Command extends Command
                         $item->file_path = $device_id.'/'.$start_date.'/'.$file_name;
                         $item->save();
                         //request rule data to AI--------
-                        $aws_url = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/';
+                        $aws_url = config('const.aws_url');
                         $movie_path = $aws_url.$device_id.'/'.$start_date.'/'.$file_name;
                         $this->reqeuestToAI($device_id, $id_camera, $movie_path);
                         //-------------------------------
@@ -187,7 +187,7 @@ class S3Command extends Command
                 $params['rect_info']['action_id'] = $action_data;
                 $params['priority'] = 1;
                 Log::info('危険エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
-                $url = 'https://43.206.48.25/api/v1/danger-zone/register-camera';
+                $url = config('const.ai_server').'danger-zone/register-camera';
                 $this->sendPostApi($url, $header, $params, 'json');
             }
         }
@@ -217,7 +217,7 @@ class S3Command extends Command
                     $params['priority'] = 1;
 
                     Log::info('ピット入退場解析リクエスト（BI→AI）開始ーーーー');
-                    $url = 'https://43.206.48.25/api/v1/pit/register-camera';
+                    $url = config('const.ai_server').'pit/register-camera';
                     $this->sendPostApi($url, $header, $params, 'json');
                 }
             }
@@ -248,7 +248,7 @@ class S3Command extends Command
                     $params['priority'] = 1;
                 }
                 Log::info('棚乱れ解析リクエスト（BI→AI）開始ーーーー');
-                $url = 'https://43.206.48.25/api/v1/shelf-theft/register-camera';
+                $url = config('const.ai_server').'shelf-theft/register-camera';
                 $this->sendPostApi($url, $header, $params, 'json');
             }
         }
@@ -280,7 +280,7 @@ class S3Command extends Command
                     $params['priority'] = 1;
                 }
                 Log::info('大量盗難解析リクエスト（BI→AI）開始ーーーー');
-                $url = 'https://43.206.48.25/api/v1/hanger-counter/register-camera';
+                $url = config('const.ai_server').'hanger-counter/register-camera';
                 $this->sendPostApi($url, $header, $params, 'json');
             }
         }

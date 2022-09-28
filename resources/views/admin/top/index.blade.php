@@ -1605,29 +1605,6 @@
             });
     }
 
-    $('.grid-stack').on('change', function(event) {
-        var changed_data = [];
-        $('.grid-stack-item', event.target).each(function(){
-            changed_data.push({
-                id:$(this).attr('data-id'),
-                gs_x:$(this).attr('gs-x'),
-                gs_y:$(this).attr('gs-y'),
-                gs_w:$(this).attr('gs-w'),
-                gs_h:$(this).attr('gs-h'),
-            });
-        })
-        updateTopBlockData(changed_data);
-        $('.image-container').each(function(){
-            var image_container_id = $(this).attr('id');
-            var streaming_video_id = 'streaming_video_' + image_container_id.replace('image_container_', '');
-            if (stages[image_container_id] != undefined){
-                stages[image_container_id].width($('#' + streaming_video_id).width());
-                stages[image_container_id].height($('#' + streaming_video_id).height());
-            }
-        })
-
-    });
-
     function refreshGraph(){
         //draw graph-----------------
         $('.graph-canvas').each(function(){
@@ -1786,6 +1763,30 @@
         })
 
         refreshGraph();
+        setTimeout(() => {
+            $('.grid-stack').on('change', function(event) {
+                var changed_data = [];
+                $('.grid-stack-item', event.target).each(function(){
+                    changed_data.push({
+                        id:$(this).attr('data-id'),
+                        gs_x:$(this).attr('gs-x'),
+                        gs_y:$(this).attr('gs-y'),
+                        gs_w:$(this).attr('gs-w'),
+                        gs_h:$(this).attr('gs-h'),
+                    });
+                })
+                updateTopBlockData(changed_data);
+                $('.image-container').each(function(){
+                    var image_container_id = $(this).attr('id');
+                    var streaming_video_id = 'streaming_video_' + image_container_id.replace('image_container_', '');
+                    if (stages[image_container_id] != undefined){
+                        stages[image_container_id].width($('#' + streaming_video_id).width());
+                        stages[image_container_id].height($('#' + streaming_video_id).height());
+                    }
+                })
+
+            });
+        }, 500);
 
     })
 

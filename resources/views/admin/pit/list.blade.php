@@ -181,9 +181,6 @@
     .notice-area{
         color:#999;
     }
-    .from_top{
-        background: lightblue;
-    }
 </style>
 <script>
     function selectRule(){

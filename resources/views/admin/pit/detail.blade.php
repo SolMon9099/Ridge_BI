@@ -5,6 +5,7 @@
     $selected_camera = old('selected_camera', (isset($request_params) && isset($request_params['selected_camera']))?$request_params['selected_camera']:null);
     $total_data = array();
     $sum = 0;
+    $time_period = '3';
 ?>
 <form action="{{route('admin.pit.detail')}}" method="get" name="form1" id="form1">
 @csrf
@@ -37,33 +38,30 @@
                     </div>
                 </div>
             </div>
-            <div class="list">
-                <div class="inner active">
-                    <h3 class="title">ピット内人数推移</h3>
+            @if($selected_rule != null)
+                <div class="list">
+                    <div class="inner active">
+                        <h3 class="title">ピット内人数推移</h3>
 
-                    <div style="display: flex;">
-                        <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_video_pit']}})">ダッシュボートへ追加</button>
+                        <div style="display: flex;">
+                            <div style="width:50%; position: relative;">
+                                <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_video_pit']}})">ダッシュボートへ追加</button>
+                            </div>
+                            <div style="width:50%; position: relative;">
+                                <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_graph_pit']}})">ダッシュボートへ追加</button>
+                            </div>
                         </div>
-                        <div style="width:50%; position: relative;">
-                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_graph_pit']}})">ダッシュボートへ追加</button>
-                        </div>
-                    </div>
-                    <div style="" class="mainbody">
-                        <div class='video-show' style="width:54%;padding-top:40px;">
-                            @if($selected_rule != null)
+                        <div style="" class="mainbody">
+                            <div class='video-show' style="width:54%;padding-top:40px;">
                                 <div id="image-container" onclick="location.href='{{route('admin.pit.edit', ['pit' => $selected_rule->id])}}'"></div>
                                 <div class="streaming-video" style="height:360px;width:640px;">
                                     <safie-streaming-player></safie-streaming-player>
                                     {{-- <input type="button" value='再生' onClick="play()">
                                     <input type="button" value='停止' onClick="pause()"> --}}
                                 </div>
-                            @endif
-                        </div>
-                        @if($selected_rule != null)
+                            </div>
                             <div class="period-select-buttons">
                                 <?php
-                                    $time_period = '3';
                                     if (isset($request_params['time_period']) && $request_params['time_period'] != '') $time_period = $request_params['time_period'];
                                 ?>
                                 <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
@@ -72,64 +70,63 @@
                                 <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '12')">12時間</button>
                             </div>
                             <canvas id="myLineChart1" onclick="location.href='{{route('admin.pit.past_analysis')}}'"></canvas>
-                        @endif
-
-                    </div>
-
-                    <div class="left-right">
-                        <div class="left-box" style="position: relative;">
-                            <h3 class="title">ピット内最大時間の超過検知</h3>
-                            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
-                            <table class="table2 text-centre top50">
-                                <thead>
-                                    <tr>
-                                        <th>時間</th>
-                                        <th>検知条件</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- <tr>
-                                        <td>9:22</td>
-                                        <td>時間オーバー(120)</td>
-                                        <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
-                                    </tr> --}}
-                                </tbody>
-                            </table>
                         </div>
-                        <div class="right-box" style="position: relative;">
-                            <h3 class="title">入退場履歴</h3>
-                            <button type="button" class="add-to-toppage" onclick="addDashboard({{config('const.top_block_type_codes')['pit_history']}})">ダッシュボートへ追加</button>
-                            <table class="table2 text-centre top50">
-                                <thead>
-                                    <tr>
-                                        <th>時間</th>
-                                        <th>検知条件</th>
-                                        <th>人数変化</th>
-                                        <th>ピット内人数</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($pit_detections as $item)
-                                        @if($item->nb_entry != $item->nb_exit)
-                                        <?php
-                                            $sum += ($item->nb_entry - $item->nb_exit);
-                                            $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
-                                        ?>
+
+                        <div class="left-right">
+                            <div class="left-box" style="position: relative;">
+                                <h3 class="title">ピット内最大時間の超過検知</h3>
+                                <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
+                                <table class="table2 text-centre top50">
+                                    <thead>
                                         <tr>
-                                            <td>{{date('H:i:s', strtotime($item->starttime))}}</td>
-                                            <td>{{$item->nb_entry > $item->nb_exit ? '入場' : '退場'}} </td>
-                                            <td><span class="{{$item->nb_entry > $item->nb_exit ? 'f-red' : 'f-blue'}}">{{$item->nb_entry - $item->nb_exit}}</span></td>
-                                            <td>{{$sum}}</td>
+                                            <th>時間</th>
+                                            <th>検知条件</th>
+                                            <th></th>
                                         </tr>
-                                        @endif
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {{-- <tr>
+                                            <td>9:22</td>
+                                            <td>時間オーバー(120)</td>
+                                            <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
+                                        </tr> --}}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="right-box" style="position: relative;">
+                                <h3 class="title">入退場履歴</h3>
+                                <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['pit_history']}})">ダッシュボートへ追加</button>
+                                <table class="table2 text-centre top50">
+                                    <thead>
+                                        <tr>
+                                            <th>時間</th>
+                                            <th>検知条件</th>
+                                            <th>人数変化</th>
+                                            <th>ピット内人数</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($pit_detections as $item)
+                                            @if($item->nb_entry != $item->nb_exit)
+                                            <?php
+                                                $sum += ($item->nb_entry - $item->nb_exit);
+                                                $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
+                                            ?>
+                                            <tr>
+                                                <td>{{date('H:i:s', strtotime($item->starttime))}}</td>
+                                                <td>{{$item->nb_entry > $item->nb_exit ? '入場' : '退場'}} </td>
+                                                <td><span class="{{$item->nb_entry > $item->nb_exit ? 'f-red' : 'f-blue'}}">{{$item->nb_entry - $item->nb_exit}}</span></td>
+                                                <td>{{$sum}}</td>
+                                            </tr>
+                                            @endif
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 
@@ -227,9 +224,6 @@
     }
     .right-box > .add-to-toppage{
         top:0px;
-    }
-    .from_top{
-        background: lightblue;
     }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>

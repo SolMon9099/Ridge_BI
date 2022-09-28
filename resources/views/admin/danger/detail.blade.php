@@ -5,6 +5,7 @@
         if ($rule->points != null && $rule->points != '') $rule->points = json_decode($rule->points);
         $selected_rule = $rule;
     }
+    $time_period = '3';
 ?>
 @extends('admin.layouts.app')
 
@@ -40,6 +41,7 @@
                     </div>
                 </div>
             </div>
+            @if(isset($selected_rule))
             <div class="list">
                 <div class="inner active">
                     <h3 class="title">現在の映像</h3>
@@ -53,31 +55,27 @@
                     </div>
                     <div class="mainbody">
                         <div class='video-show' style="width:54%;padding-top:40px;">
-                            @if(isset($selected_rule))
                             <div id="image-container" onclick="location.href='{{route('admin.danger.edit', ['danger' => $selected_rule->id])}}'"></div>
                             <div class="streaming-video" style="height:360px;width:640px;">
                                 <safie-streaming-player></safie-streaming-player>
                                 {{-- <input type="button" value='再生' onClick="play()">
                                 <input type="button" value='停止' onClick="pause()"> --}}
                             </div>
-                            @endif
                         </div>
-                        @if(isset($selected_rule))
-                            <div class="period-select-buttons">
-                                <?php
-                                    $time_period = '3';
-                                    if (isset($request_params['time_period']) && $request_params['time_period'] != '') $time_period = $request_params['time_period'];
-                                ?>
-                                <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
-                                <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
-                                <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '6')">6時間</button>
-                                <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '12')">12時間</button>
-                            </div>
-                            <canvas id="myLineChart1" onclick="location.href='{{route('admin.danger.past_analysis')}}'"></canvas>
-                        @endif
+                        <div class="period-select-buttons">
+                            <?php
+                                if (isset($request_params['time_period']) && $request_params['time_period'] != '') $time_period = $request_params['time_period'];
+                            ?>
+                            <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
+                            <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
+                            <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '6')">6時間</button>
+                            <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '12')">12時間</button>
+                        </div>
+                        <canvas id="myLineChart1" onclick="location.href='{{route('admin.danger.past_analysis')}}'"></canvas>
                     </div>
                 </div>
             </div>
+            @endif
             <ul class="kenchi-list" style="margin-top: 45px;position: relative;">
                 @if(count($danger_detections) > 0)
                     <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_danger']}})">ダッシュボートへ追加</button>
@@ -253,9 +251,6 @@
         position: absolute;
         right: 0;
         top:-50px;
-    }
-    .from_top{
-        background: lightblue;
     }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>

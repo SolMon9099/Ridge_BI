@@ -60,8 +60,10 @@
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
                 <div class="grid-area">
-                    @for ($i = 0; $i < 100; $i++)
-                        <div class='{{"grid grid_".$i}}'></div>
+                    @for ($i = 0; $i < 72; $i++)
+                        @for($j = 0; $j < 128; $j++)
+                            <div class='{{"grid grid_".$i."_".$j}}'></div>
+                        @endfor
                     @endfor
                 </div>
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
@@ -138,7 +140,7 @@
         background-color:transparent;
         position: absolute;
         display: grid;
-        grid-template-columns: auto auto auto auto auto auto auto auto auto auto;
+        grid-template-columns: repeat(128, 10px);
     }
     .grid-area > div{
         opacity: 0;
@@ -211,6 +213,7 @@
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 
 <script>
+    var heatmap_data = [];
     var stage = null;
     var layer = null;
     var radius = "<?php echo config('const.camera_mark_radius');?>";
@@ -586,15 +589,38 @@
 
     function changeHeatMap(e){
         if (e.checked){
-            for (var i = 0; i < 100; i++){
-                $('.grid_' + i).css('opacity', Math.random());
+            for (var i = 0; i < 72; i++){
+                for(var j=0; j<128; j++){
+                    var index = i * 128 + j;
+                    if (heatmap_data[index] != undefined && isNaN(parseInt(heatmap_data[index]))){
+                        $('.grid_' + i + '_' + j).css('opacity', heatmap_data[index]);
+                    }
+                }
             }
         } else {
             $('.grid').css('opacity', 0);
         }
     }
+    function getHeadtMapData(){
+        jQuery.ajax({
+            url : '/admin/camera/getHeatmapData',
+            method: 'post',
+            data: {
+                camera_id:'<?php echo $device_id;?>',
+                _token:$('meta[name="csrf-token"]').attr('content'),
+            },
+            error : function(){
+                console.log('failed');
+            },
+            success: function(result){
+                console.log(result);
+                heatmap_data = result;
+            }
+        });
+    }
 
     $(document).ready(function() {
+        getHeadtMapData();
         drawing();
         if (red_points != null && red_points.length == 4){
             red_points.map((center_point, point_index) => {

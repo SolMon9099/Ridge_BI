@@ -267,9 +267,6 @@
         color:white;
         border-radius: 20px;
     }
-    .from_top{
-        background: lightblue;
-    }
     /* #myLineChart1{
         width:50%!important;
         height: 360px!important;

@@ -221,15 +221,18 @@ class PitController extends AdminController
             }
         }
 
-        $search_params = [
-            'selected_camera' => $request['selected_camera'],
-            'time_period' => isset($request['time_period']) ? $request['time_period'] : 3,
-        ];
-        $search_option_params = [
-            'page_name' => 'admin.pit.detail',
-            'search_params' => $search_params,
-        ];
-        TopService::save_search_option($search_option_params);
+        $search_params = [];
+        if (isset($request['selected_camera']) && $request['selected_camera'] != '') {
+            $search_params = [
+                'selected_camera' => $request['selected_camera'],
+                'time_period' => isset($request['time_period']) ? $request['time_period'] : 3,
+            ];
+            $search_option_params = [
+                'page_name' => 'admin.pit.detail',
+                'search_params' => $search_params,
+            ];
+            TopService::save_search_option($search_option_params);
+        }
 
         if ($selected_rule != null) {
             if ($selected_rule->red_points != null && $selected_rule->red_points != '') {
@@ -330,17 +333,20 @@ class PitController extends AdminController
                 }
             }
         }
-        $search_params = [
-            'selected_camera' => $request['selected_camera'],
-            'starttime' => isset($request['starttime']) && $request['starttime'] != '' ? $request['starttime'] : date('Y-m-d'),
-            'endtime' => isset($request['endtime']) && $request['endtime'] != '' ? $request['endtime'] : date('Y-m-d'),
-            'time_period' => isset($request['time_period']) ? $request['time_period'] : 3,
-        ];
-        $search_option_params = [
-            'page_name' => 'admin.pit.past_analysis',
-            'search_params' => $search_params,
-        ];
-        TopService::save_search_option($search_option_params);
+        $search_params = [];
+        if (isset($request['selected_camera']) && $request['selected_camera'] != '') {
+            $search_params = [
+                'selected_camera' => $request['selected_camera'],
+                'starttime' => isset($request['starttime']) && $request['starttime'] != '' ? $request['starttime'] : date('Y-m-d'),
+                'endtime' => isset($request['endtime']) && $request['endtime'] != '' ? $request['endtime'] : date('Y-m-d'),
+                'time_period' => isset($request['time_period']) ? $request['time_period'] : 3,
+            ];
+            $search_option_params = [
+                'page_name' => 'admin.pit.past_analysis',
+                'search_params' => $search_params,
+            ];
+            TopService::save_search_option($search_option_params);
+        }
 
         $pit_detections = PitService::searchDetections($request)->get()->all();
 

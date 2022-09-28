@@ -11,6 +11,7 @@ use App\Service\PitService;
 use App\Service\ThiefService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Heatmap;
 
 class DetectionController extends Controller
 {
@@ -358,5 +359,53 @@ class DetectionController extends Controller
 
     public function saveHeatmap(Request $request)
     {
+        Log::info('ヒートマップ計算結果送受信API（AI→BI）開始');
+        Log::info('パラメータ');
+        Log::info($request);
+        if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
+            Log::info('デバイスがありません。-------------');
+
+            return ['error' => 'デバイスがありません。'];
+        }
+        if (!isset($request['analyze_result'])) {
+            Log::info('計算結果がありません。-------------');
+
+            return ['error' => '計算結果がありません。'];
+        }
+        if (!(isset($request['analyze_result']['heatmap']) && $request['analyze_result']['heatmap'] != '')) {
+            Log::info('ヒートマップデータがありません。-------------');
+
+            return ['error' => 'ヒートマップデータがありません。'];
+        }
+        $quaility_score = 0.82;
+        if (isset($request['analyze_result']['quality_score']) && $request['analyze_result']['quality_score'] > 0) {
+            $quaility_score = $request['analyze_result']['quality_score'];
+        }
+        $camera_id = $request['camera_info']['camera_id'];
+        Log::info('heatmap parameter*****************');
+        Log::info($request['analyze_result']['heatmap']);
+        $heatmap_data = json_decode($request['analyze_result']['heatmap']);
+        $check_flag = false;
+        foreach ($heatmap_data as &$item) {
+            if (is_numeric($item)) {
+                $check_flag = true;
+            } else {
+                $item = '';
+            }
+        }
+        if ($check_flag) {
+            $new_heatmap = new Heatmap();
+            $new_heatmap->camera_id = $camera_id;
+            $new_heatmap->quality_score = $quaility_score;
+            $new_heatmap->heatmap_data = json_encode($heatmap_data);
+            $new_heatmap->save();
+            Log::info('ヒートマップ計算結果保存成功');
+        } else {
+            Log::info('すべてNaNデーターーーーーー');
+        }
+
+        Log::info('ヒートマップ計算結果送受信API（AI→BI）終了');
+
+        return ['success' => '送信成功'];
     }
 }

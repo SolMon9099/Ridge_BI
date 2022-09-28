@@ -235,6 +235,7 @@ class DangerController extends AdminController
                 }
             }
         }
+        $search_params = [];
         if (isset($request['selected_camera']) && $request['selected_camera'] != '') {
             $search_params = [
                 'selected_camera' => $request['selected_camera'],

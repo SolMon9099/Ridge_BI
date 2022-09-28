@@ -10,6 +10,7 @@ use App\Service\LocationService;
 use App\Service\LocationDrawingService;
 use App\Models\Camera;
 use App\Models\CameraMappingDetail;
+use App\Models\Heatmap;
 use App\Models\LocationDrawing;
 use App\Service\SafieApiService;
 use Illuminate\Support\Facades\Auth;
@@ -280,5 +281,16 @@ class CameraController extends AdminController
         $new_filename = 'drawing_'.date('YmdHis').'.'.$download_file->getClientOriginalExtension();
         $path = $request->file('vfile')->storeAs('public/temp', $new_filename);
         exit($new_filename);
+    }
+
+    public function getHeatmapData(Request $request)
+    {
+        $camera_id = $request['camera_id'];
+        $heatmap_data = Heatmap::query()->where('camera_id', $camera_id)->orderByDesc('created_at')->get()->all();
+        foreach ($heatmap_data as &$item) {
+            $item->heatmap_data = json_decode($item->heatmap_data);
+        }
+
+        return $heatmap_data;
     }
 }

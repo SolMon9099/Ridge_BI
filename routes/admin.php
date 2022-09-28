@@ -84,6 +84,7 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
             Route::get('/mapping_detail/{drawing}', 'CameraController@mappingDetail')->name('admin.camera.mapping.detail');
 
             Route::post('/ajaxUploadFile', 'CameraController@ajaxUploadFile')->name('admin.camera.ajaxUploadFile');
+            Route::post('/getHeatmapData', 'CameraController@getHeatmapData')->name('admin.camera.getHeatmapData');
         });
 
         Route::group(['prefix' => 'pit'], function () {

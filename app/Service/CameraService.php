@@ -10,6 +10,7 @@ use App\Models\ShelfDetectionRule;
 use App\Models\ThiefDetectionRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class CameraService
 {
@@ -193,14 +194,27 @@ class CameraService
         }
     }
 
-    public static function getAllCameraNames()
+    public static function refreshImg()
     {
-        $cameras = Camera::orderBy('id', 'asc')->get();
-        $cameras_array = [];
+        $cameras = Camera::orderBy('contract_no');
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $cameras = $cameras->where('contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        $cameras = $cameras->get()->all();
+        $camera_imgs = [];
+        $contracts = [];
         foreach ($cameras as $camera) {
-            $cameras_array[$camera->id] = $camera->camera_id;
+            if (!in_array($camera->contract_no, $contracts)) {
+                $safie_service = new SafieApiService($camera->contract_no);
+                $contracts[] = $camera->contract_no;
+            }
+            if (!isset($camera_imgs[$camera->camera_id])) {
+                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                $camera_imgs[$camera->camera_id] = $camera_image_data;
+                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
+            }
         }
 
-        return $cameras_array;
+        return true;
     }
 }

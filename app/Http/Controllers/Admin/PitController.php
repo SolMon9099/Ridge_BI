@@ -93,7 +93,7 @@ class PitController extends AdminController
             'camera_id' => $request['selected_camera'],
             'rules' => $pit_rules,
             'camera_image_data' => $camera_image_data,
-            'device_id' => $safie_service->device_id,
+            'device_id' => $camera_data->camera_id,
             'access_token' => $safie_service->access_token,
         ]);
     }
@@ -114,7 +114,7 @@ class PitController extends AdminController
             'rules' => $rules,
             'camera_id' => $pit->camera_id,
             'camera_image_data' => $camera_image_data,
-            'device_id' => $safie_service->device_id,
+            'device_id' => $camera_data->camera_id,
             'access_token' => $safie_service->access_token,
         ]);
     }

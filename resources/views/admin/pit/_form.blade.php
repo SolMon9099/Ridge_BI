@@ -213,7 +213,7 @@
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 
 <script>
-    var heatmap_data = [];
+    var heatmap_records = [];
     var stage = null;
     var layer = null;
     var radius = "<?php echo config('const.camera_mark_radius');?>";
@@ -591,10 +591,22 @@
         if (e.checked){
             for (var i = 0; i < 72; i++){
                 for(var j=0; j<128; j++){
-                    var index = i * 128 + j;
-                    if (heatmap_data[index] != undefined && isNaN(parseInt(heatmap_data[index]))){
-                        $('.grid_' + i + '_' + j).css('opacity', heatmap_data[index]);
+                    var score = null;
+                    var count = 0;
+                    if (heatmap_records != undefined && heatmap_records.length > 0){
+                        heatmap_records.map(heat_item => {
+                            if (heat_item.heatmap_data != null && heat_item.heatmap_data.length > 0){
+                                if (!isNaN(parseInt(heat_item.heatmap_data[i][j]))){
+                                    if (score === null) score = 0;
+                                    score += parseFloat(heat_item.heatmap_data[i][j]);
+                                    count++;
+                                }
+                            }
+                        })
                     }
+                    if (count > 0) score = score / count;
+                    console.log('score', score);
+                    $('.grid_' + i + '_' + j).css('opacity', calcOpacity(score));
                 }
             }
         } else {
@@ -614,7 +626,7 @@
             },
             success: function(result){
                 console.log(result);
-                heatmap_data = result;
+                heatmap_records = result;
             }
         });
     }

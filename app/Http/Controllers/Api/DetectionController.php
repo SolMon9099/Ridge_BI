@@ -367,30 +367,32 @@ class DetectionController extends Controller
 
             return ['error' => 'デバイスがありません。'];
         }
-        if (!isset($request['analyze_result'])) {
-            Log::info('計算結果がありません。-------------');
+        // if (!isset($request['analyze_result'])) {
+        //     Log::info('計算結果がありません。-------------');
 
-            return ['error' => '計算結果がありません。'];
-        }
-        if (!(isset($request['analyze_result']['heatmap']) && $request['analyze_result']['heatmap'] != '')) {
+        //     return ['error' => '計算結果がありません。'];
+        // }
+        if (!(isset($request['heatmap']) && $request['heatmap'] != '' && is_array($request['heatmap']))) {
             Log::info('ヒートマップデータがありません。-------------');
 
             return ['error' => 'ヒートマップデータがありません。'];
         }
         $quaility_score = 0.82;
-        if (isset($request['analyze_result']['quality_score']) && $request['analyze_result']['quality_score'] > 0) {
-            $quaility_score = $request['analyze_result']['quality_score'];
+        if (isset($request['quality_score']) && $request['quality_score'] > 0) {
+            $quaility_score = $request['quality_score'];
         }
         $camera_id = $request['camera_info']['camera_id'];
         Log::info('heatmap parameter*****************');
-        Log::info($request['analyze_result']['heatmap']);
-        $heatmap_data = json_decode($request['analyze_result']['heatmap']);
+        Log::info($request['heatmap']);
+        $heatmap_data = $request['heatmap'];
         $check_flag = false;
-        foreach ($heatmap_data as &$item) {
-            if (is_numeric($item)) {
-                $check_flag = true;
-            } else {
-                $item = '';
+        foreach ($heatmap_data as $rows) {
+            foreach($rows as &$item){
+                if (is_numeric($item)) {
+                    $check_flag = true;
+                } else {
+                    $item = '';
+                }
             }
         }
         if ($check_flag) {

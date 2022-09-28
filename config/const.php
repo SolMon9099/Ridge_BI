@@ -322,22 +322,22 @@ return [
         5 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            'change_x_axis' => 'グラフの横軸変更',
+            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         6 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            'change_x_axis' => 'グラフの横軸変更',
+            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         7 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            'change_x_axis' => 'グラフの横軸変更',
+            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         8 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            'change_x_axis' => 'グラフの横軸変更',
+            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         9 => [
             'delete' => '削除',

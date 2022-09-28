@@ -5167,9 +5167,9 @@ ul.camera-list li{
 	margin-right: 1.25%;
 	margin-bottom: 1.25%;
 }
-ul.camera-list li:nth-child(5n){
+/* ul.camera-list li:nth-child(5n){
 	margin-right: 0;
-}
+} */
 ul.camera-list li .pic{
 	line-height: 0;
 }
@@ -5806,6 +5806,9 @@ table.pit-detect-list td{
     padding: 30px 10px;
     color: #999;
     font-size:14px;
+    text-align: center;
+    border:1px solid lightgray;
+    margin-top:40px;
 }
 input[type="color"]{
     min-height:30px;

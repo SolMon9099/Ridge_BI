@@ -18,6 +18,11 @@
         color:#0062de;
         text-decoration: underline;
     }
+    .menu-sub-li{
+        padding-left: 15px;
+        font-size: 14px;
+        padding-top: 5px;
+    }
     .user-menu{
         display: none;
         position: absolute;
@@ -33,9 +38,6 @@
     .user-menu h2{
         opacity: 0.5;
         margin-top:10px;
-    }
-    .menu-li{
-        padding-left:10px;
     }
     .grid-stack{
         width:100%;
@@ -150,12 +152,6 @@
     }
     .cap{
         padding-left: 20px;
-    }
-    .no-data{
-        font-size: 16px;
-        text-align: center;
-        border:1px solid lightgray;
-        margin-top:40px;
     }
     .gear-menu{
         display: none;
@@ -333,10 +329,20 @@
                                 @if ($super_admin_flag)
                                     @if (!in_array($url, config('const.super_admin_not_allowed_pages')))
                                         <li class="menu-li"><a href="{{route($url).'?from_top=true'}}">{{$item['name']}}</a></li>
+                                        @if($item['name'] == 'TOP')
+                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">リアルタイム映像</a></li>
+                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">グラフ</a></li>
+                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">最新の検知</a></li>
+                                        @endif
                                     @endif
                                 @else
                                     @if (!$general_user_flag || in_array($url, $manager_allowed_pages))
                                         <li class="menu-li"><a href="{{route($url).'?from_top=true'}}">{{$item['name']}}</a></li>
+                                        @if($item['name'] == 'TOP')
+                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">リアルタイム映像</a></li>
+                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">グラフ</a></li>
+                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">最新の検知</a></li>
+                                        @endif
                                     @endif
                                 @endif
                             @endif
@@ -718,7 +724,7 @@
 <div id="camera" class="modal-content">
     <div class="textarea">
         <div class="listing">
-            <form action="{{route('admin.top.update')}}" method="post" name="form" id="camera_form">
+            <form action="{{route('admin.top')}}" method="get" name="form" id="camera_form">
             @csrf
                 <input name="selected_top_block" id = 'selected_top_block' type="hidden"/>
                 <input name="selected_camera_data" id = 'selected_camera' type="hidden"/>
@@ -737,7 +743,7 @@
                         </tbody>
                     </table>
                     <div class="modal-set">
-                        <button type="submit" class="modal-close">設 定</button>
+                        <button onclick="changeSelectCamera()" type="button" class="modal-close">設 定</button>
                     </div>
                 </div>
             </form>
@@ -1743,7 +1749,18 @@
         }
     }
 
+    function changeSelectCamera(){
+        var changed_data = [];
+        changed_data.push({
+            id:$('#selected_top_block').val(),
+            selected_camera:$('#selected_camera').val(),
+        })
+        updateTopBlockData(changed_data);
+        $('#camera_form').submit();
+    }
+
     $(document).ready(function() {
+        refresshCameraImg();
         //live video and draw stage on it-----------------
         $('.image-container').each(function(){
             var image_container_id = $(this).attr('id');

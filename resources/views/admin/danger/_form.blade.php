@@ -125,7 +125,9 @@
             </div>
 
             <div class="add-figure-area">
-                <button type="button" onclick="addNewFigure()" class="{{count($rules) < $max_figure_numbers ? 'draw-btn add-btn' : 'disabled-btn draw-btn add-btn' }}">検知設定を追加</button>
+                <button type="button" onclick="addNewFigure()" style="display: <?php echo count($rules) < $max_figure_numbers ? 'block':'none' ?>"
+                    id="add-figure-btn" class="draw-btn add-btn">検知設定を追加
+                </button>
                 <div class="balloon_danger">
                     <p>画像内をクリックしエリアを選択してください。</p>
                 </div>
@@ -388,6 +390,7 @@
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 
 <script>
+    var heatmap_records = [];
     var max_figure_numbers = "<?php echo $max_figure_numbers;?>";
     max_figure_numbers = parseInt(max_figure_numbers);
     var stage = null;
@@ -626,11 +629,15 @@
             enable_add_figure_flag = true;
         }
         delete rules_object[rule_index];
+        $('#add-figure-btn').show();
     }
 
     function addNewFigure(){
         if (Object.keys(rules_object).length >= max_figure_numbers) return;
         if (enable_add_figure_flag != true) return;
+        if (Object.keys(rules_object).length == max_figure_numbers - 1){
+            $('#add-figure-btn').hide();
+        }
         if (unique_rule_id == null){
             unique_rule_id = 0;
         } else {
@@ -753,15 +760,48 @@
         if (e.checked){
             for (var i = 0; i < 72; i++){
                 for(var j=0; j<128; j++){
-                    $('.grid_' + i + '_' + j).css('opacity', Math.random());
+                    var score = null;
+                    var count = 0;
+                    if (heatmap_records != undefined && heatmap_records.length > 0){
+                        heatmap_records.map(heat_item => {
+                            if (heat_item.heatmap_data != null && heat_item.heatmap_data.length > 0){
+                                if (!isNaN(parseInt(heat_item.heatmap_data[i][j]))){
+                                    if (score === null) score = 0;
+                                    score += parseFloat(heat_item.heatmap_data[i][j]);
+                                    count++;
+                                }
+                            }
+                        })
+                    }
+                    if (count > 0) score = score / count;
+                    console.log('score', score);
+                    $('.grid_' + i + '_' + j).css('opacity', calcOpacity(score));
                 }
             }
         } else {
             $('.grid').css('opacity', 0);
         }
     }
+    function getHeadtMapData(){
+        jQuery.ajax({
+            url : '/admin/camera/getHeatmapData',
+            method: 'post',
+            data: {
+                camera_id:'<?php echo $device_id;?>',
+                _token:$('meta[name="csrf-token"]').attr('content'),
+            },
+            error : function(){
+                console.log('failed');
+            },
+            success: function(result){
+                console.log(result);
+                heatmap_records = result;
+            }
+        });
+    }
 
     $(document).ready(function() {
+        getHeadtMapData();
         drawing();
         Object.keys(rules_object).map(rule_index => {
             var rule_item = rules_object[rule_index];

@@ -293,4 +293,9 @@ class CameraController extends AdminController
 
         return $heatmap_data;
     }
+
+    public function AjaxRefreshImg()
+    {
+        return CameraService::refreshImg();
+    }
 }

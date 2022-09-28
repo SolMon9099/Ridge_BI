@@ -42,11 +42,10 @@
                 </div>
             </div>
         </form>
-
-        @if(count($pit_detections) > 0)
-            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_pit']}})">ダッシュボートへ追加</button>
+        <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_pit']}})">ダッシュボートへ追加</button>
+        @if(!(count($pit_detections) > 0))
+            <div class="no-data">検知データがありません。</div>
         @endif
-
         {{ $pit_detections->appends([
             'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
             'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),

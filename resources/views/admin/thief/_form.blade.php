@@ -65,12 +65,16 @@
                 </div>
                 @endforeach
             </div>
+
             <div class="add-figure-area">
-                <button type="button" onclick="addNewFigure()" class="{{count($rules) < $max_figure_numbers ? 'draw-btn add-btn' : 'disabled-btn draw-btn add-btn' }}">検知設定を追加</button>
+                <button type="button" onclick="addNewFigure()" style="display: <?php echo count($rules) < $max_figure_numbers ? 'block':'none' ?>"
+                    id="add-figure-btn" class="draw-btn add-btn">検知設定を追加
+                </button>
                 <div class="balloon_danger">
-                    <p>画像内をクリックし矩形を選択してください。</p>
+                    <p>画像内をクリックしエリアを選択してください。</p>
                 </div>
             </div>
+
         </div>
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
@@ -532,11 +536,15 @@
             $('.img-magnifier-glass').remove();
         }
         delete rules_object[rule_index];
+        $('#add-figure-btn').show();
     }
 
     function addNewFigure(){
         if (Object.keys(rules_object).length >= max_figure_numbers) return;
         if (enable_add_figure_flag != true) return;
+        if (Object.keys(rules_object).length == max_figure_numbers - 1){
+            $('#add-figure-btn').hide();
+        }
         if (unique_rule_id == null){
             unique_rule_id = 0;
         } else {

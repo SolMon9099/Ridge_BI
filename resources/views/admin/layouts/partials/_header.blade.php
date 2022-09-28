@@ -25,12 +25,12 @@
                         <div class="login-user-name">{{$login_user->name.$suffix}}</div>
                     </li>
                     <li>
-                        <button type="button" class="logout">
+                        <button onclick="event.preventDefault(); document.getElementById('logout-form').submit();" type="button" class="logout">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(208,211,219, 1);transform: ;msFilter:;">
                                 <path d="M16 13v-2H7V8l-5 4 5 4v-3z"></path>
                                 <path d="M20 3h-9c-1.103 0-2 .897-2 2v4h2V5h9v14h-9v-4H9v4c0 1.103.897 2 2 2h9c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2z"></path>
                             </svg>
-                            <span  onclick="event.preventDefault(); document.getElementById('logout-form').submit();">ログアウト</span>
+                            <span >ログアウト</span>
                         </button>
                         <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">
                             @csrf

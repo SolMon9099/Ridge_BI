@@ -179,7 +179,10 @@ $('.video-pit').hover( function() {
 function addToToppage(block_type, options = null){
     let token = $('meta[name="csrf-token"]').attr('content');
 
-    jQuery.ajax({
+    $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': token
+        },
         url : '/admin/save_block',
         method: 'post',
         data: {
@@ -190,17 +193,20 @@ function addToToppage(block_type, options = null){
 
         error : function(){
             console.log('failed');
-            helper_alert('alert-modal', '登録失敗', result, 300, '閉じる');
+            helper_alert('alert-modal', '登録失敗', result, 320, '閉じる');
         },
         success: function(result){
             console.log(result);
-            helper_alert('alert-modal', '登録完了', result, 300, '閉じる');
+            helper_alert('alert-modal', '登録完了', result, 320, '閉じる');
         }});
 }
 
 function saveSearchOptions(page_name, search_params){
     let token = $('meta[name="csrf-token"]').attr('content');
-    jQuery.ajax({
+    $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': token
+        },
         url : '/admin/save_search_option',
         method: 'post',
         data: {
@@ -218,7 +224,10 @@ function saveSearchOptions(page_name, search_params){
 }
 
 function updateTopBlockData(changed_data){
-    jQuery.ajax({
+    $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': token
+        },
         url : '/admin/AjaxUpdate',
         method: 'post',
         data: {
@@ -235,11 +244,33 @@ function updateTopBlockData(changed_data){
 }
 
 function deleteTopBlock(block_id){
-    jQuery.ajax({
+    $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': token
+        },
         url : '/admin/AjaxDelete',
         method: 'post',
         data: {
             id:block_id,
+            _token:$('meta[name="csrf-token"]').attr('content'),
+        },
+        error : function(){
+            console.log('failed');
+        },
+        success: function(result){
+            console.log(result);
+        }
+    });
+}
+
+function refresshCameraImg(){
+    $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': token
+        },
+        url : '/admin/camera/AjaxRefreshImg',
+        method: 'post',
+        data: {
             _token:$('meta[name="csrf-token"]').attr('content'),
         },
         error : function(){
@@ -366,3 +397,13 @@ function formatDateTimeStr (val) {
         return "";
     }
 };
+
+function calcOpacity(score){
+    if (score === null) return 0.8;
+
+    if (score <= 1 && score > 0.8) return 0;
+    if (score <= 0.8 && score > 0.6) return 0.2;
+    if (score <= 0.6 && score > 0.4) return 0.4;
+    if (score <= 0.4 && score > 0) return 0.6;
+    return 0.6;
+}

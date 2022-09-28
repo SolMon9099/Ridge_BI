@@ -19,7 +19,7 @@ class CreateHeatmapsTable extends Migration
             $table->integer('grid_x')->default(128)->comment('グリッドサイズ');
             $table->integer('grid_y')->default(72)->comment('グリッドサイズ');
             $table->text('heatmap_data')->comment('ヒートマップ:２次元配列');
-            $table->float('quality_score')->comment('品質スコア');
+            $table->text('quality_score')->comment('品質スコア');
             $table->timestamps();
         });
     }

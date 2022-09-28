@@ -99,7 +99,7 @@ class DangerController extends AdminController
             'camera_id' => $request['selected_camera'],
             'rules' => $danger_rules,
             'camera_image_data' => $camera_image_data,
-            'device_id' => $safie_service->device_id,
+            'device_id' => $camera_data->camera_id,
             'access_token' => $safie_service->access_token,
         ]);
     }
@@ -120,7 +120,7 @@ class DangerController extends AdminController
             'rules' => $rules,
             'camera_id' => $danger->camera_id,
             'camera_image_data' => $camera_image_data,
-            'device_id' => $safie_service->device_id,
+            'device_id' => $camera_data->camera_id,
             'access_token' => $safie_service->access_token,
         ]);
     }

@@ -39,10 +39,11 @@
             </div>
         </form>
 
-        @if(count($danger_detections) > 0)
-            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_danger']}})">ダッシュボートへ追加</button>
-        @endif
 
+        <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_danger']}})">ダッシュボートへ追加</button>
+        @if(!(count($danger_detections) > 0))
+            <div class="no-data">検知データがありません。</div>
+        @endif
         {{ $danger_detections->appends([
             'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
             'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),

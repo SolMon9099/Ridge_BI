@@ -10,13 +10,11 @@ use App\Service\DangerService;
 use App\Service\PitService;
 use App\Service\SafieApiService;
 use App\Service\TopService;
-use Illuminate\Support\Facades\Storage;
 
 class TopController extends AdminController
 {
     public function index()
     {
-        $camera_imgs = [];
         $top_blocks = TopService::search()->get()->all();
         foreach ($top_blocks as $item) {
             $request = [];
@@ -33,11 +31,6 @@ class TopController extends AdminController
                             if (!in_array($camera->contract_no, array_keys($access_tokens))) {
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
-                            }
-                            if (!isset($camera_imgs[$camera->camera_id])) {
-                                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                                $camera_imgs[$camera->camera_id] = $camera_image_data;
-                                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
                             }
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
@@ -106,11 +99,6 @@ class TopController extends AdminController
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
                             }
-                            if (!isset($camera_imgs[$camera->camera_id])) {
-                                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                                $camera_imgs[$camera->camera_id] = $camera_image_data;
-                                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
-                            }
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
                     }
@@ -171,11 +159,6 @@ class TopController extends AdminController
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
                             }
-                            if (!isset($camera_imgs[$camera->camera_id])) {
-                                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                                $camera_imgs[$camera->camera_id] = $camera_image_data;
-                                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
-                            }
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
                     }
@@ -234,10 +217,6 @@ class TopController extends AdminController
                             if (!in_array($camera->contract_no, array_keys($access_tokens))) {
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
-                            }
-                            if (!isset($camera_imgs[$camera->camera_id])) {
-                                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
                             }
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
@@ -305,10 +284,6 @@ class TopController extends AdminController
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
                             }
-                            if (!isset($camera_imgs[$camera->camera_id])) {
-                                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
-                            }
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
                     }
@@ -351,10 +326,6 @@ class TopController extends AdminController
                             if (!in_array($camera->contract_no, array_keys($access_tokens))) {
                                 $safie_service = new SafieApiService($camera->contract_no);
                                 $access_tokens[$camera->contract_no] = $safie_service->access_token;
-                            }
-                            if (!isset($camera_imgs[$camera->camera_id])) {
-                                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
                             }
                             $camera->access_token = $access_tokens[$camera->contract_no];
                         }
@@ -410,27 +381,6 @@ class TopController extends AdminController
         ]);
     }
 
-    public function update(Request $request)
-    {
-        $selected_top_block_id = $request['selected_top_block'];
-        $selected_camera_data = json_decode($request['selected_camera_data']);
-        $top_block = TopBlock::find($selected_top_block_id);
-        $options = $top_block->options;
-        if (isset($options)) {
-            $options = json_decode($options);
-            $options->selected_camera = $selected_camera_data;
-            $top_block->options = json_encode((array) $options);
-        } else {
-            $top_block->options = json_encode(['selected_camera' => $selected_camera_data]);
-        }
-
-        $top_block->save();
-
-        $request->session()->flash('success', '変更しました。');
-
-        return redirect()->route('admin.top');
-    }
-
     public function AjaxUpdate(Request $request)
     {
         if (isset($request['changed_data']) && count($request['changed_data']) > 0) {
@@ -449,6 +399,16 @@ class TopController extends AdminController
                     if (isset($item['gs_h'])) {
                         $top_block->gs_h = $item['gs_h'];
                     }
+                    if (isset($item['selected_camera']) && $item['selected_camera'] > 0) {
+                        $options = $top_block->options;
+                        if ($options != null) {
+                            $options = (array) json_decode($options);
+                            $options['selected_camera'] = $item['selected_camera'];
+                        } else {
+                            $options = ['selected_camera' => $item['selected_camera']];
+                        }
+                        $top_block->options = json_encode($options);
+                    }
                     if (isset($item['options'])) {
                         $top_block->options = $item['options'];
                     }
@@ -464,8 +424,10 @@ class TopController extends AdminController
     {
         if (isset($request['id']) && $request['id'] > 0) {
             TopBlock::find($request['id'])->delete();
+
             return 'delete ok';
         }
+
         return 'delete failed';
     }
 
@@ -500,7 +462,7 @@ class TopController extends AdminController
         $new_block->gs_h = 3;
         $new_block->save();
 
-        return 'TOPページに追加しました。';
+        return 'ダッシュボードに追加しました。';
         // }
 
         // return 'すでに登録されています。';

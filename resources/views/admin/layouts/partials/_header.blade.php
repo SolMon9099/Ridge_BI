@@ -13,7 +13,7 @@
 <div class="overlay" id="js__overlay"></div>
 <div id="sp-head">
     <a href="{{route('admin.top')}}">
-        <h1><img src="{{ asset('assets/admin/img/logo-top.svg') }}?1111"></h1>
+        <h1><img src="{{ asset('assets/admin/img/logo-top.svg?2') }}?1111"></h1>
     </a>
     <p class="spnav"><a id="btn"><span></span></a></p>
 
@@ -76,7 +76,7 @@
         <div class="leftside">
             <a href="{{route('admin.top')}}">
                 <h1>
-                    <img src="{{ asset('assets/admin/img/logo-top.svg') }}">
+                    <img src="{{ asset('assets/admin/img/logo-top.svg?2') }}">
                 </h1>
             </a>
         </div>

@@ -111,7 +111,7 @@
 <style>
     .clear-btn{
         margin:0;
-        padding: 10px 35px;
+        padding: 10px 30px;
         position: absolute;
         right:0;
     }
@@ -135,8 +135,6 @@
     .grid-area{
         width:1280px;
         height:720px;
-        margin-left: auto;
-        margin-right: auto;
         background-color:transparent;
         position: absolute;
         display: grid;
@@ -181,7 +179,7 @@
         display: flex;
     }
     .ai-guide-area{
-        margin-left: 40px;
+        margin-left: 10px;
         padding-top:8px;
         display:inline-flex;
     }
@@ -213,6 +211,7 @@
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 
 <script>
+    var mouse_pos = null;
     var heatmap_records = [];
     var stage = null;
     var layer = null;
@@ -392,6 +391,17 @@
         circle.on('dragmove', function (e) {
             var new_x = e.evt.offsetX;
             var new_y = e.evt.offsetY;
+            if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30) {
+                if (color == null){
+                    var point_index = red_points.findIndex(point => point.id == e.target.id());
+                    circle.absolutePosition({x:red_points[point_index].x, y:red_points[point_index].y});
+                } else {
+                    point_index = blue_points.findIndex(point => point.id == e.target.id());
+                    circle.absolutePosition({x:blue_points[point_index].x, y:blue_points[point_index].y});
+                }
+                circle.stopDrag();
+                return;
+            }
             if (e.evt.offsetX <= 10 || e.evt.offsetX >= 1270) {
                 circle.stopDrag();
                 new_x = e.evt.offsetX <=10 ? 13 : 1267;
@@ -522,6 +532,12 @@
             circle.on('dragmove', function (e) {
                 var new_x = e.evt.offsetX;
                 var new_y = e.evt.offsetY;
+                if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30) {
+                    var point_index = red_points.findIndex(point => point.id == e.target.id());
+                    circle.absolutePosition({x:red_points[point_index].x, y:red_points[point_index].y});
+                    circle.stopDrag();
+                    return;
+                }
                 if (e.evt.offsetX <= 10 || e.evt.offsetX >= 1270) {
                     circle.stopDrag();
                     new_x = e.evt.offsetX <=10 ? 13 : 1267;
@@ -630,8 +646,13 @@
             }
         });
     }
+    function handleMouseMove(event){
+        event = event || window.event;
+        mouse_pos = {x:event.clientX, y:event.clientY};
+    }
 
     $(document).ready(function() {
+        document.onmousemove = handleMouseMove;
         getHeadtMapData();
         drawing();
         if (red_points != null && red_points.length == 4){
@@ -645,7 +666,11 @@
             }
             drawRect(red_points, blue_points);
         }
-
+        $('.grid-area').css('margin-left', $('.video-area').width() - 1280 > 0 ? ($('.video-area').width() - 1280)/2 : 0);
+        window.addEventListener('resize', function(event) {
+            console.log('resize');
+            $('.grid-area').css('margin-left', $('.video-area').width() - 1280 > 0 ? ($('.video-area').width() - 1280)/2 : 0);
+        }, true);
     });
 </script>
 

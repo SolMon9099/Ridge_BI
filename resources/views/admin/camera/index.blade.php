@@ -87,13 +87,18 @@
             <li class="camera-item">
                 <?php
                     $camera_img_path = '';
+                    $alert_text = '';
                     if (isset($camera->img) && $camera->img == true){
                         $camera_img_path = asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg';
                     } else {
                         $camera_img_path = asset('assets/admin/img/samplepic.png');
+                        $alert_text = 'カメラ映像の取得に失敗しました。';
                     }
                 ?>
-                <div class="pic"><img src="{{$camera_img_path}}"></div>
+                <div class="pic">
+                    <img src="{{$camera_img_path}}">
+                    <div class="alert-camera-text">{{$alert_text}}</div>
+                </div>
                 <div class="text">
                 <button style="background:transparent;border:none;" class="edit2" onclick="location.href='{{route('admin.camera.edit', ['camera' => $camera->id])}}'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="fill: rgba(46, 191, 67, 1);transform: ;msFilter:;">
@@ -141,6 +146,16 @@
     .radio-list{
         margin-bottom: 0!important;
         margin-left: 15px!important;
+    }
+    .pic{
+        position: relative;
+    }
+    .alert-camera-text{
+        position: absolute;
+        color: white;
+        width: 100%;
+        text-align: center;
+        bottom: 20px;
     }
 </style>
 

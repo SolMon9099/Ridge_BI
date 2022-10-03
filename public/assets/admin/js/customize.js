@@ -226,7 +226,7 @@ function saveSearchOptions(page_name, search_params){
 function updateTopBlockData(changed_data){
     $.ajax({
         headers: {
-            'X-CSRF-TOKEN': token
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         url : '/admin/AjaxUpdate',
         method: 'post',
@@ -246,7 +246,7 @@ function updateTopBlockData(changed_data){
 function deleteTopBlock(block_id){
     $.ajax({
         headers: {
-            'X-CSRF-TOKEN': token
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         url : '/admin/AjaxDelete',
         method: 'post',
@@ -266,7 +266,7 @@ function deleteTopBlock(block_id){
 function refresshCameraImg(){
     $.ajax({
         headers: {
-            'X-CSRF-TOKEN': token
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         url : '/admin/camera/AjaxRefreshImg',
         method: 'post',

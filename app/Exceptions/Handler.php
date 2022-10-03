@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Support\Facades\Log;
 
 class Handler extends ExceptionHandler
 {
@@ -37,5 +38,35 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+    public function render($request, Throwable $e)
+    {
+        $response = parent::render($request, $e);
+
+
+        if (is_object($e)) {
+            // エラーコードの取得
+            $status_code = $response->getStatusCode();
+
+            // 404, 500, 502の時のみSlackに通知
+            // if ($status_code == 404 || $status_code == 502 || $status_code == 500) {
+            if($status_code == 404){
+                Log::info("----- 404エラー発生------");
+            }
+
+            // if ($status_code == 502 || $status_code == 500) {
+            //     $message = "エラーが発生しました。\nエラーコード：".$status_code;
+            //     SlackService::send($message);
+            // }
+
+
+            if ($e instanceof \Illuminate\Session\TokenMismatchException) {
+                return redirect()->route('admin.login');
+            }
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
+                return redirect()->route('admin.login');
+            }
+        }
+        return $response;
     }
 }

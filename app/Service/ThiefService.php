@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Models\ThiefDetectionRule;
+use App\Models\ThiefDetection;
 use Illuminate\Support\Facades\Auth;
 
 class ThiefService
@@ -78,5 +79,50 @@ class ThiefService
         }
 
         return $res;
+    }
+
+    public static function searchDetections($params)
+    {
+        $query = ThiefDetection::query()
+            ->select(
+                'thief_detections.*',
+                'thief_detection_rules.color',
+                'cameras.installation_position',
+                'cameras.location_id',
+                'cameras.contract_no',
+                'cameras.camera_id as camera_no',
+                'locations.name as location_name'
+            )
+            ->leftJoin('thief_detection_rules', 'thief_detection_rules.id', 'thief_detections.rule_id')
+            ->leftJoin('cameras', 'cameras.id', 'thief_detections.camera_id')
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+        if (isset($params['starttime']) && $params['starttime'] != '') {
+            $query->whereDate('thief_detections.starttime', '>=', $params['starttime']);
+        } else {
+            $query->whereDate('thief_detections.starttime', '>=', date('Y-m-d', strtotime('-1 week')));
+        }
+        if (isset($params['endtime']) && $params['endtime'] != '') {
+            $query->whereDate('thief_detections.starttime', '<=', $params['endtime']);
+        } else {
+            $query->whereDate('thief_detections.starttime', '<=', date('Y-m-d'));
+        }
+        if (isset($params['rule_ids']) && $params['rule_ids'] != '') {
+            $rule_ids = json_decode($params['rule_ids']);
+            if (count($rule_ids) > 0) {
+                $query->whereIn('thief_detections.rule_id', $rule_ids);
+            }
+        }
+        if (isset($params['selected_rules']) && is_array($params['selected_rules']) && count($params['selected_rules']) > 0) {
+            $query->whereIn('thief_detections.rule_id', $params['selected_rules']);
+        }
+        if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
+            $query->whereIn('thief_detections.camera_id', $params['selected_cameras']);
+        }
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        $query->orderByDesc('thief_detections.starttime');
+
+        return $query;
     }
 }

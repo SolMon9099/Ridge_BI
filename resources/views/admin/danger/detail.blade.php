@@ -76,10 +76,16 @@
                 </div>
             </div>
             @endif
+            <div style="position: relative;">
+                <h3 class="title">最新の検知</h3>
+                <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" style="top:0;"
+                    onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_danger']}})">ダッシュボートへ追加
+                </button>
+            </div>
+            @if(count($danger_detections) == 0)
+                <div class="no-data">検知データがありません。</div>
+            @endif
             <ul class="kenchi-list" style="margin-top: 45px;position: relative;">
-                @if(count($danger_detections) > 0)
-                    <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_danger']}})">ダッシュボートへ追加</button>
-                @endif
                 @foreach ($danger_detections as $item)
                 <?php
                     $video_path = '';
@@ -205,6 +211,7 @@
         <div class="v">
             <video id = 'video-container' src = '' type= 'video/mp4' controls>
             </video>
+            <p class="video-notice">動画の30秒あたりが検知のタイミングになります。</p>
         </div>
     </div>
     <p class="closemodal"><a class="modal-close">×</a></p>
@@ -241,11 +248,6 @@
     }
     .streaming-video{
         position: absolute;
-    }
-    .move-href{
-        text-decoration: underline;
-        color: blue;
-        cursor: pointer;
     }
     .add-to-toppage{
         position: absolute;
@@ -516,6 +518,29 @@
             })
         }
         displayGraphData(null, time_period);
+
+        setInterval(() => {
+            $.ajax({
+                url : '/admin/CheckDetectData',
+                method: 'post',
+                data: {
+                    type:'danger',
+                    camera_id:"<?php echo $selected_camera;?>",
+                    endtime:formatDateLine(new Date()),
+                    _token:$('meta[name="csrf-token"]').attr('content'),
+                    last_record_id : "<?php echo $last_number;?>"
+                },
+                error : function(){
+                    console.log('failed');
+                },
+                success: function(result){
+                    console.log('success', result);
+                    if (result == 1){
+                        $('#form1').submit();
+                    }
+                }
+            })
+        }, 60000);
     });
 </script>
 @endsection

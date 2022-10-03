@@ -181,4 +181,39 @@ class PitService
 
         return $camera_query->get()->all();
     }
+
+    public static function extractOverData($data){
+        $temp = array();
+        foreach($data as $index => $item){
+            $nb_entry = $item->nb_entry;
+            $nb_exit = $item->nb_exit;
+            $max_permission_time = $item->max_permission_time;
+            $rule_id = $item->rule_id;
+            // $min_members = $item->min_members;
+            if ($index == 0 && ($nb_entry - $nb_exit < 0)) continue;
+            if ($nb_entry - $nb_exit > 0){
+                if ($index == count($data) - 1) continue;
+                $increatment = 1;
+                $cond_flag = true;
+                do {
+                    if (isset($data[$index + $increatment])){
+                        $next_item = $data[$index + $increatment];
+                        if ($rule_id == $next_item->rule_id){
+                            if ($next_item->nb_entry - $next_item->nb_exit < 0 ){
+                                if (strtotime($next_item->starttime) - strtotime($item->starttime) > $max_permission_time * 60){
+                                    $temp[] = $item;
+                                    $temp[] = $next_item;
+                                }
+                                $cond_flag = false;
+                            }
+                        }
+                    } else {
+                        $cond_flag = false;
+                    }
+                    $increatment++;
+                } while($cond_flag);
+            }
+        }
+        return $temp;
+    }
 }

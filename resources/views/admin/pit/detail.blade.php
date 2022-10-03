@@ -41,7 +41,7 @@
             @if($selected_rule != null)
                 <div class="list">
                     <div class="inner active">
-                        <h3 class="title">ピット内人数推移</h3>
+                        <h3 class="title">現在の映像</h3>
 
                         <div style="display: flex;">
                             <div style="width:50%; position: relative;">
@@ -74,8 +74,9 @@
 
                         <div class="left-right">
                             <div class="left-box" style="position: relative;">
-                                <h3 class="title">ピット内最大時間の超過検知</h3>
-                                <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
+                                <h3 class="title">最新の検知</h3>
+                                <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>"
+                                    onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
                                 <table class="table2 text-centre top50">
                                     <thead>
                                         <tr>
@@ -85,11 +86,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {{-- <tr>
-                                            <td>9:22</td>
-                                            <td>時間オーバー(120)</td>
-                                            <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
-                                        </tr> --}}
+                                        @foreach ($pit_over_detections as $item)
+                                            <tr>
+                                                <td>{{$item->starttime}}</td>
+                                                <td>時間オーバー({{$item->max_permission_time.'分'}})</td>
+                                                <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -113,7 +116,7 @@
                                                 $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
                                             ?>
                                             <tr>
-                                                <td>{{date('H:i:s', strtotime($item->starttime))}}</td>
+                                                <td>{{date('Y-m-d H:i:s', strtotime($item->starttime))}}</td>
                                                 <td>{{$item->nb_entry > $item->nb_exit ? '入場' : '退場'}} </td>
                                                 <td><span class="{{$item->nb_entry > $item->nb_exit ? 'f-red' : 'f-blue'}}">{{$item->nb_entry - $item->nb_exit}}</span></td>
                                                 <td>{{$sum}}</td>
@@ -208,11 +211,6 @@
     }
     .streaming-video{
         position: absolute;
-    }
-    .move-href{
-        text-decoration: underline;
-        color: blue;
-        cursor: pointer;
     }
     .add-to-toppage{
         position: absolute;
@@ -491,7 +489,28 @@
         if (selected_rule != null){
             drawing(selected_rule);
         }
-
+        setInterval(() => {
+            $.ajax({
+                url : '/admin/CheckDetectData',
+                method: 'post',
+                data: {
+                    type:'pit',
+                    camera_id:"<?php echo $selected_camera;?>",
+                    endtime:formatDateLine(new Date()),
+                    _token:$('meta[name="csrf-token"]').attr('content'),
+                    last_record_id : "<?php echo $last_number;?>"
+                },
+                error : function(){
+                    console.log('failed');
+                },
+                success: function(result){
+                    console.log('success', result);
+                    if (result == 1){
+                        $('#form1').submit();
+                    }
+                }
+            })
+        }, 60000);
     });
 </script>
 

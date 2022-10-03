@@ -25,7 +25,7 @@
                 <p class="close-items"><a class="close-icon">×</a></p>
                 <div class="radio-area">
                     <label class="title-label">図形：</label>
-                    <select name = '' class="select-box" style="">
+                    <select name = '' class="select-box select-figure" style="">
                         <option value="0" selected>四角形</option>
                         <option value="1">多角形</option>
                     </select>
@@ -34,7 +34,6 @@
                     <input id="radio-polygon" type="radio" value="1">
                     <label for="radio-polygon" class="radio-label radio-label-polygon">多角形</label> --}}
                 </div>
-                <button type="button" class="draw-btn area-draw-btn" style="display: none;">エリア選択</button>
                 <div class="title-div">
                     <label class="title-label">カラー選択：</label>
                     <input type="color" class="color" value=""/>
@@ -55,6 +54,7 @@
                     @endforeach --}}
                 </div>
                 <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
+                <button type="button" class="draw-btn area-draw-btn" style="display: none;">エリア選択</button>
             </div>
             <div id="rule_item_area">
                 @foreach ($rules as $index=>$rule)
@@ -89,9 +89,6 @@
                         @endif --}}
 
                     </div>
-                    @if(count($rule->points) != 4)
-                        <button type="button" class="draw-btn disabled-btn area-draw-btn">エリア選択</button>
-                    @endif
                     <div class="title-div">
                         <label class="title-label">カラー選択：</label>
                         <input onchange="changeColor(this, '{{$index}}')" type="color" class="color" value="{{isset($rule->color) ? $rule->color:'#000000'}}"/>
@@ -120,6 +117,9 @@
                             @endforeach --}}
                     </div>
                     <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
+                    @if(count($rule->points) != 4)
+                        <button type="button" class="draw-btn disabled-btn area-draw-btn">エリア選択</button>
+                    @endif
                 </div>
                 @endforeach
             </div>
@@ -188,7 +188,7 @@
 <style>
     .clear-btn{
         margin:0;
-        padding: 10px 35px;
+        padding: 10px 30px;
         position: absolute;
         right:0;
         top: 20px;
@@ -211,7 +211,7 @@
         height:21px;
     }
     .area-draw-btn{
-        margin-bottom: 10px;
+        margin-top: 10px;
     }
     .add-figure-area{
         position: relative;
@@ -318,6 +318,7 @@
         box-shadow:0 0 10px #999;
         border-radius:5px;
         animation: ba 1s ease-in-out infinite;
+        z-index: 1000;
     }
     .balloon_danger:before{
         content: "";
@@ -345,8 +346,6 @@
     .grid-area{
         width:1280px;
         height:720px;
-        margin-left: auto;
-        margin-right: auto;
         background-color:transparent;
         position: absolute;
         display: grid;
@@ -390,6 +389,7 @@
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 
 <script>
+    var mouse_pos = null;
     var heatmap_records = [];
     var max_figure_numbers = "<?php echo $max_figure_numbers;?>";
     max_figure_numbers = parseInt(max_figure_numbers);
@@ -434,9 +434,14 @@
         circle.on('dragmove', function (e) {
             var circle_id = e.target.id();
             var rule_index = parseInt(circle_id.split('_')[0]);
-            var point_index = parseInt(circle_id.split('_')[1]);
             var new_x = e.evt.offsetX;
             var new_y = e.evt.offsetY;
+            if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30) {
+                var point_index = rules_object[rule_index].points.findIndex(x => x.id == circle_id);
+                circle.stopDrag();
+                circle.absolutePosition({x:rules_object[rule_index].points[point_index].x, y:rules_object[rule_index].points[point_index].y});
+                return;
+            }
             if (e.evt.offsetX <= 10 || e.evt.offsetX >= 1270) {
                 new_x = e.evt.offsetX <=10?13:1267;
                 circle.stopDrag();
@@ -646,7 +651,7 @@
         $('.rule_items .draw-btn').each(function(){
             $(this).addClass('disabled-btn');
         });
-        $('.rule_items input[type="radio"]').each(function(){
+        $('.rule_items .select-figure').each(function(){
             $(this).prop('disabled', true);
         })
         var template_item = $('#rule_items').clone();
@@ -698,6 +703,7 @@
                 enable_add_figure_flag = true;
             }
             delete rules_object[rule_index];
+            $('#add-figure-btn').show();
         });
         $('select', $('.radio-area', template_item)).change(function(){
             if ($(this).val() == 0){
@@ -799,8 +805,13 @@
             }
         });
     }
+    function handleMouseMove(event){
+        event = event || window.event;
+        mouse_pos = {x:event.clientX, y:event.clientY};
+    }
 
     $(document).ready(function() {
+        document.onmousemove = handleMouseMove;
         getHeadtMapData();
         drawing();
         Object.keys(rules_object).map(rule_index => {
@@ -813,5 +824,11 @@
                 })
             }
         })
+
+        $('.grid-area').css('margin-left', $('.video-area').width() - 1280 > 0 ? ($('.video-area').width() - 1280)/2 : 0);
+        window.addEventListener('resize', function(event) {
+            console.log('resize');
+            $('.grid-area').css('margin-left', $('.video-area').width() - 1280 > 0 ? ($('.video-area').width() - 1280)/2 : 0);
+        }, true);
     });
 </script>

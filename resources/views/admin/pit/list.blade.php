@@ -46,11 +46,11 @@
         @if(!(count($pit_detections) > 0))
             <div class="no-data">検知データがありません。</div>
         @endif
-        {{ $pit_detections->appends([
+        {{-- {{ $pit_detections->appends([
             'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
             'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
             'rule_ids' => isset($request) && $request->has('rule_ids')?$request->rule_ids:''
-        ])->links('vendor.pagination.admin-pagination') }}
+        ])->links('vendor.pagination.admin-pagination') }} --}}
         <ul class="kenchi-list">
             @foreach ($pit_detections as $item)
             <?php
@@ -93,18 +93,29 @@
                         </li>
                         <li>
                             <h2 class="icon-content">検知内容</h2>
-                            <p>{{$item->nb_entry > $item->nb_exit ? 'ピット入場 '.($item->nb_entry - $item->nb_exit) :  'ピット退場 '.($item->nb_exit - $item->nb_entry)}}</p>
+                            <dl>
+                                <dt>
+                                    <p>{{$item->nb_entry > $item->nb_exit ? 'ピット入場 ' :  'ピット退場 '}}</p>
+                                </dt>
+                                <dd>{{$item->nb_entry > $item->nb_exit ? ($item->nb_entry - $item->nb_exit).'人' : ($item->nb_exit - $item->nb_entry).'人'}}</dd>
+                            </dl>
+                            <dl>
+                                <dt>
+                                    <p>時間オーバー</p>
+                                </dt>
+                                <dd>{{$item->max_permission_time.'分'}}</dd>
+                            </dl>
                         </li>
                     </ul>
                 </div>
             </li>
             @endforeach
         </ul>
-        {{ $pit_detections->appends([
+        {{-- {{ $pit_detections->appends([
             'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
             'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
             'rule_ids' => isset($request) && $request->has('rule_ids')?$request->rule_ids:''
-        ])->links('vendor.pagination.admin-pagination') }}
+        ])->links('vendor.pagination.admin-pagination') }} --}}
     </div>
 </div>
 <!--MODAL -->
@@ -167,6 +178,7 @@
     <div class="v">
         <video id = 'video-container' src = '' type= 'video/mp4' controls>
         </video>
+        <p class="video-notice">動画の30秒あたりが検知のタイミングになります。</p>
     </div>
 </div>
 <p class="closemodal"><a class="modal-close">×</a></p>
@@ -205,5 +217,28 @@
         };
         addToToppage(block_type, options);
     }
+    $(document).ready(function() {
+        setInterval(() => {
+            $.ajax({
+                url : '/admin/CheckDetectData',
+                method: 'post',
+                data: {
+                    type:'pit',
+                    endtime:formatDateLine(new Date($('#endtime').val())),
+                    _token:$('meta[name="csrf-token"]').attr('content'),
+                    last_record_id : "<?php echo $last_number;?>"
+                },
+                error : function(){
+                    console.log('failed');
+                },
+                success: function(result){
+                    console.log('success', result);
+                    if (result == 1){
+                        $('#form1').submit();
+                    }
+                }
+            })
+        }, 60000);
+    })
 </script>
 @endsection

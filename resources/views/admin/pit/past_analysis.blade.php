@@ -155,12 +155,13 @@
                                         <th>検知条件</th>
                                     </tr>
                                 </thead>
-                                {{-- <tbody>
+                                @foreach ($pit_over_detections as $item)
                                     <tr>
-                                        <td>9:22</td>
-                                        <td>時間オーバー(120)</td>
+                                        <td>{{$item->starttime}}</td>
+                                        <td>時間オーバー({{$item->max_permission_time.'分'}})</td>
+                                        <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
                                     </tr>
-                                </tbody> --}}
+                                @endforeach
                             </table>
                         </div>
                     </div>
@@ -659,6 +660,28 @@
     }
     $(document).ready(function() {
         displayGraphData(null, grpah_init_type);
+        setInterval(() => {
+            $.ajax({
+                url : '/admin/CheckDetectData',
+                method: 'post',
+                data: {
+                    type:'pit',
+                    camera_id:"<?php echo $selected_camera;?>",
+                    endtime:formatDateLine(new Date($('#endtime').val())),
+                    _token:$('meta[name="csrf-token"]').attr('content'),
+                    last_record_id : "<?php echo $last_number;?>"
+                },
+                error : function(){
+                    console.log('failed');
+                },
+                success: function(result){
+                    console.log('success', result);
+                    if (result == 1){
+                        $('#form1').submit();
+                    }
+                }
+            })
+        }, 60000);
     });
 </script>
 @endsection

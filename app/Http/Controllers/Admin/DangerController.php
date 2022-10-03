@@ -164,7 +164,10 @@ class DangerController extends AdminController
         if (isset($request['from_top']) && $request['from_top'] == true) {
             $from_top = true;
         }
-        $danger_detections = DangerService::searchDetections($request)->paginate($this->per_page);
+        $danger_query = DangerService::searchDetections($request);
+        $clone_danger_query = clone $danger_query;
+        $danger_detections = $danger_query->paginate($this->per_page);
+        $last_record = $clone_danger_query->get()->first();
         foreach ($danger_detections as $item) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $item->camera_id)
@@ -202,6 +205,7 @@ class DangerController extends AdminController
             'request' => $request,
             'rules' => $rules,
             'from_top' => $from_top,
+            'last_number' => $last_record != null ? $last_record->id : null,
         ]);
     }
 
@@ -292,6 +296,7 @@ class DangerController extends AdminController
             'access_token' => $access_token,
             'danger_detections' => $danger_detections,
             'from_top' => $from_top,
+            'last_number' => count($danger_detections) > 0 ? $danger_detections[0]->id : null,
         ]);
     }
 
@@ -396,6 +401,7 @@ class DangerController extends AdminController
             'rules' => $rules,
             'cameras' => $cameras,
             'from_top' => $from_top,
+            'last_number' => count($danger_detections) > 0 ? $danger_detections[0]->id : null,
         ]);
     }
 

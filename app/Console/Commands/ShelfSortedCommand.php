@@ -23,11 +23,12 @@ class ShelfSortedCommand extends Command
     public function handle()
     {
         // ini_set('memory_limit', '4096M');
-        // $pit_file = Storage::disk('video')->get('pit.mp4');
-        // $shelf_file = Storage::disk('video')->get('shelf.mp4');
-        // Storage::disk('video')->put('test/test.mp4', $thief_file);
-        // Storage::disk('s3')->put('test_pit/20220707/20220707153430_20220707153455.mp4', $pit_file);
-        // Storage::disk('s3')->put('test_shelf/20220707/20220707153430_20220707153455.mp4', $shelf_file);
+        // $danger_file = Storage::disk('video')->get('danger_2022-09-22_15-00-00.mp4');
+        // $shelf_file = Storage::disk('video')->get('shelf_2022-09-22_16-00-00.mp4');
+        // $thief_file = Storage::disk('video')->get('hanger_2022-09-22_15-00-00.mp4');
+        // Storage::disk('s3')->put('test_hanger/20220922/2022-09-22_15-00-00.mp4', $thief_file);
+        // Storage::disk('s3')->put('test_danger/20220922/2022-09-22_15-00-00.mp4', $danger_file);
+        // Storage::disk('s3')->put('test_shelf/20220922/2022-09-22_15-00-00.mp4', $shelf_file);
 
         Log::info('定時撮影チェック開始ーーーーーー');
         $shelf_detection_rules = ShelfDetectionRule::select('shelf_detection_rules.*', 'cameras.camera_id as camera_no', 'cameras.contract_no')

@@ -17,25 +17,44 @@
             <div id="rule_items">
                 <p class="close-items"><a class="close-icon">×</a></p>
                 <div class="radio-area">
-                    <input id="radio-rect" type="radio" value="0" checked>
+                    <label class="title-label">図形：</label>
+                    <select name = '' class="select-box select-figure" style="">
+                        <option value="0" selected>四角形</option>
+                        <option value="1">多角形</option>
+                    </select>
+                    {{-- <input id="radio-rect" type="radio" value="0" checked>
                     <label for="radio-rect" class="radio-label radio-label-rect">四角形</label>
                     <input id="radio-polygon" type="radio" value="1">
-                    <label for="radio-polygon" class="radio-label radio-label-polygon">多角形</label>
+                    <label for="radio-polygon" class="radio-label radio-label-polygon">多角形</label> --}}
                 </div>
-                <div class="title-div">カラー</div>
-                <div class="content-div"><input type="color" class="color" value=""/><button type="button" class="draw-btn disabled-btn">矩形描く</button></div>
+                <div class="title-div">
+                    <label class="title-label">カラー選択：</label>
+                    <input type="color" class="color" value=""/>
+                </div>
                 <div class="title-div mt-7">エリア内のハンガーの色を選択</div>
                 <div class="content-div hanger-area">
                     <div class="demo_color" style="background: black"></div>
                     {{-- <p class="error-message hanger" style="display: none">ハンガーの色を選択してください。</p> --}}
                 </div>
+                <button type="button" class="draw-btn area-draw-btn" style="display: none;">エリア選択</button>
             </div>
             <div id="rule_item_area">
                 @foreach ($rules as $index=>$rule)
                 <div class="rule_items" data-index = {{$index}}>
                     <p class="close-items"><a class="close-icon" onclick="removeFigure({{$index}})">×</a></p>
                     <div class="radio-area">
-                        @if(count($rule->points) == 4)
+                        <label class="title-label">図形：</label>
+                        <select name={{'figure_type_'.$index}} class="select-box select-figure" style=""
+                            disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}>
+                            @if(count($rule->points) == 4)
+                                <option value="0" selected>四角形</option>
+                                <option value="1">多角形</option>
+                            @else
+                                <option value="0">四角形</option>
+                                <option value="1" selected>多角形</option>
+                            @endif
+                        </select>
+                        {{-- @if(count($rule->points) == 4)
                             <input disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}
                                 id={{"radio-rect_".$index}} name={{'figure_type_'.$index}} type="radio" value="0" onchange="changeFigure(this, '{{$index}}')" checked>
                             <label for={{"radio-rect_".$index}} class="radio-label">四角形</label>
@@ -49,19 +68,21 @@
                             <input disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}
                                 id={{"radio-polygon_".$index}} name={{'figure_type_'.$index}} type="radio" value="1" onchange="changeFigure(this, '{{$index}}')" checked>
                             <label for={{"radio-polygon_".$index}} class="radio-label">多角形</label>
-                        @endif
+                        @endif --}}
 
                     </div>
-                    <div class="title-div">カラー</div>
-                    <div class="content-div">
+                    <div class="title-div">
+                        <label class="title-label">カラー選択：</label>
                         <input onchange="changeColor(this, '{{$index}}')" type="color" class="color" value="{{isset($rule->color) ? $rule->color:'#000000'}}"/>
-                        <button type="button" class="draw-btn disabled-btn">矩形描く</button>
                     </div>
                     <div class="title-div mt-7">エリア内のハンガーの色を選択</div>
                     <div class="content-div hanger-area" onclick="switchHanger(this, '{{$index}}')">
                         <div class="demo_color" style="background: {{isset($rule->hanger) && $rule->hanger !== '' ? $rule->hanger : black}}"></div>
                         {{-- <p class="error-message hanger" style="display: none">ハンガーの色を選択してください。</p> --}}
                     </div>
+                    @if(count($rule->points) != 4)
+                        <button type="button" class="draw-btn disabled-btn area-draw-btn">エリア選択</button>
+                    @endif
                 </div>
                 @endforeach
             </div>
@@ -113,8 +134,25 @@
 </div>
 <!-- -->
 <style>
+    .select-box{
+        width:110px;
+        background: white;
+        padding:5px;
+    }
+    .title-label{
+        font-size: 14px;
+        width:93px;
+        display: inline-block;
+    }
+    input[type="color"]{
+        height:21px;
+    }
+    .area-draw-btn{
+        margin-top: 10px;
+    }
     .mt-7{
         margin-top:7px;
+        font-size: 14px;
     }
     .setting-head{
         padding-left:15px;
@@ -220,8 +258,9 @@
     }
     .radio-area{
         height: 30px;
-        margin-left: 10px;
         white-space: nowrap;
+        margin-top:8px;
+        margin-bottom: 8px;
     }
     .balloon_danger{
         display: none;
@@ -240,6 +279,7 @@
         box-shadow:0 0 10px #999;
         border-radius:5px;
         animation: ba 1s ease-in-out infinite;
+        z-index: 1000;
     }
     .balloon_danger:before{
         content: "";
@@ -307,6 +347,7 @@
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 
 <script>
+    var mouse_pos = null;
     var stage = null;
     var layer = null;
     var checked_hanger_flag = true;
@@ -329,6 +370,7 @@
             unique_rule_id++;
         }
     })
+    var rule_default_color = <?php echo json_encode(config('const.rule_default_color'));?>;
 
     function magnify(imgID, zoom) {
         var img, glass, w, h, bw;
@@ -405,8 +447,16 @@
             stage.container().style.cursor = 'default';
         });
         circle.on('dragmove', function (e) {
+            var circle_id = e.target.id();
+            var rule_index = parseInt(circle_id.split('_')[0]);
             var new_x = e.evt.offsetX;
             var new_y = e.evt.offsetY;
+            if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30) {
+                var point_index = rules_object[rule_index].points.findIndex(x => x.id == circle_id);
+                circle.stopDrag();
+                circle.absolutePosition({x:rules_object[rule_index].points[point_index].x, y:rules_object[rule_index].points[point_index].y});
+                return;
+            }
             if (e.evt.offsetX <= 10 || e.evt.offsetX >= 1270) {
                 new_x = e.evt.offsetX <=10?13:1267;
                 circle.stopDrag();
@@ -419,8 +469,6 @@
                 circle.absolutePosition({x:e.evt.offsetX, y:new_y});
                 // return;
             }
-            var circle_id = e.target.id();
-            var rule_index = parseInt(circle_id.split('_')[0]);
             if (!isNaN(rule_index)){
                 var index = rules_object[rule_index].points.findIndex(x => x.id == circle_id);
                 if (index > -1){
@@ -553,7 +601,7 @@
         $('.rule_items .draw-btn').each(function(){
             $(this).addClass('disabled-btn');
         });
-        $('.rule_items input[type="radio"]').each(function(){
+        $('.rule_items .select-figure').each(function(){
             $(this).prop('disabled', true);
         })
         var template_item = $('#rule_items').clone();
@@ -562,15 +610,16 @@
         template_item.attr('data-index', unique_rule_id);
         template_item.show();
         $('#rule_item_area').append(template_item);
-        $('#radio-rect', template_item).attr('name', 'figure_type_' + unique_rule_id);
-        $('#radio-rect', template_item).attr('id', 'radio-rect_' + unique_rule_id);
-        $('#radio-polygon', template_item).attr('name', 'figure_type_' + unique_rule_id);
-        $('#radio-polygon', template_item).attr('id', 'radio-polygon_' + unique_rule_id);
-        $('.radio-label-rect', template_item).attr('for', 'radio-rect_' + unique_rule_id);
-        $('.radio-label-polygon', template_item).attr('for', 'radio-polygon_' + unique_rule_id);
+        // $('#radio-rect', template_item).attr('name', 'figure_type_' + unique_rule_id);
+        // $('#radio-rect', template_item).attr('id', 'radio-rect_' + unique_rule_id);
+        // $('#radio-polygon', template_item).attr('name', 'figure_type_' + unique_rule_id);
+        // $('#radio-polygon', template_item).attr('id', 'radio-polygon_' + unique_rule_id);
+        // $('.radio-label-rect', template_item).attr('for', 'radio-rect_' + unique_rule_id);
+        // $('.radio-label-polygon', template_item).attr('for', 'radio-polygon_' + unique_rule_id);
+        $('.color', template_item).val(rule_default_color[Object.keys(rules_object).length]);
         rules_object[unique_rule_id] = {
             points:[],
-            color:'#000000',
+            color:rule_default_color[Object.keys(rules_object).length],
             hanger:'#000000',
         };
         $('.add-btn').addClass('disabled-btn');
@@ -602,14 +651,17 @@
                 $('.img-magnifier-glass').remove();
             }
             delete rules_object[rule_index];
+            $('#add-figure-btn').show();
         });
-        $('input', $('.radio-area', template_item)).change(function(){
+        $('select', $('.radio-area', template_item)).change(function(){
             if ($(this).val() == 0){
                 selected_figure = 'rect';
-                $('.draw-btn', template_item).addClass('disabled-btn');
+                // $('.draw-btn', template_item).addClass('disabled-btn');
+                $('.draw-btn', template_item).hide();
             } else {
                 selected_figure = 'polygon';
-                $('.draw-btn', template_item).removeClass('disabled-btn');
+                // $('.draw-btn', template_item).removeClass('disabled-btn');
+                $('.draw-btn', template_item).show();
             }
         });
         $('.draw-btn', template_item).click(function(){
@@ -761,7 +813,13 @@
         $('#form_thief_rule').submit();
     }
 
+    function handleMouseMove(event){
+        event = event || window.event;
+        mouse_pos = {x:event.clientX, y:event.clientY};
+    }
+
     $(document).ready(function() {
+        document.onmousemove = handleMouseMove;
         drawingStage();
         setTimeout(() => {
             Object.keys(rules_object).map(rule_index => {

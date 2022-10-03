@@ -38,6 +38,10 @@
                 </div>
             </div>
         </form>
+        {{-- <button type="button" class="add-to-toppage <?php echo isset($from_top) && $from_top == true ?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_pit']}})">ダッシュボートへ追加</button> --}}
+        @if(!(count($shelf_detections) > 0))
+            <div class="no-data">検知データがありません。</div>
+        @endif
         @include('admin.layouts.flash-message')
         {{ $shelf_detections->appends([
             'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
@@ -151,6 +155,7 @@
     <div class="v">
         <video id = 'video-container' src = '' type= 'video/mp4' controls>
         </video>
+        <p class="video-notice">動画の30秒あたりが検知のタイミングになります。</p>
     </div>
 </div>
 <p class="closemodal"><a class="modal-close">×</a></p>

@@ -161,15 +161,29 @@ class PitController extends AdminController
         if (!(isset($request['starttime']) && $request['starttime'] != '')) {
             $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
         }
-        $pit_detections = PitService::searchDetections($request)->paginate($this->per_page);
+        // $pit_detections = PitService::searchDetections($request)->paginate($this->per_page);
+        $pit_detections = PitService::searchDetections($request)->get()->all();
+        $last_record = null;
+        if (count($pit_detections) > 0) {
+            $last_record = $pit_detections[0];
+        }
+        $pit_detections = array_reverse($pit_detections);
+        $pit_detections = PitService::extractOverData($pit_detections);
+        $pit_detections = array_reverse($pit_detections);
+        $floor_data = array();
         foreach ($pit_detections as $item) {
-            $map_data = CameraMappingDetail::select('drawing.floor_number')
-                ->where('camera_id', $item->camera_id)
-                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
-                ->whereNull('drawing.deleted_at')->get()->first();
-            if ($map_data != null) {
-                $item->floor_number = $map_data->floor_number;
+            if (!isset($floor_data[$item->camera_id])){
+                $map_data = CameraMappingDetail::select('drawing.floor_number')
+                    ->where('camera_id', $item->camera_id)
+                    ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                    ->whereNull('drawing.deleted_at')->get()->first();
+                if ($map_data != null) {
+                    $floor_data[$item->camera_id] = $map_data->floor_number;
+                } else {
+                    $floor_data[$item->camera_id] = null;
+                }
             }
+            $item->floor_number = $floor_data[$item->camera_id];
         }
         $rules = PitService::doSearch($request)->get()->all();
         foreach ($rules as $rule) {
@@ -183,10 +197,11 @@ class PitController extends AdminController
         }
 
         return view('admin.pit.list')->with([
-            'pit_detections' => $pit_detections,
+            'pit_detections' => (array)$pit_detections,
             'request' => $request,
             'rules' => $rules,
             'from_top' => $from_top,
+            'last_number' => $last_record != null ? $last_record->id : null,
         ]);
     }
 
@@ -244,6 +259,8 @@ class PitController extends AdminController
         }
 
         $pit_detections = PitService::searchDetections($request, true)->get()->all();
+        $pit_over_detections = array_reverse($pit_detections);
+        $pit_over_detections = PitService::extractOverData($pit_over_detections);
         $cameras = PitService::getAllCameras();
         $access_token = '';
         $camera_imgs = [];
@@ -271,11 +288,13 @@ class PitController extends AdminController
 
         return view('admin.pit.detail')->with([
             'pit_detections' => $pit_detections,
+            'pit_over_detections' => $pit_over_detections,
             'request_params' => $search_params,
             'selected_rule' => $selected_rule,
             'cameras' => $cameras,
             'access_token' => $access_token,
             'from_top' => $from_top,
+            'last_number' => count($pit_detections) > 0 ? $pit_detections[0]->id : null,
         ]);
     }
 
@@ -349,13 +368,17 @@ class PitController extends AdminController
         }
 
         $pit_detections = PitService::searchDetections($request)->get()->all();
+        $pit_over_detections = array_reverse($pit_detections);
+        $pit_over_detections = PitService::extractOverData($pit_over_detections);
 
         return view('admin.pit.past_analysis')->with([
             'pit_detections' => $pit_detections,
+            'pit_over_detections' => $pit_over_detections,
             'request_params' => (array) $search_params,
             'cameras' => $cameras,
             'selected_rule' => $selected_rule,
             'from_top' => $from_top,
+            'last_number' => count($pit_detections) > 0 ? $pit_detections[0]->id : null,
         ]);
     }
 

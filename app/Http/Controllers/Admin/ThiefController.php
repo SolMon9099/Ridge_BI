@@ -139,9 +139,33 @@ class ThiefController extends AdminController
         }
     }
 
-    public function list()
+    public function list(Request $request)
     {
-        return view('admin.thief.list');
+        $thief_detections = ThiefService::searchDetections($request)->paginate($this->per_page);
+        foreach ($thief_detections as $item) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $item->camera_id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $item->floor_number = $map_data->floor_number;
+            }
+        }
+        $rules = ThiefService::doSearch($request)->get()->all();
+        foreach ($rules as $rule) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $rule->camera_id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $rule->floor_number = $map_data->floor_number;
+            }
+        }
+        return view('admin.thief.list')->with([
+            'thief_detections' => $thief_detections,
+            'request' => $request,
+            'rules' => $rules,
+        ]);
     }
 
     public function detail()

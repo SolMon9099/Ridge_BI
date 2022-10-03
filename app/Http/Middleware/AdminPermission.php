@@ -30,19 +30,21 @@ class AdminPermission
                     }
                 }
             } else {
-                $allowed_pages = AuthorityGroup::query()->where('authority_id', $login_user->authority_id)->where('access_flag', 1)
-                    ->where('contract_no', $login_user->contract_no)->get()->all();
-                if (count($allowed_pages) == 0) {
-                    abort(403);
-                }
-                $check_flag = false;
-                foreach ($allowed_pages as $record) {
-                    if (strpos($cur_route, config('const.page_route_names')[$record->group_id]) !== false) {
-                        $check_flag = true;
+                if (in_array($cur_route, config('const.page_route_names'))){
+                    $allowed_pages = AuthorityGroup::query()->where('authority_id', $login_user->authority_id)->where('access_flag', 1)
+                        ->where('contract_no', $login_user->contract_no)->get()->all();
+                    if (count($allowed_pages) == 0) {
+                        abort(403);
                     }
-                }
-                if ($check_flag != true) {
-                    abort(403);
+                    $check_flag = false;
+                    foreach ($allowed_pages as $record) {
+                        if (strpos($cur_route, config('const.page_route_names')[$record->group_id]) !== false) {
+                            $check_flag = true;
+                        }
+                    }
+                    if ($check_flag != true) {
+                        abort(403);
+                    }
                 }
                 foreach (config('const.header_menus_routes') as $header_id => $header_route) {
                     if (strpos($header_route, $cur_route) !== false && !in_array($header_id, $headers)) {

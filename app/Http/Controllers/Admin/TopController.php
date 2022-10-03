@@ -248,12 +248,14 @@ class TopController extends AdminController
                             $request['endtime'] = $options['endtime'];
                         }
                     }
-                    $unlimit_pit_detections = PitService::searchDetections($request)->get();
+                    $unlimit_pit_detections = PitService::searchDetections($request)->get()->all();
 
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
                     $item->pit_detections = $unlimit_pit_detections;
-                    $item->pit_detection = count($unlimit_pit_detections) > 0 ? $unlimit_pit_detections[0] : null;
+                    $pit_over_data = PitService::extractOverData(array_reverse($unlimit_pit_detections));
+                    $pit_over_data = array_reverse($pit_over_data);
+                    $item->pit_detection = count($pit_over_data) > 0 ? $pit_over_data[0] : null;
                     break;
                 case config('const.top_block_type_codes')['detect_list_pit']:
                     $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
@@ -267,7 +269,9 @@ class TopController extends AdminController
                             $request['endtime'] = $options['endtime'];
                         }
                     }
-                    $list_pit_detections = PitService::searchDetections($request)->get();
+                    $list_pit_detections = PitService::searchDetections($request)->get()->all();
+                    $list_pit_detections = PitService::extractOverData(array_reverse($list_pit_detections));
+                    $list_pit_detections = array_reverse($list_pit_detections);
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
                     $item->pit_detections = $list_pit_detections;
@@ -409,6 +413,26 @@ class TopController extends AdminController
                         }
                         $top_block->options = json_encode($options);
                     }
+                    if (isset($item['starttime']) && $item['starttime'] != '') {
+                        $options = $top_block->options;
+                        if ($options != null) {
+                            $options = (array) json_decode($options);
+                            $options['starttime'] = date('Y-m-d', strtotime($item['starttime']));
+                        } else {
+                            $options = ['starttime' => date('Y-m-d', strtotime($item['starttime']))];
+                        }
+                        $top_block->options = json_encode($options);
+                    }
+                    if (isset($item['endtime']) && $item['endtime'] != '') {
+                        $options = $top_block->options;
+                        if ($options != null) {
+                            $options = (array) json_decode($options);
+                            $options['endtime'] = date('Y-m-d', strtotime($item['endtime']));
+                        } else {
+                            $options = ['endtime' => date('Y-m-d', strtotime($item['endtime']))];
+                        }
+                        $top_block->options = json_encode($options);
+                    }
                     if (isset($item['options'])) {
                         $top_block->options = $item['options'];
                     }
@@ -429,6 +453,48 @@ class TopController extends AdminController
         }
 
         return 'delete failed';
+    }
+
+    public function CheckDetectData(Request $request)
+    {
+        if (isset($request['type']) && $request['type'] != '' && isset($request['endtime']) && $request['endtime'] != '') {
+            $endtime = $request['endtime'];
+            $now = date('Y-m-d');
+            if (strtotime($endtime) < strtotime($now)) {
+                return false;
+            }
+            $last_record_id = 0;
+            if (isset($request['last_record_id']) && $request['last_record_id'] != ''){
+                $last_record_id = (int)$request['last_record_id'];
+            }
+            switch ($request['type']) {
+                case 'pit':
+                    $params = null;
+                    if (isset($request['camera_id']) && $request['camera_id'] > 0){
+                        $params = ['selected_camera' => (int)$request['camera_id']];
+                    }
+                    $last_record = PitService::searchDetections($params)->get()->first();
+                    if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d')) ){
+                        return 1;
+                    }
+                    break;
+                case 'danger':
+                    $params = null;
+                    if (isset($request['camera_id']) && $request['camera_id'] > 0){
+                        $params = ['selected_camera' => (int)$request['camera_id']];
+                    }
+                    $last_record = DangerService::searchDetections($params)->get()->first();
+                    if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d')) ){
+                        return 1;
+                    }
+                    break;
+                case 'shelf':
+                    break;
+                case 'thief':
+                    break;
+            }
+        }
+        return 0;
     }
 
     public function save_block(Request $request)

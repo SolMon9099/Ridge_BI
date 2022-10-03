@@ -333,6 +333,9 @@
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">リアルタイム映像</a></li>
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">グラフ</a></li>
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">最新の検知</a></li>
+                                            @if ($url == 'admin.pit.detail')
+                                                <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">入退場履歴</a></li>
+                                            @endif
                                         @endif
                                     @endif
                                 @else
@@ -342,6 +345,9 @@
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">リアルタイム映像</a></li>
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">グラフ</a></li>
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">最新の検知</a></li>
+                                            @if ($url == 'admin.pit.detail')
+                                                <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">入退場履歴</a></li>
+                                            @endif
                                         @endif
                                     @endif
                                 @endif
@@ -431,9 +437,9 @@
                                 @elseif($item->block_type == config('const.top_block_type_codes')['detect_list_danger'])
                                     @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
                                         <div class="search-period-area">
-                                            <span>{{date('Y/m/d', strtotime($item->starttime))}}</span>
+                                            <input onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                             <span>～</span>
-                                            <span>{{date('Y/m/d', strtotime($item->endtime))}}</span>
+                                            <input onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
                                         </div>
                                     @endif
                                     @if (isset($item->danger_detections) && count($item->danger_detections) > 0)
@@ -509,9 +515,9 @@
                                             }
                                         ?>
                                         <div class="search-period-area">
-                                            <span>{{date('Y/m/d', strtotime($item->starttime))}}</span>
+                                            <input onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                             <span>～</span>
-                                            <span>{{date('Y/m/d', strtotime($item->endtime))}}</span>
+                                            <input onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
                                         </div>
                                         <div class="period-select-buttons">
                                             @if ($search_period < 1)
@@ -550,25 +556,30 @@
                                         <div class="camera-id">カメラID：{{$item->selected_camera->camera_id}}</div>
                                     @endif
                                     @if (isset($item->pit_detections) && count($item->pit_detections) > 0)
+                                        <?php $sum = 0;?>
                                         <table class="pit-detect-list list-table">
                                             <thead>
                                                 <tr>
-                                                    <th class="time">時間</th>
-                                                    <th class="area">設置エリア</th>
-                                                    <th class="location">設置場所</th>
-                                                    <th class="action">検知内容</th>
+                                                    <th>時間</th>
+                                                    <th>検知条件</th>
+                                                    <th>人数変化</th>
+                                                    <th>ピット内人数</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                             @foreach ($item->pit_detections as $detection_item)
+                                                @if($detection_item->nb_entry != $detection_item->nb_exit)
+                                                <?php
+                                                    $sum += ($detection_item->nb_entry - $detection_item->nb_exit);
+                                                    $total_data[date('Y-m-d H:i:s', strtotime($detection_item->starttime))] = $sum;
+                                                ?>
                                                 <tr>
-                                                    <td>{{date('Y/m/d H:i', strtotime($detection_item->starttime))}}</td>
-                                                    <td>{{$detection_item->location_name}}</td>
-                                                    <td>{{$detection_item->installation_position}}</td>
-                                                    <td>
-                                                        {{$detection_item->nb_entry > $detection_item->nb_exit ? '入場 '.($detection_item->nb_entry - $detection_item->nb_exit) :  '退場 '.($detection_item->nb_exit - $detection_item->nb_entry)}}
-                                                    </td>
+                                                    <td>{{date('Y-m-d H:i:s', strtotime($detection_item->starttime))}}</td>
+                                                    <td>{{$detection_item->nb_entry > $detection_item->nb_exit ? '入場' : '退場'}} </td>
+                                                    <td><span class="{{$detection_item->nb_entry > $detection_item->nb_exit ? 'f-red' : 'f-blue'}}">{{$detection_item->nb_entry - $detection_item->nb_exit}}</span></td>
+                                                    <td>{{$sum}}</td>
                                                 </tr>
+                                                @endif
                                             @endforeach
                                             </tbody>
                                         </table>
@@ -576,12 +587,36 @@
                                         <div class="no-data">検知データがありません。</div>
                                     @endif
 
+                                @elseif($item->block_type == config('const.top_block_type_codes')['recent_detect_pit'])
+                                    @if(isset($item->pit_detection))
+                                        <?php
+                                            $video_path = '';
+                                            $video_path .= asset('storage/video/').'/';
+                                            $video_path .= $item->pit_detection->video_file_path;
+
+                                            $thumb_path = asset('storage/thumb/').'/'.$item->pit_detection->thumb_img_path;
+                                        ?>
+                                        <div class="camera-id">カメラID：{{$item->pit_detection->camera_no}}</div>
+                                        <div class="movie" video-path = "{{$video_path}}">
+                                            <a data-target="movie0000"
+                                                {{-- onclick="videoPlay(this, '{{$video_path}}')"  --}}
+                                                class="video-open setting2 play">
+                                                <img src="{{$thumb_path}}"/>
+                                            </a>
+                                        </div>
+                                        <video style="" class = 'video-play' src = '{{$video_path}}' type= 'video/mp4' controls></video>
+                                        <div class="cap">検知時間：<time>{{date('Y/m/d H:i', strtotime($item->pit_detection->starttime))}}</time></div>
+                                        <div class="cap">検知条件：<time>時間オーバー({{$item->pit_detection->max_permission_time.'分'}})</time>
+                                        </div>
+                                    @else
+                                        <div class="no-data">検知データがありません。</div>
+                                    @endif
                                 @elseif($item->block_type == config('const.top_block_type_codes')['detect_list_pit'])
                                     @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
                                     <div class="search-period-area">
-                                        <span>{{date('Y/m/d', strtotime($item->starttime))}}</span>
+                                        <input onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                         <span>～</span>
-                                        <span>{{date('Y/m/d', strtotime($item->endtime))}}</span>
+                                        <input onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
                                     </div>
                                     @endif
                                     @if (isset($item->pit_detections) && count($item->pit_detections) > 0)
@@ -589,20 +624,14 @@
                                             <thead>
                                                 <tr>
                                                     <th class="time">時間</th>
-                                                    <th class="area">設置エリア</th>
-                                                    <th class="location">設置場所</th>
-                                                    <th class="action">検知内容</th>
+                                                    <th>検知条件</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                             @foreach ($item->pit_detections as $detection_item)
                                                 <tr>
                                                     <td>{{date('Y/m/d H:i', strtotime($detection_item->starttime))}}</td>
-                                                    <td>{{$detection_item->location_name}}</td>
-                                                    <td>{{$detection_item->installation_position}}</td>
-                                                    <td>
-                                                        {{$detection_item->nb_entry > $detection_item->nb_exit ? '入場 '.($detection_item->nb_entry - $detection_item->nb_exit) :  '退場 '.($detection_item->nb_exit - $detection_item->nb_entry)}}
-                                                    </td>
+                                                    <td>時間オーバー({{$detection_item->max_permission_time.'分'}})</td>
                                                 </tr>
                                             @endforeach
                                             </tbody>
@@ -659,9 +688,9 @@
                                             }
                                         ?>
                                         <div class="search-period-area">
-                                            <span>{{date('Y/m/d', strtotime($item->starttime))}}</span>
+                                            <input onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                             <span>～</span>
-                                            <span>{{date('Y/m/d', strtotime($item->endtime))}}</span>
+                                            <input onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
                                         </div>
                                         <div class="period-select-buttons">
                                             @if ($search_period < 1)
@@ -702,9 +731,10 @@
                     </div>
                     @endforeach
                 </div>
-            @else
-                {{-- <div class="no-data">現在設定されていません</div> --}}
             @endif
+            <div class="no-data top-no-data" style="font-size: 16px;display:<?php echo count($top_blocks) == 0 ? 'block' : 'none' ?>">
+                表示項目を追加することでデータを表示できます。
+            </div>
         </div>
 	</div>
 </div>
@@ -714,6 +744,7 @@
         <div class="v">
             <video id = 'video-container' src = '' type= 'video/mp4' controls>
             </video>
+            <p class="video-notice">動画の30秒あたりが検知のタイミングになります。</p>
         </div>
     </div>
     <p class="closemodal"><a class="modal-close">×</a></p>
@@ -878,6 +909,10 @@
                 delete_id = block_item.id;
                 helper_confirm("dialog-confirm", "削除", "削除します。<br />よろしいですか？", 300, "確認", "閉じる", function(){
                     $('[data-id="'+ block_item.id + '"]').remove();
+                    if ($('.grid-stack-item').length == 0){
+                        $('.grid-stack').height('auto');
+                        $('.top-no-data').show();
+                    }
                     deleteTopBlock(block_item.id);
                 });
                 break;
@@ -1754,6 +1789,18 @@
         changed_data.push({
             id:$('#selected_top_block').val(),
             selected_camera:$('#selected_camera').val(),
+        })
+        updateTopBlockData(changed_data);
+        $('#camera_form').submit();
+    }
+
+    function changePeriod(e, type='starttime', block_id){
+        console.log('type', type, block_id);
+        console.log('val', e.value);
+        var changed_data = [];
+        changed_data.push({
+            id:block_id,
+            [type]:e.value
         })
         updateTopBlockData(changed_data);
         $('#camera_form').submit();

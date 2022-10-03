@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="login-wrap">
-        <h1 id="logo"><img src="{{ asset('assets/admin/img/logo-top.svg') }}" alt=""></h1>
+        <h1 id="logo"><img src="{{ asset('assets/admin/img/logo-top.svg?2') }}" alt=""></h1>
 
         <form method="POST" action="{{ route('admin.login') }}">
             @csrf

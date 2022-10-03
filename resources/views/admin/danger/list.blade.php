@@ -189,6 +189,7 @@
     <div class="v">
         <video id = 'video-container' src = '' type= 'video/mp4' controls>
         </video>
+        <p class="video-notice">動画の30秒あたりが検知のタイミングになります。</p>
     </div>
 </div>
 <p class="closemodal"><a class="modal-close">×</a></p>
@@ -228,5 +229,28 @@
         };
         addToToppage(block_type, options);
     }
+    $(document).ready(function() {
+        setInterval(() => {
+            $.ajax({
+                url : '/admin/CheckDetectData',
+                method: 'post',
+                data: {
+                    type:'danger',
+                    endtime:formatDateLine(new Date($('#endtime').val())),
+                    _token:$('meta[name="csrf-token"]').attr('content'),
+                    last_record_id : "<?php echo $last_number;?>"
+                },
+                error : function(){
+                    console.log('failed');
+                },
+                success: function(result){
+                    console.log('success', result);
+                    if (result == 1){
+                        $('#form1').submit();
+                    }
+                }
+            })
+        }, 60000);
+    })
 </script>
 @endsection

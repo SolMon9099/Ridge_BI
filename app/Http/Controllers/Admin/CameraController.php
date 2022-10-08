@@ -298,4 +298,11 @@ class CameraController extends AdminController
     {
         return CameraService::refreshImg();
     }
+
+    public function reset_heatmap(Request $request)
+    {
+        $camera_id = $request['camera_id'];
+
+        return $camera_id;
+    }
 }

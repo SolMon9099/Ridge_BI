@@ -52,6 +52,13 @@
                                             <input onclick="enableSubmitButton()" id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
                                             <label for="radio-{{$camera->id}}" class="radio-label"></label>
                                         </div>
+                                        @else
+                                            @if(count($camera->rules) < config('const.danger_max_figure_numbers'))
+                                            <div class="radio">
+                                                <button type="button" class="edit" onclick="createRule({{$camera->id}})">追加登録</button>
+                                                <input style="display: none" id="radio-{{$camera->id}}" name="selected_camera" value="">
+                                            </div>
+                                            @endif
                                         @endif
                                     @endif
 
@@ -92,6 +99,10 @@
     <script>
         function enableSubmitButton(){
             $('.btns').show();
+        }
+        function createRule(camera_id){
+            $('input[name="selected_camera"]').val(camera_id);
+            $('#form1').submit();
         }
     </script>
 @endsection

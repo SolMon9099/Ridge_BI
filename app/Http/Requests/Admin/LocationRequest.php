@@ -38,11 +38,12 @@ class LocationRequest extends FormRequest
         if (!empty($this->action)) {
             $rules['name'] = ['required', 'max:150'];
             // $rules['owners.*'] = ['required', 'max:150'];
-            // $rules['managers.*'] = ['required', 'max:150'];
+            $rules['managers.*'] = ['distinct'];
             if ($this->action == 'admin.location.store') {
                 // $rules['code'] = ['required', 'max:150', 'unique:locations,code,NULL,id,deleted_at,NULL'];
             } elseif ($this->action == 'admin.location.update') {
                 // $rules['code'] = ['required', 'max:150', "unique:locations,code,{$this->p_request->id},id,deleted_at,NULL"];
+                $rules['managers.*'] = ['distinct'];
             }
         }
 
@@ -55,7 +56,8 @@ class LocationRequest extends FormRequest
         $attributes['code'] = '現場コード';
         $attributes['name'] = '設置エリア';
         // $attributes['owners.*'] = '現場責任者';
-        // $attributes['managers.*'] = '現場担当者';
+        $attributes['managers.*'] = '現場担当者';
+
         return $attributes;
     }
 
@@ -66,7 +68,8 @@ class LocationRequest extends FormRequest
         // $messages['code.unique'] = 'すでに登録された現場コードです。';
         $messages['name.required'] = '設置エリアを入力してください。';
         // $messages["owners.*.required"] = "現場責任者を入力してください。";
-        // $messages["managers.*.required"] = "現場担当者を入力してください。";
+        $messages['managers.*.distinct'] = '現場担当者が重複選択されました。';
+
         return $messages;
     }
 }

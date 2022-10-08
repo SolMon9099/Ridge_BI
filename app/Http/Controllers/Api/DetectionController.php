@@ -12,6 +12,7 @@ use App\Service\ThiefService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Heatmap;
+use App\Models\DangerAreaDetection;
 
 class DetectionController extends Controller
 {
@@ -79,22 +80,33 @@ class DetectionController extends Controller
         Log::info('record startdatetime = '.$record_start_time);
         Log::info('record enddatetime = '.$record_end_time);
 
+        // if ($camera_data->camera_id == 'FvY6rnGWP12obPgFUj0a'){
+        //     $detection_model = new DangerAreaDetection();
+        //     $detection_model->detection_action_id = $detection_action_id;
+        //     $detection_model->camera_id = $camera_data->id;
+        //     $detection_model->rule_id = $rule_id;
+        //     $detection_model->video_file_path = 'test_danger.mp4';
+        //     $detection_model->thumb_img_path = 'test_danger.png';
+        //     $detection_model->starttime = $start_datetime;
+        //     $detection_model->endtime = $record_end_time_object->format('Y-m-d H:i:s');
+        //     $detection_model->save();
+        // } else {
         $safie_service = new SafieApiService($camera_data->contract_no);
         $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '危険エリア侵入検知');
         Log::info('request_id = '.$request_id);
         if ($request_id > 0) {
             $temp_save_data = [
-                'request_id' => $request_id,
-                'starttime' => $start_datetime,
-                'endtime' => $record_end_time_object->format('Y-m-d H:i:s'),
-                'camera_no' => $camera_data->camera_id,
-                'camera_id' => $camera_data->id,
-                'contract_no' => $camera_data->contract_no,
-                'rule_id' => $rule_id,
-                'detection_action_id' => $detection_action_id,
-                'type' => 'danger_area',
-                'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
-            ];
+                    'request_id' => $request_id,
+                    'starttime' => $start_datetime,
+                    'endtime' => $record_end_time_object->format('Y-m-d H:i:s'),
+                    'camera_no' => $camera_data->camera_id,
+                    'camera_id' => $camera_data->id,
+                    'contract_no' => $camera_data->contract_no,
+                    'rule_id' => $rule_id,
+                    'detection_action_id' => $detection_action_id,
+                    'type' => 'danger_area',
+                    'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
+                ];
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
             Log::info('危険エリア侵入検知解析結果送受信API（AI→BI）終了');
 
@@ -104,6 +116,7 @@ class DetectionController extends Controller
 
             return ['error' => '送信失敗'];
         }
+        // }
     }
 
     public function saveShelfDetection(Request $request)
@@ -387,7 +400,7 @@ class DetectionController extends Controller
         $heatmap_data = $request['heatmap'];
         $check_flag = false;
         foreach ($heatmap_data as $rows) {
-            foreach($rows as &$item){
+            foreach ($rows as &$item) {
                 if (is_numeric($item)) {
                     $check_flag = true;
                 } else {

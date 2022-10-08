@@ -41,13 +41,13 @@
             @if($selected_rule != null)
                 <div class="list">
                     <div class="inner active">
-                        <h3 class="title">現在の映像</h3>
-
                         <div style="display: flex;">
                             <div style="width:50%; position: relative;">
+                                <h3 class="title">現在の映像</h3>
                                 <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_video_pit']}})">ダッシュボートへ追加</button>
                             </div>
                             <div style="width:50%; position: relative;">
+                                <h3 class="title">当日グラフ</h3>
                                 <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_graph_pit']}})">ダッシュボートへ追加</button>
                             </div>
                         </div>
@@ -82,6 +82,7 @@
                                         <tr>
                                             <th>時間</th>
                                             <th>検知条件</th>
+                                            <th>ピット内人数</th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -90,6 +91,7 @@
                                             <tr>
                                                 <td>{{$item->starttime}}</td>
                                                 <td>時間オーバー({{$item->max_permission_time.'分'}})</td>
+                                                <td>{{isset($item->sum_in_pit) ? $item->sum_in_pit.'人' : ''}}</td>
                                                 <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
                                             </tr>
                                         @endforeach
@@ -109,17 +111,22 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php
+                                            foreach (array_reverse($pit_detections) as $item) {
+                                                if ($item->nb_entry != $item->nb_exit){
+                                                    $sum += ($item->nb_entry - $item->nb_exit);
+                                                    $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
+                                                }
+                                            }
+                                        ?>
                                         @foreach ($pit_detections as $item)
                                             @if($item->nb_entry != $item->nb_exit)
-                                            <?php
-                                                $sum += ($item->nb_entry - $item->nb_exit);
-                                                $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
-                                            ?>
+
                                             <tr>
                                                 <td>{{date('Y-m-d H:i:s', strtotime($item->starttime))}}</td>
                                                 <td>{{$item->nb_entry > $item->nb_exit ? '入場' : '退場'}} </td>
                                                 <td><span class="{{$item->nb_entry > $item->nb_exit ? 'f-red' : 'f-blue'}}">{{$item->nb_entry - $item->nb_exit}}</span></td>
-                                                <td>{{$sum}}</td>
+                                                <td>{{$total_data[date('Y-m-d H:i:s', strtotime($item->starttime))]}}</td>
                                             </tr>
                                             @endif
                                         @endforeach
@@ -169,10 +176,17 @@
                             <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
+                        @if(count($cameras) == 0)
+                        <tr>
+                            <td colspan="6">登録されたカメラがありません。カメラを設定してください</td>
+                        </tr>
+                        @endif
                         </tbody>
                     </table>
                     <div class="modal-set">
-                        <button type="submit" class="modal-close">設 定</button>
+                        @if(count($cameras) > 0)
+                            <button type="submit" class="modal-close">設 定</button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -186,6 +200,9 @@
 </div>
 <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <style>
+    .title{
+        padding-left:15px;
+    }
     .mainbody{
         position: relative;
         display: flex;
@@ -215,12 +232,6 @@
     .add-to-toppage{
         position: absolute;
         right: 0;
-        top:-50px;
-    }
-    .left-box > .add-to-toppage{
-        top:0px;
-    }
-    .right-box > .add-to-toppage{
         top:0px;
     }
 </style>
@@ -255,8 +266,9 @@
                     }
                 },
                 title: {
-                    display: false,
-                    text: 'ピット内人数推移'
+                    display: true,
+                    text: 'ピット入退場履歴',
+                    fontSize:25,
                 },
                 responsive: true,
                 interaction: {

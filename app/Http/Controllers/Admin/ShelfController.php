@@ -18,10 +18,28 @@ use Illuminate\Support\Facades\DB;
 
 class ShelfController extends AdminController
 {
-    public function index()
+    public function index(Request $request)
     {
-        $shelfs = ShelfService::doSearch()->paginate($this->per_page);
+        $shelfs = ShelfService::doSearch($request)->paginate($this->per_page);
         $locations = LocationService::getAllLocationNames();
+        $cameras = ShelfService::getAllCameras();
+        $camera_imgs = [];
+        foreach ($cameras as $camera) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $camera->floor_number = $map_data->floor_number;
+            }
+            $safie_service = new SafieApiService($camera->contract_no);
+
+            if (!isset($camera_imgs[$camera->camera_id])) {
+                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                $camera_imgs[$camera->camera_id] = $camera_image_data;
+                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
+            }
+        }
         foreach ($shelfs as $shelf) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $shelf->camera_id)
@@ -34,7 +52,9 @@ class ShelfController extends AdminController
 
         return view('admin.shelf.index')->with([
             'shelfs' => $shelfs,
+            'input' => $request,
             'locations' => $locations,
+            'cameras' => $cameras,
         ]);
     }
 

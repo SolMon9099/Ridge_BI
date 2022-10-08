@@ -16,6 +16,7 @@
         $rule->drawn_flag = true;
     }
 ?>
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <div class="no-scroll">
     @include('admin.layouts.flash-message')
     <div class="scroll" style="position: relative;">
@@ -23,6 +24,11 @@
         <div class="setting-head">
             <div id="rule_items">
                 <p class="close-items"><a class="close-icon">×</a></p>
+                <div>
+                    <label class="title-label">ルール名：</label>
+                    <input type="text" class="rule_name" />
+                </div>
+                <p class="error-message rule-name" style="display: none">ルール名を6文字以内で入力してください</p>
                 <div class="radio-area">
                     <label class="title-label">図形：</label>
                     <select name = '' class="select-box select-figure" style="">
@@ -60,6 +66,11 @@
                 @foreach ($rules as $index=>$rule)
                 <div class="rule_items" data-index = {{$index}}>
                     <p class="close-items"><a class="close-icon" onclick="removeFigure({{$index}})">×</a></p>
+                    <div>
+                        <label class="title-label">ルール名：</label>
+                        <input value="{{$rule->name}}" onchange="changeName(this, '{{$index}}')" type="text" class="rule_name" />
+                    </div>
+                    <p class="error-message rule-name" style="display: none">ルール名を6文字以内で入力してください</p>
                     <div class="radio-area">
                         <label class="title-label">図形：</label>
                         <select name={{'figure_type_'.$index}} class="select-box" style=""
@@ -132,10 +143,15 @@
                     <p>画像内をクリックしエリアを選択してください。</p>
                 </div>
             </div>
-            <div class="ai-guide-area" style="">
-                <input onchange="changeHeatMap(this)" class="tgl tgl-flat" id="ai_guide" type="checkbox">
-                <label class="tgl-btn" for="ai_guide"></label>
-                <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
+            <div>
+                <div class="ai-guide-area" style="">
+                    <input onchange="changeHeatMap(this)" class="tgl tgl-flat" id="ai_guide" type="checkbox">
+                    <label class="tgl-btn" for="ai_guide"></label>
+                    <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
+                    <button style="margin-left: 10px;" onclick="resetHeatMap({{$camera_id}})" type='button' class="reset-heatmap-button">再取得</button>
+                </div>
+                <div style="color: #999;">※カメラの位置や画角を変更した場合は、<br/>AI検知精度の再計算を行う必要がありますので、<br/>「再計算」ボタンを押してください。
+                </div>
             </div>
         </div>
         <button type="button" onclick="clearImage()" class="clear-btn history">選択を全てクリア</button>
@@ -179,12 +195,20 @@
                 <li>④エリアは検知設定内の×ボタンで削除できます。
                     <small>※「選択をすべてクリア」ですべてのエリアを削除できます。</small>
                 </li>
+                <li>⑤AI検知精度
+                    <small>AI検知精度をONにするとカメラ映像内の検知精度が表示されます。</small>
+                    <small>※検知精度が高いところがより透明に表示されます。</small>
+                </li>
             </ul>
         </div>
     </div>
     <p class="closemodal"><a class="modal-close">×</a></p>
 </div>
 <!-- -->
+<div id="dialog-confirm" title="test" style="display:none">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+        <span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
 <style>
     .clear-btn{
         margin:0;
@@ -196,6 +220,11 @@
     .setting-head{
         padding-left:15px;
         display:flex;
+    }
+    .rule_name{
+        width:110px!important;
+        background: white!important;
+        border:1px lightgray solid!important;
     }
     .select-box{
         width:110px;
@@ -339,7 +368,7 @@
         cursor: pointer;
     }
     .ai-guide-area{
-        margin-left: 40px;
+        margin-left: 10px;
         padding-top:100px;
         display:inline-flex;
     }
@@ -387,7 +416,7 @@
     }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
-
+<script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <script>
     var mouse_pos = null;
     var heatmap_records = [];
@@ -461,6 +490,7 @@
                     rules_object[rule_index].points[index].y = new_y;
                     if (enable_add_figure_flag == true || rule_index < Math.max(...Object.keys(rules_object))){
                         drawFigure(rule_index, rules_object[rule_index].color);
+                        rules_object[rule_index].is_changed = true;
                     }
                 }
             }
@@ -488,6 +518,7 @@
             rules_object[unique_rule_id].points.push({x:e.evt.offsetX, y:e.evt.offsetY, id:(unique_rule_id).toString() + '_' + point_index.toString()});
             if (point_index + 1 == 4 && selected_figure == 'rect'){
                 drawFigure(unique_rule_id, figure_color);
+                rules_object[unique_rule_id].is_changed = true;
             }
         })
         stage.on('mousemove', function(e){
@@ -527,6 +558,10 @@
             if (rule_item.action_id == undefined || rule_item.action_id.length == 0){
                 res = false;
                 $('.error-message.rule-select', $('[data-index="'+ rule_index + '"]')).show();
+            }
+            if (rule_item.name != undefined && rule_item.name != null && rule_item.name.length > 6){
+                res = false;
+                $('.error-message.rule-name', $('[data-index="'+ rule_index + '"]')).show();
             }
         })
         return res;
@@ -580,6 +615,11 @@
         }
     }
 
+    function changeName(e, rule_index){
+        rules_object[rule_index].name = e.value;
+        rules_object[rule_index].is_name_color_changed = true;
+    }
+
     function changeColor(e, rule_index){
         layer.find('Circle').map(circle_item => {
             if (circle_item.attrs.id.includes(rule_index + '_')){
@@ -593,6 +633,7 @@
             }
         })
         rules_object[rule_index].color = e.value;
+        rules_object[rule_index].is_name_color_changed = true;
     }
 
     function changeActions (e, rule_index){
@@ -603,6 +644,7 @@
         } else {
             rules_object[rule_index].action_id = [];
         }
+        rules_object[rule_index].is_changed = true;
 
         // var check_input_id = rule_index + '_action_' + id_action;
         // var add_remove_flag = $('#' + check_input_id).is(':checked');
@@ -724,6 +766,7 @@
             } else {
                 rules_object[rule_index].action_id = [];
             }
+            rules_object[rule_index].is_changed = true;
             // if (rules_object[rule_index].action_id.includes($(this).val())){
             //     var action_index = rules_object[rule_index].action_id.findIndex(x => x == $(this).val());
             //     if (action_index > -1){
@@ -739,6 +782,7 @@
                 if (rules_object[rule_index].points != undefined && rules_object[rule_index].points.length > 2 && rules_object[rule_index].drawn_flag != true){
                     var figure_color = rules_object[rule_index].color != undefined ? rules_object[rule_index].color :"black";
                     drawFigure(rule_index, figure_color);
+                    rules_object[rule_index].is_changed = true;
                     $(this).addClass('disabled-btn');
                     $('input[type="radio"]', template_item).prop('disabled', true);
                 }
@@ -759,6 +803,12 @@
                 }
             });
             rules_object[rule_index].color = $(this).val();
+            rules_object[rule_index].is_name_color_changed = true;
+        });
+        $('.rule_name', template_item).change(function(){
+            var rule_index = template_item.attr('data-index');
+            rules_object[rule_index].name = $(this).val();
+            rules_object[rule_index].is_name_color_changed = true;
         });
     }
 
@@ -808,6 +858,12 @@
     function handleMouseMove(event){
         event = event || window.event;
         mouse_pos = {x:event.clientX, y:event.clientY};
+    }
+
+    function resetHeatMap(camera_id){
+        helper_confirm("dialog-confirm", "再取得確認", "AI検知精度ガイドを再取得しますがよろしいですか？<br/>＜注意＞<br/>　・現在のAI検知精度ガイドはリセットされます<br/>　・AI検知精度の再取得まではお時間がかかります（最大１日程度）", 600, "再取得", "キャンセル", function(){
+            resetHeatMapAjax(camera_id);
+        });
     }
 
     $(document).ready(function() {

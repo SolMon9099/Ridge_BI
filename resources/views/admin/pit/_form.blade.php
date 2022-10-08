@@ -6,13 +6,16 @@
     $blue_points = array();
     $max_permission_time = null;
     $min_members = null;
+    $name = null;
     foreach ($rules as $key => $rule) {
         if ($rule->red_points != null && $rule->red_points != '') $red_points = json_decode($rule->red_points);
         if ($rule->blue_points != null && $rule->blue_points != '') $blue_points = json_decode($rule->blue_points);
         $max_permission_time = $rule->max_permission_time;
         $min_members = $rule->min_members;
+        $name = $rule->name;
     }
 ?>
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <div class="no-scroll">
     {{-- @include('admin.layouts.flash-message') --}}
     <div class="scroll" style="position: relative;">
@@ -23,6 +26,14 @@
             <p>　※赤枠は入場を検知し青枠は退場を検知します。</p>
         </div>
         <div class="setting-head">
+            <input type="hidden" name="change_flag" id="change_flag" value=""/>
+            <div style="margin-right:20px;">
+                <label>ルール名：</label>
+                <input name="name" class='name_input' type="text" value="{{old('name', isset($name)?$name:'')}}">
+                @error('name')
+                    <p class="error-message name">{{ $message }}</p>
+                @enderror
+            </div>
             <div style="margin-right:30px;">
                 <label>ピット内人数：</label>
                 <input name="min_members" type="number" inputmode="numeric" pattern="\d*" max='10' min='0' class='members_input'
@@ -54,9 +65,12 @@
                 <label class="tgl-btn" for="ai_guide"></label>
                 <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
             </div>
+            <div class="reset-heatmap-area">
+                <button onclick="resetHeatMap({{$camera_id}})" type='button' class="reset-heatmap-button">再取得</button>
+            </div>
             <button type="button" class="clear-btn history" onclick="clearImage()">選択を全てクリア</button>
         </div>
-
+        <div class="notice-area">※カメラの位置や画角を変更した場合は、AI検知精度の再計算を行う必要がありますので、「再計算」ボタンを押してください。</div>
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
                 <div class="grid-area">
@@ -102,18 +116,27 @@
                 <li>③選択が完了したら「決定」ボタンを押下してください。
                     <small>※「選択を全てクリア」した際は全ての選択がクリアされます。</small>
                 </li>
+                <li>④AI検知精度
+                    <small>AI検知精度をONにするとカメラ映像内の検知精度が表示されます。</small>
+                    <small>※検知精度が高いところがより透明に表示されます。</small>
+                </li>
             </ul>
         </div>
     </div>
     <p class="closemodal"><a class="modal-close">×</a></p>
 </div>
 <!-- -->
+<div id="dialog-confirm" title="test" style="display:none">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+        <span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
 <style>
     .clear-btn{
         margin:0;
         padding: 10px 30px;
         position: absolute;
         right:0;
+        top:45px!important;
     }
     .guide{
         position: absolute;
@@ -171,17 +194,27 @@
     .notice-area{
         color:#999;
     }
+    .name_input{
+        background: white!important;
+        width:120px!important;
+    }
     .members_input{
         background: white!important;
         width:60px!important;
     }
     .setting-head{
         display: flex;
+        position: relative;
+        white-space: nowrap;
     }
     .ai-guide-area{
         margin-left: 10px;
-        padding-top:8px;
+        padding-top:8px!important;
         display:inline-flex;
+    }
+    .reset-heatmap-area{
+        margin-left:8px;
+        padding-top:6px;
     }
     @media only screen and (max-width:768px) {
         .btns{
@@ -209,7 +242,7 @@
     }
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
-
+<script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <script>
     var mouse_pos = null;
     var heatmap_records = [];
@@ -421,6 +454,7 @@
                     red_points[index].y = new_y;
                     if (point_numbers == 4){
                         drawRect(red_points);
+                        $('#change_flag').val('updated');
                     }
                 }
             } else {
@@ -430,6 +464,7 @@
                     blue_points[index].y = new_y;
                     if (point_numbers == 4){
                         drawRect(red_points, blue_points);
+                        $('#change_flag').val('updated');
                     }
                 }
             }
@@ -556,6 +591,7 @@
                     red_points[index].y = new_y;
                     if (point_numbers == 4){
                         drawRect(red_points);
+                        $('#change_flag').val('updated');
                     }
                 }
 
@@ -565,6 +601,7 @@
             point_numbers++;
             if (point_numbers == 4){
                 drawRect(red_points);
+                $('#change_flag').val('updated');
             }
 
         })
@@ -649,6 +686,12 @@
     function handleMouseMove(event){
         event = event || window.event;
         mouse_pos = {x:event.clientX, y:event.clientY};
+    }
+
+    function resetHeatMap(camera_id){
+        helper_confirm("dialog-confirm", "再取得確認", "AI検知精度ガイドを再取得しますがよろしいですか？<br/>＜注意＞<br/>　・現在のAI検知精度ガイドはリセットされます<br/>　・AI検知精度の再取得まではお時間がかかります（最大１日程度）", 600, "再取得", "キャンセル", function(){
+            resetHeatMapAjax(camera_id);
+        });
     }
 
     $(document).ready(function() {

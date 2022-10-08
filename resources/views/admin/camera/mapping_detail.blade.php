@@ -95,11 +95,18 @@
                             <td>{{$camera->remarks}}</td>
                         </tr>
                         @endforeach
+                        @if(count($cameras) == 0)
+                        <tr>
+                            <td colspan="6">登録されたカメラがありません。カメラを設定してください</td>
+                        </tr>
+                        @endif
                     </tbody>
                 </table>
                 <p class="error-message">カメラを選択してください。</p>
                 <div class="modal-set">
+                    @if(count($cameras) > 0)
                     <button onclick="selectCamera()" type="submit" class="">設 定</button>
+                    @endif
                 </div>
             </div>
         </div>

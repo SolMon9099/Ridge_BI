@@ -40,12 +40,12 @@ class S3Command extends Command
                 return 0;
             }
             $record_start_time_object = clone $cur_time_object;
-            $record_start_time_object->sub(new \DateInterval('PT'.(string) 2 * $request_interval.'M'));
-            // $record_start_time_object->sub(new \DateInterval('PT'.(string) (2 * $request_interval + 3).'M'));
+            // $record_start_time_object->sub(new \DateInterval('PT'.(string) 2 * $request_interval.'M'));
+            $record_start_time_object->sub(new \DateInterval('PT'.(string) ($request_interval + 3).'M'));
             $record_start_time = $record_start_time_object->format('c');
             $record_end_time_object = clone $cur_time_object;
-            $record_end_time_object->sub(new \DateInterval('PT'.(string) $request_interval.'M'));
-            // $record_end_time_object->sub(new \DateInterval('PT'.(string) ($request_interval + 3).'M'));
+            // $record_end_time_object->sub(new \DateInterval('PT'.(string) $request_interval.'M'));
+            $record_end_time_object->sub(new \DateInterval('PT'.(string) (3).'M'));
             $record_end_time = $record_end_time_object->format('c');
 
             foreach ($cameras as $camera) {
@@ -170,8 +170,11 @@ class S3Command extends Command
                 if (!isset($params['movie_info'])) {
                     $params['movie_info'] = [];
                 }
+                // if ($device_id == 'FvY6rnGWP12obPgFUj0a') {
+                //     $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_danger/20220922/20220922150000_20220922150200.mp4';
+                // } else {
                 $params['movie_info']['movie_path'] = $movie_path;
-                // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_danger/20220311/20220311100323_20220311100822.mp4';
+                // }
                 if (!isset($params['rect_info'])) {
                     $params['rect_info'] = [];
                 }
@@ -225,6 +228,7 @@ class S3Command extends Command
         //--------------------------------------
         //６．棚乱れ解析リクエスト（BI→AI） /api/v1/shelf-theft/register-camera
         $rules = ShelfService::getRulesByCameraID($id_camera);
+        // $rules = ShelfService::getRulesByCameraID(11);
         if (count($rules) > 0) {
             if (count($rules) > 0) {
                 $params = [];
@@ -236,8 +240,9 @@ class S3Command extends Command
                     if (!isset($params['movie_info'])) {
                         $params['movie_info'] = [];
                     }
+
                     $params['movie_info']['movie_path'] = $movie_path;
-                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_shelf/20220707/20220707153430_20220707153455.mp4';
+                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_shelf/20220922/20220922150000_20220922150200.mp4';
                     if (!isset($params['rect_info'])) {
                         $params['rect_info'] = [];
                     }
@@ -256,6 +261,7 @@ class S3Command extends Command
 
         //９．大量盗難解析リクエスト（BI→AI） /api/v1/hanger-counter/register-camera
         $rules = ThiefService::getRulesByCameraID($id_camera);
+        // $rules = ThiefService::getRulesByCameraID(10);
         if (count($rules) > 0) {
             if (count($rules) > 0) {
                 $params = [];
@@ -268,7 +274,7 @@ class S3Command extends Command
                         $params['movie_info'] = [];
                     }
                     $params['movie_info']['movie_path'] = $movie_path;
-                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_thief/20220311/20220311100323_20220311100346.mp4';
+                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_hanger/20220922/20220922150000_20220922150200.mp4';
                     if (!isset($params['rect_info'])) {
                         $params['rect_info'] = [];
                     }

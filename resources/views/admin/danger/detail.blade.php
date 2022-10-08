@@ -44,12 +44,13 @@
             @if(isset($selected_rule))
             <div class="list">
                 <div class="inner active">
-                    <h3 class="title">現在の映像</h3>
                     <div style="display: flex;">
                         <div style="width:50%; position: relative;">
+                            <h3 class="title">現在の映像</h3>
                             <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_video_danger']}})">ダッシュボートへ追加</button>
                         </div>
                         <div style="width:50%; position: relative;">
+                            <h3 class="title">当日グラフ</h3>
                             <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['live_graph_danger']}})">ダッシュボートへ追加</button>
                         </div>
                     </div>
@@ -193,10 +194,17 @@
                             <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
+                        @if(count($cameras) == 0)
+                        <tr>
+                            <td colspan="6">登録されたカメラがありません。カメラを設定してください</td>
+                        </tr>
+                        @endif
                         </tbody>
                     </table>
                     <div class="modal-set">
+                        @if(count($cameras) > 0)
                         <button type="submit" class="modal-close">設 定</button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -223,6 +231,9 @@
 <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 
 <style>
+    .title{
+        padding-left: 15px;
+    }
     .mainbody{
         position: relative;
         display: flex;
@@ -252,7 +263,7 @@
     .add-to-toppage{
         position: absolute;
         right: 0;
-        top:-50px;
+        top:0px;
     }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
@@ -397,7 +408,7 @@
                 },
                 title: {
                     display: true,
-                    text: 'NGアクション毎の回数',
+                    text: "NGアクション毎の回数",
                     fontSize:25,
                 },
                 scales: {

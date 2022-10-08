@@ -62,6 +62,9 @@
                     </li>
                     @endif
                 </ul>
+                @error('managers.*')
+                <p class="error-message">{{ $message }}</p>
+                @enderror
                 </td>
             </tr>
             {{-- <tr>

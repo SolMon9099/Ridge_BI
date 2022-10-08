@@ -161,10 +161,17 @@
                             <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$rule->camera_no.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
+                        @if(count($rules) == 0)
+                        <tr>
+                            <td colspan="8">登録されたルールがありません。ルールを設定してください</td>
+                        </tr>
+                        @endif
                     </tbody>
                 </table>
                 <div class="modal-set">
-                    <button onclick="selectRule()" class="modal-close">設 定</button>
+                    @if(count($rules) > 0)
+                        <button onclick="selectRule()" class="modal-close">設 定</button>
+                    @endif
                 </div>
                 </div>
             </div>
@@ -209,10 +216,17 @@
                             <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
+                        @if(count($cameras) == 0)
+                        <tr>
+                            <td colspan="6">登録されたカメラがありません。カメラを設定してください</td>
+                        </tr>
+                        @endif
                         </tbody>
                     </table>
                     <div class="modal-set">
-                        <button type="submit" class="modal-close">設 定</button>
+                        @if(count($cameras) > 0)
+                            <button type="submit" class="modal-close">設 定</button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -353,29 +367,32 @@
     setGraphOptions(grpah_init_type);
 
     function setGraphOptions(time_period){
+        if (!isNaN(parseInt(time_period))){
+            time_period = parseInt(time_period);
+        }
         switch(time_period){
-            case '3':
+            case 3:
                 grid_unit = 15;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
                 break;
-            case '6':
+            case 6:
                 grid_unit = 30;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
                 break;
-            case '12':
+            case 12:
                 grid_unit = 60;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
                 break;
-            case '24':
+            case 24:
                 grid_unit = 60;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
@@ -421,6 +438,7 @@
     var selected_actions = <?php echo json_encode($selected_action_ids);?>;
 
     function moveXRange(increament = 1){
+        if (!isNaN(parseInt(grpah_init_type))) grpah_init_type = parseInt(grpah_init_type);
         switch(grpah_init_type){
             case 3:
                 if (increament == 1){

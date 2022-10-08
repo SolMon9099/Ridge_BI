@@ -21,20 +21,51 @@ class DangerController extends AdminController
 {
     public function index(Request $request)
     {
-        $dangers = DangerService::doSearch($request)->paginate($this->per_page);
-        foreach ($dangers as $daner) {
+        $locations = LocationService::getAllLocationNames();
+        $cameras = DangerService::getAllCameras();
+        $camera_imgs = [];
+        foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
-                ->where('camera_id', $daner->camera_id)
+                ->where('camera_id', $camera->id)
                 ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
                 ->whereNull('drawing.deleted_at')->get()->first();
             if ($map_data != null) {
-                $daner->floor_number = $map_data->floor_number;
+                $camera->floor_number = $map_data->floor_number;
             }
+            $safie_service = new SafieApiService($camera->contract_no);
+
+            if (!isset($camera_imgs[$camera->camera_id])) {
+                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                $camera_imgs[$camera->camera_id] = $camera_image_data;
+                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
+            }
+        }
+        $dangers = DangerService::doSearch($request)->paginate($this->per_page);
+        $all_rules = DangerService::doSearch()->get()->all();
+        $temp = [];
+        foreach ($all_rules as $rule) {
+            if (!isset($temp[$rule->camera_id])) {
+                $temp[$rule->camera_id] = [];
+            }
+            $temp[$rule->camera_id][] = $rule;
+        }
+        $all_rules = $temp;
+        foreach ($dangers as $danger) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $danger->camera_id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $danger->floor_number = $map_data->floor_number;
+            }
+            $danger->rules = isset($all_rules[$danger->camera_id]) ? $all_rules[$danger->camera_id] : [];
         }
 
         return view('admin.danger.index')->with([
             'dangers' => $dangers,
             'input' => $request,
+            'locations' => $locations,
+            'cameras' => $cameras,
         ]);
     }
 

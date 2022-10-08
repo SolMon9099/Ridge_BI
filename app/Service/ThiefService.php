@@ -3,12 +3,13 @@
 namespace App\Service;
 
 use App\Models\ThiefDetectionRule;
+use App\Models\Camera;
 use App\Models\ThiefDetection;
 use Illuminate\Support\Facades\Auth;
 
 class ThiefService
 {
-    public static function doSearch()
+    public static function doSearch($params = null)
     {
         $rules = ThiefDetectionRule::select(
             'thief_detection_rules.*',
@@ -19,8 +20,43 @@ class ThiefService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
+        if ($params != null) {
+            if (isset($params['selected_cameras']) && !is_array($params['selected_cameras']) && $params['selected_cameras'] != '') {
+                $selected_cameras = json_decode($params['selected_cameras']);
+                $rules->whereIn('thief_detection_rules.camera_id', $selected_cameras);
+            }
+            if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
+                $rules->whereIn('thief_detection_rules.camera_id', $params['selected_cameras']);
+            }
+            if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+                $rules->where('thief_detection_rules.camera_id', $params['selected_camera']);
+            }
+            if (isset($params) && $params->has('location') && $params->location > 0) {
+                $rules->where('cameras.location_id', $params->location);
+            }
+            if (isset($params) && $params->has('installation_position') && $params->installation_position != '') {
+                $rules->where('cameras.installation_position', 'like', '%'.$params->installation_position.'%');
+            }
+            if (isset($params) && $params->has('floor_number') && $params->floor_number != '') {
+                $rules->leftJoin('camera_mapping_details as map', 'cameras.id', 'map.camera_id')->whereNull('map.deleted_at')
+                    ->leftJoin('location_drawings as drawing', 'drawing.id', 'map.drawing_id')->whereNull('drawing.deleted_at')
+                    ->where('drawing.floor_number', 'LIKE', '%'.$params->floor_number.'%');
+            }
+        }
 
         return $rules;
+    }
+
+    public static function getAllCameras()
+    {
+        $camera_ids = ThiefDetectionRule::query()->distinct('camera_id')->pluck('camera_id');
+        $camera_query = Camera::query()->whereIn('cameras.id', $camera_ids)->select('cameras.*', 'locations.name as location_name');
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $camera_query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
+
+        return $camera_query->get()->all();
     }
 
     public static function saveData($params)
@@ -29,11 +65,30 @@ class ThiefService
         $rule_data = $params['rule_data'];
         $rule_data = json_decode($rule_data);
         if (count((array) $rule_data) > 0) {
-            ThiefDetectionRule::query()->where('camera_id', $camera_id)->delete();
+            // ThiefDetectionRule::query()->where('camera_id', $camera_id)->delete();
+            $unchanged_ids = [];
             foreach ($rule_data as $rule) {
+                if (isset($rule->id) && $rule->id > 0) {
+                    if (!(isset($rule->is_changed) && $rule->is_changed == true)) {
+                        $unchanged_ids[] = $rule->id;
+                        if (isset($rule->is_name_color_changed) && $rule->is_name_color_changed == true) {
+                            $cur_rule = ThiefDetectionRule::find($rule->id);
+                            $cur_rule->name = isset($rule->name) && $rule->name != '' ? $rule->name : null;
+                            $cur_rule->color = $rule->color;
+                            $cur_rule->save();
+                        }
+                    }
+                }
+            }
+            ThiefDetectionRule::query()->where('camera_id', $camera_id)->whereNotIn('id', $unchanged_ids)->delete();
+            foreach ($rule_data as $rule) {
+                if (isset($rule->id) && $rule->id > 0 && !(isset($rule->is_changed) && $rule->is_changed == true)) {
+                    continue;
+                }
                 if (is_array($rule->points) && count($rule->points) > 0) {
                     $new_rule = new ThiefDetectionRule();
                     $new_rule->color = $rule->color;
+                    $new_rule->name = isset($rule->name) && $rule->name != '' ? $rule->name : null;
                     $new_rule->camera_id = $camera_id;
                     $new_rule->points = json_encode($rule->points);
                     $new_rule->hanger = $rule->hanger;

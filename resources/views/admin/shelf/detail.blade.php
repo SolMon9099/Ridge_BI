@@ -32,10 +32,10 @@
             </div>
             <div class="list">
                 <div class="inner active">
-                    <ul class="tab_sub">
+                    {{-- <ul class="tab_sub">
                     <li class="active"><a data-target="rule" class="modal-open blue">ルールから選択</a></li>
                     <li><a data-target="camera" class="modal-open blue">カメラから選択</a></li>
-                    </ul>
+                    </ul> --}}
                     <div class="scroll active sp-ma-right">  <canvas id="myLineChart1"></canvas> </div>
                     <div class="scroll sp-ma-right">  <canvas id="myLineChart2"></canvas></div>
                 </div>

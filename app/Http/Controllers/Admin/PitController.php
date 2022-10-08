@@ -21,6 +21,26 @@ class PitController extends AdminController
     public function index(Request $request)
     {
         $pits = PitService::doSearch($request)->paginate($this->per_page);
+        $locations = LocationService::getAllLocationNames();
+        $cameras = PitService::getAllCameras();
+        $camera_imgs = [];
+        foreach ($cameras as $camera) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $camera->floor_number = $map_data->floor_number;
+            }
+            $safie_service = new SafieApiService($camera->contract_no);
+
+            if (!isset($camera_imgs[$camera->camera_id])) {
+                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                $camera_imgs[$camera->camera_id] = $camera_image_data;
+                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
+            }
+        }
+
         foreach ($pits as $pit) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $pit->camera_id)
@@ -33,6 +53,8 @@ class PitController extends AdminController
 
         return view('admin.pit.index')->with([
             'pits' => $pits,
+            'locations' => $locations,
+            'cameras' => $cameras,
             'input' => $request,
         ]);
     }
@@ -170,9 +192,9 @@ class PitController extends AdminController
         $pit_detections = array_reverse($pit_detections);
         $pit_detections = PitService::extractOverData($pit_detections);
         $pit_detections = array_reverse($pit_detections);
-        $floor_data = array();
+        $floor_data = [];
         foreach ($pit_detections as $item) {
-            if (!isset($floor_data[$item->camera_id])){
+            if (!isset($floor_data[$item->camera_id])) {
                 $map_data = CameraMappingDetail::select('drawing.floor_number')
                     ->where('camera_id', $item->camera_id)
                     ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
@@ -197,7 +219,7 @@ class PitController extends AdminController
         }
 
         return view('admin.pit.list')->with([
-            'pit_detections' => (array)$pit_detections,
+            'pit_detections' => (array) $pit_detections,
             'request' => $request,
             'rules' => $rules,
             'from_top' => $from_top,
@@ -288,7 +310,7 @@ class PitController extends AdminController
 
         return view('admin.pit.detail')->with([
             'pit_detections' => $pit_detections,
-            'pit_over_detections' => $pit_over_detections,
+            'pit_over_detections' => array_reverse($pit_over_detections),
             'request_params' => $search_params,
             'selected_rule' => $selected_rule,
             'cameras' => $cameras,
@@ -373,7 +395,7 @@ class PitController extends AdminController
 
         return view('admin.pit.past_analysis')->with([
             'pit_detections' => $pit_detections,
-            'pit_over_detections' => $pit_over_detections,
+            'pit_over_detections' => array_reverse($pit_over_detections),
             'request_params' => (array) $search_params,
             'cameras' => $cameras,
             'selected_rule' => $selected_rule,

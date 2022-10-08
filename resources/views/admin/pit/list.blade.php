@@ -15,7 +15,8 @@
         </div>
         <div class='notice-area'>
             ピット内最大時間(ピット内の人数が０人から１人になった時点を始点とし時間を測定)を超えた際に検知を行います。<br/>
-            ※時間計測開始時の画像を表示しています。
+            ※時間計測開始時の画像を表示しています。<br/>
+            ※現在のプランでは検知してから検知リストに反映されるまで最低5分程度かかります。検知後表示までの時間を短くしたい場合はご相談ください。
         </div>
         <form action="{{route('admin.pit.list')}}" method="get" name="form1" id="form1">
         @csrf
@@ -92,12 +93,18 @@
                             </dl>
                         </li>
                         <li>
-                            <h2 class="icon-content">検知内容</h2>
+                            <h2 class="icon-content" style="cursor: pointer" onclick="location.href='{{route('admin.pit.edit', ['pit' => $item->rule_id])}}'">検知内容</h2>
                             <dl>
                                 <dt>
                                     <p>{{$item->nb_entry > $item->nb_exit ? 'ピット入場 ' :  'ピット退場 '}}</p>
                                 </dt>
                                 <dd>{{$item->nb_entry > $item->nb_exit ? ($item->nb_entry - $item->nb_exit).'人' : ($item->nb_exit - $item->nb_entry).'人'}}</dd>
+                            </dl>
+                            <dl>
+                                <dt>
+                                    <p>ピット内人数</p>
+                                </dt>
+                                <dd>{{$item->sum_in_pit.'人'}}</dd>
                             </dl>
                             <dl>
                                 <dt>
@@ -161,10 +168,17 @@
                         <td>{{$rule->installation_position}}</td>
                     </tr>
                     @endforeach
+                    @if(count($rules) == 0)
+                    <tr>
+                        <td colspan="5">登録されたルールがありません。ルールを設定してください</td>
+                    </tr>
+                    @endif
                 </tbody>
             </table>
             <div class="modal-set">
+                @if(count($rules) > 0)
                 <button onclick="selectRule()" class="modal-close">設 定</button>
+                @endif
             </div>
             </div>
         </div>

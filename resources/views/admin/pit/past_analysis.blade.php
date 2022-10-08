@@ -130,8 +130,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($pit_detections as $pit_item)
-                                        <?php $sum += ($pit_item->nb_entry - $pit_item->nb_exit); ?>
+                                    <?php
+                                        $sum_data = array();
+                                        foreach ($pit_detections as $pit_item) {
+                                            $sum += ($pit_item->nb_entry - $pit_item->nb_exit);
+                                            $sum_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))] = $sum;
+                                        }
+                                    ?>
+                                    @foreach (array_reverse($pit_detections) as $pit_item)
                                         <tr>
                                             <td>{{date('Y-m-d H:i:s', strtotime($pit_item->starttime))}}</td>
                                             <td>{{$pit_item->nb_entry > $pit_item->nb_exit ? '入場':'退場'}}</td>
@@ -140,7 +146,7 @@
                                                     {{($pit_item->nb_entry - $pit_item->nb_exit)}}
                                                 </span>
                                             </td>
-                                            <td>{{$sum}}</td>
+                                            <td>{{$sum_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))]}}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -153,12 +159,15 @@
                                     <tr>
                                         <th>時間</th>
                                         <th>検知条件</th>
+                                        <th>ピット内人数</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 @foreach ($pit_over_detections as $item)
                                     <tr>
                                         <td>{{$item->starttime}}</td>
                                         <td>時間オーバー({{$item->max_permission_time.'分'}})</td>
+                                        <td>{{isset($item->sum_in_pit) ? $item->sum_in_pit.'人' : ''}}</td>
                                         <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
                                     </tr>
                                 @endforeach
@@ -206,10 +215,17 @@
                             <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
+                        @if(count($cameras) == 0)
+                        <tr>
+                            <td colspan="6">登録されたカメラがありません。カメラを設定してください</td>
+                        </tr>
+                        @endif
                         </tbody>
                     </table>
                     <div class="modal-set">
+                        @if(count($cameras) > 0)
                         <button type="submit" class="modal-close">設 定</button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -311,29 +327,32 @@
     setGraphOptions(grpah_init_type);
 
     function setGraphOptions(time_period){
+        if (!isNaN(parseInt(time_period))){
+            time_period = parseInt(time_period);
+        }
         switch(time_period){
-            case '3':
+            case 3:
                 grid_unit = 15;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
                 break;
-            case '6':
+            case 6:
                 grid_unit = 30;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
                 break;
-            case '12':
+            case 12:
                 grid_unit = 60;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
                 break;
-            case '24':
+            case 24:
                 grid_unit = 60;
                 period_unit = 'minute';
                 displayFormat = {'minute': 'H:mm'};
@@ -372,29 +391,30 @@
     }
 
     function moveXRange(increament = 1){
+        if (!isNaN(parseInt(grpah_init_type))) grpah_init_type = parseInt(grpah_init_type);
         switch(grpah_init_type){
-            case '3':
+            case 3:
                 if (increament == 1){
                     min_time.setHours(min_time.getHours() + 3 >= 24 ? 0 : min_time.getHours() + 3);
                 } else {
                     min_time.setHours(min_time.getHours() - 3 < 0 ? 21 : min_time.getHours() - 3);
                 }
                 break;
-            case '6':
+            case 6:
                 if (increament == 1){
                     min_time.setHours(min_time.getHours() + 6 >= 24 ? 0 : min_time.getHours() + 6);
                 } else {
                     min_time.setHours(min_time.getHours() - 6 < 0 ? 18 : min_time.getHours() - 6);
                 }
                 break;
-            case '12':
+            case 12:
                 if (increament == 1){
                     min_time.setHours(min_time.getHours() + 12 >= 24 ? 0 : min_time.getHours() + 12);
                 } else {
                     min_time.setHours(min_time.getHours() - 12 < 0 ? 12 : min_time.getHours() - 12);
                 }
                 break;
-            case '24':
+            case 24:
                 return;
             case 'time':
                 if (increament == 1){

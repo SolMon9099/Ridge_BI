@@ -24,11 +24,26 @@ class DangerService
             $danger_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
         if ($params != null) {
+            if (isset($params['selected_cameras']) && !is_array($params['selected_cameras']) && $params['selected_cameras'] != '') {
+                $selected_cameras = json_decode($params['selected_cameras']);
+                $danger_rules->whereIn('danger_area_detection_rules.camera_id', $selected_cameras);
+            }
             if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
                 $danger_rules->whereIn('danger_area_detection_rules.camera_id', $params['selected_cameras']);
             }
             if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
                 $danger_rules->where('danger_area_detection_rules.camera_id', $params['selected_camera']);
+            }
+            if (isset($params) && $params->has('location') && $params->location > 0) {
+                $danger_rules->where('cameras.location_id', $params->location);
+            }
+            if (isset($params) && $params->has('installation_position') && $params->installation_position != '') {
+                $danger_rules->where('cameras.installation_position', 'like', '%'.$params->installation_position.'%');
+            }
+            if (isset($params) && $params->has('floor_number') && $params->floor_number != '') {
+                $danger_rules->leftJoin('camera_mapping_details as map', 'cameras.id', 'map.camera_id')->whereNull('map.deleted_at')
+                    ->leftJoin('location_drawings as drawing', 'drawing.id', 'map.drawing_id')->whereNull('drawing.deleted_at')
+                    ->where('drawing.floor_number', 'LIKE', '%'.$params->floor_number.'%');
             }
         }
 
@@ -40,10 +55,29 @@ class DangerService
         $camera_id = $params['camera_id'];
         $rule_data = (array) json_decode($params['rule_data']);
         if (count($rule_data) > 0) {
-            DangerAreaDetectionRule::query()->where('camera_id', $camera_id)->delete();
+            // DangerAreaDetectionRule::query()->where('camera_id', $camera_id)->delete();
+            $unchanged_ids = [];
             foreach ($rule_data as $rule_item) {
+                if (isset($rule_item->id) && $rule_item->id > 0) {
+                    if (!(isset($rule_item->is_changed) && $rule_item->is_changed == true)) {
+                        $unchanged_ids[] = $rule_item->id;
+                        if (isset($rule_item->is_name_color_changed) && $rule_item->is_name_color_changed == true) {
+                            $cur_danger = DangerAreaDetectionRule::find($rule_item->id);
+                            $cur_danger->name = isset($rule_item->name) && $rule_item->name != '' ? $rule_item->name : null;
+                            $cur_danger->color = $rule_item->color;
+                            $cur_danger->save();
+                        }
+                    }
+                }
+            }
+            DangerAreaDetectionRule::query()->where('camera_id', $camera_id)->whereNotIn('id', $unchanged_ids)->delete();
+            foreach ($rule_data as $rule_item) {
+                if (isset($rule_item->id) && $rule_item->id > 0 && !(isset($rule_item->is_changed) && $rule_item->is_changed == true)) {
+                    continue;
+                }
                 $new_Danger = new DangerAreaDetectionRule();
                 $new_Danger->action_id = json_encode($rule_item->action_id);
+                $new_Danger->name = isset($rule_item->name) && $rule_item->name != '' ? $rule_item->name : null;
                 $new_Danger->color = $rule_item->color;
                 $new_Danger->camera_id = $camera_id;
                 $new_Danger->points = json_encode($rule_item->points);

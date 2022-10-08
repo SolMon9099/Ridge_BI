@@ -45,6 +45,7 @@ class PitRequest extends FormRequest
             if ($this->action == 'admin.pit.store') {
                 $rules['max_permission_time'] = ['required'];
                 $rules['min_members'] = ['required', 'max:2'];
+                $rules['name'] = ['max:6'];
             }
         }
 
@@ -55,6 +56,7 @@ class PitRequest extends FormRequest
     {
         $attributes = parent::attributes();
         $attributes['selected_camera'] = 'カメラ';
+        $attributes['name'] = 'ルール名';
 
         return $attributes;
     }

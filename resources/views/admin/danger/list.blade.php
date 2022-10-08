@@ -13,6 +13,9 @@
         <div class="title-wrap">
             <h2 class="title">危険エリア検知リスト(アーカイブ)</h2>
         </div>
+        <div class='notice-area'>
+            ※現在のプランでは検知してから検知リストに反映されるまで最低5分程度かかります。検知後表示までの時間を短くしたい場合はご相談ください。
+        </div>
         <form action="{{route('admin.danger.list')}}" method="get" name="form1" id="form1">
         @csrf
             <div class="title-wrap ver2 stick">
@@ -101,7 +104,7 @@
                             <p>{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action_statement')[$item->detection_action_id] : ''}}</p>
                         </li>
                         <li>
-                            <h2 class="icon-rule">ルール</h2>
+                            <h2 style="cursor: pointer" class="icon-rule" onclick="location.href='{{route('admin.danger.edit', ['danger' => $item->rule_id])}}'">ルール</h2>
                             <dl>
                                 <dt>{{$item->detection_action_id}}</dt>
                                 <dd>{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action')[$item->detection_action_id] : ''}}</dd>
@@ -172,10 +175,17 @@
                         <td><img width="100px" src="{{$rule->img}}"/></td>
                     </tr>
                     @endforeach
+                    @if(count($rules) == 0)
+                    <tr>
+                        <td colspan="8">登録されたルールがありません。ルールを設定してください</td>
+                    </tr>
+                    @endif
                 </tbody>
             </table>
             <div class="modal-set">
-                <button onclick="selectRule()" class="modal-close">設 定</button>
+                @if(count($rules) > 0)
+                    <button onclick="selectRule()" class="modal-close">設 定</button>
+                @endif
             </div>
             </div>
         </div>

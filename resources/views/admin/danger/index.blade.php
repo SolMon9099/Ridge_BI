@@ -28,40 +28,99 @@
                 @endif
             </div>
             <div class="notice-area">こちらの画面では、カメラ毎に通知ルールの新規登録・既存の通知ルールの編集・削除が行えます。</div>
+            <form action="{{route('admin.danger')}}" method="get" name="form1" id="form1">
+            @csrf
+                <div class="title-wrap ver2 stick">
+                    <div class="sp-ma">
+                        <div class="sort">
+                            <ul class="date-list">
+                                <li>
+                                    <h4>カメラ</h4>
+                                </li>
+                                <li><a data-target="camera" class="modal-open setting">選択する</a></li>
+                                <input type= 'hidden' name='selected_cameras' id = 'cameras_input' value="{{ old('selected_cameras', (isset($input) && $input->has('selected_cameras'))?$input->selected_cameras:'')}}"/>
+                                {{-- @if($selected_rule != null)
+                                    <li><p class="selected-camera">{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
+                                @endif --}}
+                            </ul>
+                            <ul class="date-list">
+                                <li><h4>設置エリア</h4></li>
+                                <li>
+                                    <div class="select-c">
+                                        <select name="location">
+                                        <option>選択する</option>
+                                        @foreach($locations as $key => $loc)
+                                            @if (isset($input) && $input->has('location') && $input->location == $key)
+                                            <option value="{{$key}}" selected>{{$loc}}</option>
+                                            @else
+                                            <option value="{{$key}}">{{$loc}}</option>
+                                            @endif
+                                        @endforeach
+                                        </select>
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul class="date-list">
+                                <li><h4>設置フロア</h4></li>
+                                <li>
+                                    <div>
+                                        <input type="text" name="floor_number" value="{{ old('floor_number', (isset($input) && $input->has('floor_number'))?$input->floor_number:'')}}"/>
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul class="date-list">
+                                <li><h4>設置場所</h4></li>
+                                <li>
+                                    <div>
+                                        <input type="text" name="installation_position" value="{{ old('installation_position', (isset($input) && $input->has('installation_position'))?$input->installation_position:'')}}"/>
+                                    </div>
+                                </li>
+                            </ul>
+                            <button type="submit" class="apply">絞り込む</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
             @include('admin.layouts.flash-message')
-            {{ $dangers->appends([])->links('vendor.pagination.admin-pagination') }}
+            {{ $dangers->appends([
+                'selected_cameras'=> (isset($input) && $input->has('selected_cameras'))?$input->selected_cameras:'',
+                'location'=> (isset($input) && $input->has('location'))?$input->location:'',
+                'floor_number'=> (isset($input) && $input->has('floor_number'))?$input->floor_number:'',
+                'installation_position'=> (isset($input) && $input->has('installation_position'))?$input->installation_position:'',
+            ])->links('vendor.pagination.admin-pagination') }}
             <div class="scroll active">
                 <table class="table2 text-centre">
                     <thead>
                     <tr>
                         <th>編集</th>
+                        <th>ルール名</th>
                         <th>カメラNo</th>
                         <th>設置エリア</th>
                         <th>設置フロア</th>
                         <th>設置場所</th>
+                        <th>ルール登録数</th>
                         <th>アクション</th>
                         <th>カラー</th>
-                        {{-- <th>検知履歴</th> --}}
                         <th>削除</th>
                     </tr>
                     </thead>
                     <tbody>
+                    <?php $max_rule_numbers = config('const.danger_max_figure_numbers'); ?>
                     @foreach($dangers as $danger)
                         <tr>
                             <td><button type="button" class="edit" onclick="location.href='{{route('admin.danger.edit', ['danger' => $danger->id])}}'">編集</button></td>
+                            <td>{{$danger->name}}</td>
                             <td>{{$danger->camera_no}}</td>
                             <td>{{$danger->location_name}}</td>
                             <td>{{$danger->floor_number}}</td>
                             <td>{{$danger->installation_position}}</td>
+                            <td>{{count($danger->rules).'/'.$max_rule_numbers}}</td>
                             <td>
                                 @foreach (json_decode($danger->action_id) as $action_code)
                                     <div>{{config('const.action')[$action_code]}}</div>
                                 @endforeach
                             </td>
                             <td><input disabled type="color" value = "{{$danger->color}}"/></td>
-                            {{-- <td>
-                                <button type="button" class="history">履歴表示</button>
-                            </td> --}}
                             <td>
                                 @if (!$super_admin_flag)
                                     <button type="button" class="delete_danger_rules history" delete_index="{{ $danger->id }}">削除</button>
@@ -76,10 +135,76 @@
                     </tbody>
                 </table>
             </div>
-            {{ $dangers->appends([])->links('vendor.pagination.admin-pagination') }}
+            {{ $dangers->appends([
+                'selected_cameras'=> (isset($input) && $input->has('selected_cameras'))?$input->selected_cameras:'',
+                'location'=> (isset($input) && $input->has('location'))?$input->location:'',
+                'floor_number'=> (isset($input) && $input->has('floor_number'))?$input->floor_number:'',
+                'installation_position'=> (isset($input) && $input->has('installation_position'))?$input->installation_position:'',
+            ])->links('vendor.pagination.admin-pagination') }}
         </div>
     </div>
-
+<!--MODAL -->
+<div id="camera" class="modal-content">
+    <div class="textarea">
+        <div class="listing">
+            <div class="scroll active sp-pl0">
+                <table class="table2 text-centre">
+                    <thead>
+                    <tr>
+                        <th class="w10"></th>
+                        <th>カメラNo</th>
+                        <th>設置エリア</th>
+                        <th>設置フロア</th>
+                        <th>設置場所</th>
+                        <th>カメラ画像確認</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                        $selected_cameras = old('selected_cameras', (isset($input) && $input->has('selected_cameras'))?$input->selected_cameras:'');
+                        if ($selected_cameras != ''){
+                            $selected_cameras = json_decode($selected_cameras);
+                        } else {
+                            $selected_cameras = [];
+                        }
+                    ?>
+                    @foreach ($cameras as $camera)
+                    <tr>
+                        <td class="stick-t">
+                            <div class="checkbtn-wrap">
+                                @if (in_array((int)$camera->id, $selected_cameras))
+                                    <input value = '{{$camera->id}}' class='rule_checkbox' type="checkbox" id="{{'camera'.$camera->id}}" checked>
+                                @else
+                                <input value = '{{$camera->id}}' class='rule_checkbox' type="checkbox" id="{{'camera'.$camera->id}}">
+                                @endif
+                                <label class="custom-style" for="{{'camera'.$camera->id}}"></label>
+                            </div>
+                        </td>
+                        <td>{{$camera->camera_id}}</td>
+                        <td>{{$camera->location_name}}</td>
+                        <td>{{$camera->floor_number}}</td>
+                        <td>{{$camera->installation_position}}</td>
+                        <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
+                    </tr>
+                    @endforeach
+                    @if(count($cameras) == 0)
+                    <tr>
+                        <td colspan="6">登録されたカメラがありません。カメラを設定してください</td>
+                    </tr>
+                    @endif
+                    </tbody>
+                </table>
+                <div class="modal-set">
+                    @if(count($cameras) > 0)
+                        <button onclick="selectCameras()" type="button" class="modal-close">設 定</button>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="closemodal"><a class="modal-close">×</a></p>
+</div>
+<!-- -->
 <div id="dialog-confirm" title="test" style="display:none">
     <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
     <span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
@@ -96,15 +221,28 @@
 
 <script>
     var delete_id = "";
+    function selectCameras(){
+        var checked_cameras = [];
+        $('.rule_checkbox').each(function(){
+            if ($(this).is(":checked")){
+                checked_cameras.push($(this).val());
+            }
+        })
+        if (checked_cameras.length == 0){
+            $('#cameras_input').val('');
+        } else {
+            $('#cameras_input').val(JSON.stringify(checked_cameras));
+        }
+    }
     $(document).ready(function () {
-      $(".delete_danger_rules").click(function(e){
-          e.preventDefault();
-          delete_id = $(this).attr('delete_index');
-          helper_confirm("dialog-confirm", "削除", "ルールを削除します。<br />よろしいですか？", 300, "確認", "閉じる", function(){
-              var frm_id = "#frm_delete_" + delete_id;
-              $(frm_id).submit();
-          });
-      });
+        $(".delete_danger_rules").click(function(e){
+            e.preventDefault();
+            delete_id = $(this).attr('delete_index');
+            helper_confirm("dialog-confirm", "削除", "ルールを削除します。<br />よろしいですか？", 300, "確認", "閉じる", function(){
+                var frm_id = "#frm_delete_" + delete_id;
+                $(frm_id).submit();
+            });
+        });
     });
 </script>
 

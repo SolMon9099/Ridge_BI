@@ -13,6 +13,9 @@
         <div class="title-wrap">
             <h2 class="title">検知リスト</h2>
         </div>
+        <div class='notice-area'>
+            ※現在のプランでは検知してから検知リストに反映されるまで最低5分程度かかります。検知後表示までの時間を短くしたい場合はご相談ください。
+        </div>
         <form action="{{route('admin.thief.list')}}" method="get" name="form1" id="form1">
         @csrf
             <div class="title-wrap ver2 stick">
@@ -66,17 +69,32 @@
                     <a data-target="movie0000" onclick="videoPlay('{{$video_path}}')" class="modal-open setting2 play">
                         <img src="{{$thumb_path}}"/>
                     </a>
+                    <div class="cap">
+                        <time>{{date('Y/m/d H:i', strtotime($item->starttime))}}</time>
+                    </div>
                 </div>
                 <div class="text">
-                    <time>{{date('Y/m/d H:i', strtotime($item->starttime))}}</time>
-                    <table>
-                    <tr>
-                        {{-- <td>{{$item->camera_no}}</td> --}}
-                        <td>{{$item->location_name}}</td>
-                        <td>{{$item->floor_number}}</td>
-                        <td>{{$item->installation_position}}</td>
-                    </tr>
-                    </table>
+                    <p class="camera-id">カメラID:{{$item->camera_no}}</p>
+                    <ul class="pit-list">
+                        <li>
+                            <h2 class="icon-map">設置場所</h2>
+                            <dl>
+                                <dt>設置エリア</dt>
+                                <dd>{{$item->location_name}}</dd>
+                            </dl>
+                            <dl>
+                                <dt>設置フロア</dt>
+                                <dd>{{$item->floor_number}}</dd>
+                            </dl>
+                            <dl>
+                                <dt>設置場所</dt>
+                                <dd>{{$item->installation_position}}</dd>
+                            </dl>
+                        </li>
+                        <li>
+                            <h2 class="icon-content" style="cursor: pointer" onclick="location.href='{{route('admin.thief.edit', ['thief' => $item->rule_id])}}'">検知内容</h2>
+                        </li>
+                    </ul>
                 </div>
             </li>
             @endforeach
@@ -133,10 +151,17 @@
                         <td><input disabled type="color" value = "{{$rule->color}}"></td>
                     </tr>
                     @endforeach
+                    @if(count($rules) == 0)
+                    <tr>
+                        <td colspan="6">登録されたルールがありません。ルールを設定してください</td>
+                    </tr>
+                    @endif
                 </tbody>
             </table>
             <div class="modal-set">
+                @if(count($rules) > 0)
                 <button onclick="selectRule()" class="modal-close">設 定</button>
+                @endif
             </div>
             </div>
         </div>

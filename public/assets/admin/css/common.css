@@ -5878,3 +5878,11 @@ button.add-btn {
   color: blue;
   cursor: pointer;
 }
+.reset-heatmap-button{
+  padding:5px 15px;
+  /* background: linear-gradient(-135deg, #2ebf43, #00db4f); */
+  background-color: #CC0000;
+  border-radius: 30px;
+  color:white;
+  border:none;
+}

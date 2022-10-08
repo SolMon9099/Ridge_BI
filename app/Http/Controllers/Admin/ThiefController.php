@@ -12,13 +12,32 @@ use Illuminate\Http\Request;
 use App\Models\CameraMappingDetail;
 use Illuminate\Support\Facades\Auth;
 use App\Service\CameraService;
+use Illuminate\Support\Facades\Storage;
 
 class ThiefController extends AdminController
 {
-    public function index()
+    public function index(Request $request)
     {
-        $thiefs = ThiefService::doSearch()->paginate($this->per_page);
+        $thiefs = ThiefService::doSearch($request)->paginate($this->per_page);
         $locations = LocationService::getAllLocationNames();
+        $cameras = ThiefService::getAllCameras();
+        $camera_imgs = [];
+        foreach ($cameras as $camera) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $camera->floor_number = $map_data->floor_number;
+            }
+            $safie_service = new SafieApiService($camera->contract_no);
+
+            if (!isset($camera_imgs[$camera->camera_id])) {
+                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
+                $camera_imgs[$camera->camera_id] = $camera_image_data;
+                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
+            }
+        }
         foreach ($thiefs as $thief) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $thief->camera_id)
@@ -31,7 +50,9 @@ class ThiefController extends AdminController
 
         return view('admin.thief.index')->with([
             'thiefs' => $thiefs,
+            'input' => $request,
             'locations' => $locations,
+            'cameras' => $cameras,
         ]);
     }
 
@@ -161,6 +182,7 @@ class ThiefController extends AdminController
                 $rule->floor_number = $map_data->floor_number;
             }
         }
+
         return view('admin.thief.list')->with([
             'thief_detections' => $thief_detections,
             'request' => $request,

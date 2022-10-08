@@ -31,6 +31,11 @@
         <div class="setting-head">
             <div id="rule_items">
                 <p class="close-items"><a class="close-icon">×</a></p>
+                <div>
+                    <label class="title-label">ルール名：</label>
+                    <input type="text" class="rule_name" />
+                </div>
+                <p class="error-message rule-name" style="display: none">ルール名を6文字以内で入力してください</p>
                 <div class="radio-area">
                     <label class="title-label">図形：</label>
                     <select name = '' class="select-box select-figure" style="">
@@ -68,6 +73,11 @@
                 @foreach ($rules as $index=>$rule)
                 <div class="rule_items" data-index = {{$index}}>
                     <p class="close-items"><a class="close-icon" onclick="removeFigure({{$index}})">×</a></p>
+                    <div>
+                        <label class="title-label">ルール名：</label>
+                        <input value="{{$rule->name}}" onchange="changeName(this, '{{$index}}')" type="text" class="rule_name" />
+                    </div>
+                    <p class="error-message rule-name" style="display: none">ルール名を6文字以内で入力してください</p>
                     <div class="radio-area">
                         <label class="title-label">図形：</label>
                         <select name={{'figure_type_'.$index}} class="select-box select-figure" style=""
@@ -155,6 +165,11 @@
         background: white;
         padding:5px;
     }
+    .rule_name{
+        width:110px!important;
+        background: white!important;
+        border:1px lightgray solid!important;
+    }
     .title-label{
         font-size: 14px;
         width:93px;
@@ -172,6 +187,7 @@
     }
     .time-wrap{
         margin-right:15px;
+        width:275px;
     }
     .add-figure-area{
         position: relative;
@@ -419,6 +435,7 @@
                     rules_object[rule_index].points[index].y = new_y;
                     if (enable_add_figure_flag == true || rule_index < Math.max(...Object.keys(rules_object))){
                         drawFigure(rule_index, rules_object[rule_index].color);
+                        rules_object[rule_index].is_changed = true;
                     }
                 }
             }
@@ -468,6 +485,11 @@
         }
     }
 
+    function changeName(e, rule_index){
+        rules_object[rule_index].name = e.value;
+        rules_object[rule_index].is_name_color_changed = true;
+    }
+
     function changeColor(e, rule_index){
         layer.find('Circle').map(circle_item => {
             if (circle_item.attrs.id.includes(rule_index + '_')){
@@ -481,6 +503,7 @@
             }
         })
         rules_object[rule_index].color = e.value;
+        rules_object[rule_index].is_name_color_changed = true;
     }
 
     function removeFigure(rule_index){
@@ -525,6 +548,7 @@
             rules_object[unique_rule_id].points.push({x:e.evt.offsetX, y:e.evt.offsetY, id:(unique_rule_id).toString() + '_' + point_index.toString()});
             if (point_index + 1 == 4 && selected_figure == 'rect'){
                 drawFigure(unique_rule_id, figure_color);
+                rules_object[unique_rule_id].is_changed = true;
             }
         })
         stage.on('mousemove', function(e){
@@ -569,6 +593,10 @@
             if (rule_item.points == undefined || rule_item.points.length < 3 || rule_item.drawn_flag != true){
                 $('.error-message.area').show();
                 res = false;
+            }
+            if (rule_item.name != undefined && rule_item.name != null && rule_item.name.length > 6){
+                res = false;
+                $('.error-message.rule-name', $('[data-index="'+ rule_index + '"]')).show();
             }
         })
         return res;
@@ -657,6 +685,7 @@
                 if (rules_object[rule_index].points != undefined && rules_object[rule_index].points.length > 2 && rules_object[rule_index].drawn_flag != true){
                     var figure_color = rules_object[rule_index].color != undefined ? rules_object[rule_index].color :"black";
                     drawFigure(rule_index, figure_color);
+                    rules_object[rule_index].is_changed = true;
                     $(this).addClass('disabled-btn');
                     $('input[type="radio"]', template_item).prop('disabled', true);
                 }
@@ -677,6 +706,12 @@
                 }
             });
             rules_object[rule_index].color = $(this).val();
+            rules_object[rule_index].is_name_color_changed = true;
+        });
+        $('.rule_name', template_item).change(function(){
+            var rule_index = template_item.attr('data-index');
+            rules_object[rule_index].name = $(this).val();
+            rules_object[rule_index].is_name_color_changed = true;
         });
     }
     function handleMouseMove(event){

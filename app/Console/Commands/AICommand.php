@@ -28,6 +28,7 @@ class AICommand extends Command
 
         $all_files = Storage::disk('temp')->files('video_request');
         if (count($all_files) > 0) {
+            Log::info('ダウンロードjsonチェック開始****************');
             foreach ($all_files as $file) {
                 $file_content = Storage::disk('temp')->get($file);
                 if ($file_content != null) {
@@ -104,7 +105,51 @@ class AICommand extends Command
                     }
                 }
             }
+            Log::info('ダウンロードjsonチェック終了****************');
         }
+        // $all_503_files = Storage::disk('temp')->files('media_request_503');
+        // if (count($all_503_files) > 0) {
+        //     Log::info('503jsonチェック開始****************');
+        //     foreach ($all_503_files as $file) {
+        //         $file_content = Storage::disk('temp')->get($file);
+        //         if ($file_content != null) {
+        //             $file_content = json_decode($file_content);
+        //         }
+        //         if (isset($file_content->camera_no) && $file_content->camera_no != '') {
+        //             $type = $file_content->type;
+        //             $resource_name = '危険エリア侵入検知';
+        //             switch ($type) {
+        //                 case 'danger_area':
+        //                     $resource_name = '危険エリア侵入検知';
+        //                     break;
+        //                 case 'pit':
+        //                     $resource_name = 'ピット入退場検知';
+        //                     break;
+        //                 case 'shelf':
+        //                     $resource_name = '棚乱れ検知';
+        //                     break;
+        //                 case 'thief':
+        //                     $resource_name = '大量盗難検知';
+        //                     break;
+        //             }
+
+        //             $safie_service = new SafieApiService($file_content->contract_no);
+        //             $request_id = $safie_service->makeMediaFile($file_content->camera_no, $file_content->record_start_time, $file_content->record_end_time, $resource_name);
+        //             Log::info('503 retry http code = '.$request_id);
+        //             if ($request_id > 0) {
+        //                 $file_content->request_id = $request_id;
+        //                 Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode((array) $file_content));
+        //             } else {
+        //                 if ($request_id != null && str_replace('http_code_', '', $request_id) == 503) {
+        //                     continue;
+        //                 }
+        //             }
+        //             Storage::disk('temp')->delete($file);
+        //         }
+        //     }
+        //     Log::info('503jsonチェック終了****************');
+        // }
+
         Log::info('Ending check detection json file exist****************');
 
         return 0;

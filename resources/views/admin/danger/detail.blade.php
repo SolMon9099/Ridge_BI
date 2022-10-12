@@ -377,7 +377,6 @@
                 })
             }
         }
-
         var datasets = [];
         Object.keys(totals_by_action).map(action_id => {
             datasets.push({
@@ -388,7 +387,6 @@
                 lineTension:0,
             })
         });
-
         var myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -396,16 +394,6 @@
                 datasets
             },
             options: {
-                legend: {
-                    labels: {
-                        fontSize: 25
-                    }
-                },
-                responsive: true,
-                interaction: {
-                    intersect: false,
-                    axis: 'x'
-                },
                 title: {
                     display: true,
                     text: "NGアクション毎の回数",
@@ -433,12 +421,12 @@
                             tooltipFormat:"H:mm",
                             distribution: 'series',
                             stepSize: grid_unit,
-                            format:'HH:mm'
                         },
                         ticks: {
                             fontSize: 25,
                             max: max_time,
                             min: min_time,
+                            autoSkip:false,
                         }
                     }]
                 },
@@ -504,7 +492,7 @@
         var figure_area = new Konva.Line({
             points: drawing_point_data,
             stroke: figure_color != null ? figure_color : 'black',
-            strokeWidth: radius - 3 > 0? radius - 3 : 2,
+            strokeWidth: 2,
             lineCap: 'round',
             lineJoin: 'round',
         });

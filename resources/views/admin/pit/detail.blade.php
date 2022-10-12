@@ -89,7 +89,7 @@
                                     <tbody>
                                         @foreach ($pit_over_detections as $item)
                                             <tr>
-                                                <td>{{$item->starttime}}</td>
+                                                <td>{{$item->detect_time}}</td>
                                                 <td>時間オーバー({{$item->max_permission_time.'分'}})</td>
                                                 <td>{{isset($item->sum_in_pit) ? $item->sum_in_pit.'人' : ''}}</td>
                                                 <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
@@ -242,6 +242,8 @@
     var time_period = "<?php echo $time_period;?>";
     var selected_camera = "<?php echo $selected_camera;?>";
     var grid_unit = 15;
+    var period_unit = 'minute';
+    var displayFormat = {'minute': 'H:mm'};
     var total_data = <?php echo json_encode($total_data);?>;
 
     function drawGraph(x_data, y_data){
@@ -260,11 +262,6 @@
                 }]
             },
             options: {
-                legend: {
-                    labels: {
-                        fontSize: 25
-                    }
-                },
                 title: {
                     display: true,
                     text: 'ピット入退場履歴',
@@ -290,19 +287,14 @@
                     xAxes:[{
                         type: 'time',
                         time: {
-                            unit: 'minute',
-                            displayFormats: {
-                                minute: 'H:mm'
-                            },
+                            unit: period_unit,
+                            displayFormats: displayFormat,
                             tooltipFormat:"H:mm",
                             distribution: 'series',
                             stepSize: grid_unit,
-                            format:'HH:mm'
                         },
                         ticks: {
                             fontSize: 25,
-                            // max: max_time,
-                            // min: min_time,
                         }
                     }]
                 },
@@ -381,7 +373,6 @@
             }
             cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
         }
-
         drawGraph(time_labels, y_data);
     }
 
@@ -423,8 +414,7 @@
             strokeWidth: 1,
             id:point_index
         });
-        layer.
-        add(circle);
+        layer.add(circle);
     }
     function is_cross(line1, line2){
         var a = line1[0]; // A point
@@ -457,7 +447,7 @@
                 rect_points[0].x/2, rect_points[0].y/2
             ],
             stroke: selected_color != null ? selected_color : 'red',
-            strokeWidth: radius - 3 > 0? radius - 3 : 2,
+            strokeWidth: 2,
             lineCap: 'round',
             lineJoin: 'round',
         });

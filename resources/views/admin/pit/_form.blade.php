@@ -70,7 +70,7 @@
             </div>
             <button type="button" class="clear-btn history" onclick="clearImage()">選択を全てクリア</button>
         </div>
-        <div class="notice-area">※カメラの位置や画角を変更した場合は、AI検知精度の再計算を行う必要がありますので、「再計算」ボタンを押してください。</div>
+        <div class="notice-area">※カメラの位置や画角を変更した場合は、AI検知精度の再取得を行う必要がありますので、「再取得」ボタンを押してください。</div>
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
                 <div class="grid-area">

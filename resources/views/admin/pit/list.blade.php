@@ -58,20 +58,25 @@
                 $video_path = '';
                 $video_path .= asset('storage/video/').'/';
                 $video_path .= $item->video_file_path;
-
+                // $video_path .= 'text_danger.mp4';
                 if (isset($item->thumb_img_path) && $item->thumb_img_path != ''){
                     $thumb_path = asset('storage/thumb/').'/'.$item->thumb_img_path;
                 } else {
                     $thumb_path = asset('assets/admin/img/samplepic.png');
                 }
+                $detection_content = '';
+                if ($item->sum_in_pit > 0){
+                    $detection_content .= 'ピット内人数 '.$item->sum_in_pit.'人　';
+                    $detection_content .= '時間オーバー'.$item->max_permission_time.'分';
+                }
             ?>
             <li>
                 <div class="movie" video-path = '{{$video_path}}'>
-                    <a data-target="movie0000" onclick="videoPlay('{{$video_path}}')" class="modal-open setting2 play">
+                    <a data-target="movie0000" onclick="videoPlay('{{$video_path}}', '{{$item->red_points}}', '{{$item->blue_points}}', '{{$detection_content}}')" class="modal-open setting2 play">
                         <img src="{{$thumb_path}}"/>
                     </a>
                     <div class="cap">
-                        <time>{{date('Y/m/d H:i', strtotime($item->starttime))}}</time>
+                        <time>{{date('Y/m/d H:i', strtotime($item->detect_time))}}</time>
                     </div>
                 </div>
                 <div class="text">
@@ -190,8 +195,9 @@
 <div id="movie0000" class="modal-content">
 <div class="textarea">
     <div class="v">
-        <video id = 'video-container' src = '' type= 'video/mp4' controls>
-        </video>
+        <div id="image-container"></div>
+        <video id = 'video-container' src = '' type= 'video/mp4' controls></video>
+        <p class="video-notice detect-content"></p>
         <p class="video-notice">動画の30秒あたりが検知のタイミングになります。</p>
     </div>
 </div>
@@ -206,7 +212,16 @@
     .notice-area{
         color:#999;
     }
+    .v{
+        position: relative;
+    }
+    #image-container{
+        position: absolute;
+        z-index: 0;
+        cursor: pointer;
+    }
 </style>
+<script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 <script>
     function selectRule(){
         var checked_rules = [];
@@ -218,11 +233,51 @@
         $('#rule_id_input').val(JSON.stringify(checked_rules));
     }
 
-    function videoPlay(path){
+    function videoPlay(path, red_points, blue_points, detect_content){
         var video = document.getElementById('video-container');
         video.pause();
         $('#video-container').attr('src', path);
         video.play();
+        red_points = JSON.parse(red_points);
+        blue_points = JSON.parse(blue_points);
+        setTimeout(() => {
+            var width = $('#video-container').width();
+            var height = $('#video-container').height();
+            $('#image-container').width(width);
+            $('#image-container').height(height);
+
+            var container = document.getElementById('image-container');
+            var stage = new Konva.Stage({
+                container: 'image-container',
+                width: container.clientWidth,
+                height: container.clientHeight,
+            });
+            layer = new Konva.Layer();
+            stage.add(layer);
+            var ratio = parseFloat(width/1280).toFixed(4);
+
+            function drawFigure(figure_points, figure_color = null, ratio = 0.5){
+                var figure_points = sortFigurePoints(figure_points);
+                var drawing_point_data = [];
+                figure_points.map(item => {
+                    drawing_point_data.push(item.x * ratio);
+                    drawing_point_data.push(item.y * ratio);
+                });
+                drawing_point_data.push(figure_points[0].x * ratio);
+                drawing_point_data.push(figure_points[0].y * ratio);
+                var figure_area = new Konva.Line({
+                    points: drawing_point_data,
+                    stroke: figure_color != null ? figure_color : 'black',
+                    strokeWidth: 2,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                });
+                layer.add(figure_area);
+            }
+            drawFigure(red_points, 'red', ratio);
+            drawFigure(blue_points, 'blue', ratio);
+            $('.detect-content').html(detect_content);
+        }, 1000);
     }
     function addDashboard(block_type){
         var options = {

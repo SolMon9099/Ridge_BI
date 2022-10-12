@@ -12,7 +12,6 @@ use App\Service\ThiefService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Heatmap;
-use App\Models\DangerAreaDetection;
 
 class DetectionController extends Controller
 {
@@ -80,17 +79,6 @@ class DetectionController extends Controller
         Log::info('record startdatetime = '.$record_start_time);
         Log::info('record enddatetime = '.$record_end_time);
 
-        // if ($camera_data->camera_id == 'FvY6rnGWP12obPgFUj0a'){
-        //     $detection_model = new DangerAreaDetection();
-        //     $detection_model->detection_action_id = $detection_action_id;
-        //     $detection_model->camera_id = $camera_data->id;
-        //     $detection_model->rule_id = $rule_id;
-        //     $detection_model->video_file_path = 'test_danger.mp4';
-        //     $detection_model->thumb_img_path = 'test_danger.png';
-        //     $detection_model->starttime = $start_datetime;
-        //     $detection_model->endtime = $record_end_time_object->format('Y-m-d H:i:s');
-        //     $detection_model->save();
-        // } else {
         $safie_service = new SafieApiService($camera_data->contract_no);
         $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '危険エリア侵入検知');
         Log::info('request_id = '.$request_id);
@@ -112,11 +100,31 @@ class DetectionController extends Controller
 
             return ['success' => '送信成功'];
         } else {
+            if ($request_id != null) {
+                $http_code = str_replace('http_code_', '', $request_id);
+                if ($http_code == 503) {
+                    Log::info('危険エリア侵入：メディアファイル 作成要求失敗ー503');
+                    Log::info('メディアファイル 作成要求臨時保存');
+                    $temp_save_data = [
+                        'record_start_time' => $record_start_time,
+                        'record_end_time' => $record_end_time,
+                        'starttime' => $start_datetime,
+                        'endtime' => $record_end_time_object->format('Y-m-d H:i:s'),
+                        'camera_no' => $camera_data->camera_id,
+                        'camera_id' => $camera_data->id,
+                        'contract_no' => $camera_data->contract_no,
+                        'rule_id' => $rule_id,
+                        'detection_action_id' => $detection_action_id,
+                        'type' => 'danger_area',
+                        'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
+                    ];
+                    Storage::disk('temp')->put('media_request_503\\'.$camera_data->camera_id.'_danger_area_'.$record_start_time.'.json', json_encode($temp_save_data));
+                }
+            }
             Log::info('危険エリア侵入検知解析結果送受信API（AI→BI）終了');
 
             return ['error' => '送信失敗'];
         }
-        // }
     }
 
     public function saveShelfDetection(Request $request)
@@ -193,6 +201,26 @@ class DetectionController extends Controller
 
             return ['success' => '送信成功'];
         } else {
+            if ($request_id != null) {
+                $http_code = str_replace('http_code_', '', $request_id);
+                if ($http_code == 503) {
+                    Log::info('棚乱れ：メディアファイル 作成要求失敗ー503');
+                    Log::info('メディアファイル 作成要求臨時保存');
+                    $temp_save_data = [
+                        'record_start_time' => $record_start_time,
+                        'record_end_time' => $record_end_time,
+                        'starttime' => $start_datetime,
+                        'endtime' => $record_end_time_object->format('Y-m-d H:i:s'),
+                        'camera_no' => $camera_data->camera_id,
+                        'camera_id' => $camera_data->id,
+                        'contract_no' => $camera_data->contract_no,
+                        'rule_id' => $rule_id,
+                        'type' => 'shelf',
+                        'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
+                    ];
+                    Storage::disk('temp')->put('media_request_503\\'.$camera_data->camera_id.'_shelf_'.$record_start_time.'.json', json_encode($temp_save_data));
+                }
+            }
             Log::info('棚乱れ検知ルール通知解析結果送受信API（AI→BI）終了');
 
             return ['error' => '送信失敗'];
@@ -283,6 +311,29 @@ class DetectionController extends Controller
 
             return ['success' => '送信成功'];
         } else {
+            if ($request_id != null) {
+                $http_code = str_replace('http_code_', '', $request_id);
+                if ($http_code == 503) {
+                    Log::info('ピット検知：メディアファイル 作成要求失敗ー503');
+                    Log::info('メディアファイル 作成要求臨時保存');
+                    $temp_save_data = [
+                        'record_start_time' => $record_start_time,
+                        'record_end_time' => $record_end_time,
+                        'starttime' => $start_datetime,
+                        'endtime' => $record_end_time_object->format('Y-m-d H:i:s'),
+                        'camera_no' => $camera_data->camera_id,
+                        'camera_id' => $camera_data->id,
+                        'contract_no' => $camera_data->contract_no,
+                        'rule_id' => $rule_id,
+                        'type' => 'pit',
+                        'nb_entry' => $nb_entry,
+                        'nb_exit' => $nb_exit,
+                        'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
+                    ];
+                    Storage::disk('temp')->put('media_request_503\\'.$camera_data->camera_id.'_pit_'.$record_start_time.'.json', json_encode($temp_save_data));
+                }
+            }
+
             Log::info('ピット入退場解析結果送受信API（AI→BI）終了');
 
             return ['error' => '送信失敗'];
@@ -364,6 +415,26 @@ class DetectionController extends Controller
 
             return ['success' => '送信成功'];
         } else {
+            if ($request_id != null) {
+                $http_code = str_replace('http_code_', '', $request_id);
+                if ($http_code == 503) {
+                    Log::info('大量盗難：メディアファイル 作成要求失敗ー503');
+                    Log::info('メディアファイル 作成要求臨時保存');
+                    $temp_save_data = [
+                        'record_start_time' => $record_start_time,
+                        'record_end_time' => $record_end_time,
+                        'starttime' => $start_datetime,
+                        'endtime' => $record_end_time_object->format('Y-m-d H:i:s'),
+                        'camera_no' => $camera_data->camera_id,
+                        'camera_id' => $camera_data->id,
+                        'contract_no' => $camera_data->contract_no,
+                        'rule_id' => $rule_id,
+                        'type' => 'thief',
+                        'starttime_format_for_image' => $time_object->format('Y-m-d\TH:i:sO'),
+                    ];
+                    Storage::disk('temp')->put('media_request_503\\'.$camera_data->camera_id.'_thief_'.$record_start_time.'.json', json_encode($temp_save_data));
+                }
+            }
             Log::info('大量盗難解析結果送受信API（AI→BI）終了');
 
             return ['error' => '送信失敗'];

@@ -20,8 +20,8 @@ use Illuminate\Support\Facades\Route;
 Route::group(['middleware' => 'prevent-back-history'], function () {
     // Auth::routes();
     Route::get('login', 'Auth\LoginController@showLoginForm')->name('admin.login');
-
     Route::post('login', 'Auth\LoginController@login');
+    Route::get('error', 'TopController@error')->name('admin.error');
 
     Route::group(['middleware' => 'auth:admin'], function () {
         Route::get('/', 'TopController@index')->name('admin.top');

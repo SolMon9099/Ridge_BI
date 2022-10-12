@@ -46,17 +46,27 @@
     }
     .grid-stack-item-content {
         background-color: white;
-        padding: 12px;
-    }
-    .grid-stack-item-content::-webkit-scrollbar {
-        /* background: lightgray; */
+        padding: 5px;
+        overflow-y:hidden!important;
     }
     .grid-contents{
-        height: calc(100% - 25px);
+        height: calc(100% - 40px);
         position: relative;
+        overflow-y: auto;
+    }
+    .grid-contents::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    .grid-contents::-webkit-scrollbar-thumb {
+        background: lightgray;
+        border-radius: 3px;
+    }
+    .grid-contents::-webkit-scrollbar-track {
+        background:white;
     }
     .ui-resizable-handle{
-        right:25px!important;
+        /* right:25px!important; */
         transform: rotate(45deg)!important;
         background-image:url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCINCgkgdmlld0JveD0iMCAwIDUxMi4wNCA1MTIuMDQiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMi4wNCA1MTIuMDQ7ZmlsbDogcmdiYSgwLCA5OCwgMjIyLCAxKTsiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPGc+DQoJPGc+DQoJCTxwYXRoIGQ9Ik01MDguOTMzLDI0OC4zNTNMNDAyLjI2NywxNDEuNjg3Yy00LjI2Ny00LjA1My0xMC45ODctMy45NDctMTUuMDQsMC4yMTNjLTMuOTQ3LDQuMTYtMy45NDcsMTAuNjY3LDAsMTQuODI3DQoJCQlsODguNDI3LDg4LjQyN0gzNi40bDg4LjQyNy04OC40MjdjNC4wNTMtNC4yNjcsMy45NDctMTAuOTg3LTAuMjEzLTE1LjA0Yy00LjE2LTMuOTQ3LTEwLjY2Ny0zLjk0Ny0xNC44MjcsMEwzLjEyLDI0OC4zNTMNCgkJCWMtNC4xNiw0LjE2LTQuMTYsMTAuODgsMCwxNS4wNEwxMDkuNzg3LDM3MC4wNmM0LjI2Nyw0LjA1MywxMC45ODcsMy45NDcsMTUuMDQtMC4yMTNjMy45NDctNC4xNiwzLjk0Ny0xMC42NjcsMC0xNC44MjcNCgkJCUwzNi40LDI2Ni41OTNoNDM5LjE0N0wzODcuMTIsMzU1LjAyYy00LjI2Nyw0LjA1My00LjM3MywxMC44OC0wLjIxMywxNS4wNGM0LjA1Myw0LjI2NywxMC44OCw0LjM3MywxNS4wNCwwLjIxMw0KCQkJYzAuMTA3LTAuMTA3LDAuMjEzLTAuMjEzLDAuMjEzLTAuMjEzbDEwNi42NjctMTA2LjY2N0M1MTMuMDkzLDI1OS4zNCw1MTMuMDkzLDI1Mi41MTMsNTA4LjkzMywyNDguMzUzeiIvPg0KCTwvZz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjwvc3ZnPg0K')!important;
     }
@@ -105,13 +115,13 @@
     .magnify-icon{
         position: absolute;
         left:10px;
-        top:5px;
+        top:7px;
         cursor: pointer;
     }
     .gear-block{
         position: absolute;
         right: 5px;
-        top: 5px;
+        top: 7px;
         background: white;
     }
     .gear-block > button{
@@ -229,6 +239,11 @@
     .extentsion-content .grid-contents{
         height: calc(100% - 40px);
     }
+    .extentsion-content .streaming-video{
+        width:960px;
+        height:540px;
+        margin:auto;
+    }
     .extentsion-content .no-data{
         margin-top:0px;
         padding-top:40px;
@@ -246,17 +261,6 @@
     .modal-title{
         margin-bottom: 10px;
         font-size:20px;
-    }
-    .grid-stack-item-content::-webkit-scrollbar {
-        width: 7px;
-    }
-
-    .grid-stack-item-content::-webkit-scrollbar-thumb {
-        background: lightgray;
-        border-radius: 3px;
-    }
-    .grid-stack-item-content::-webkit-scrollbar-track {
-        background:white;
     }
     .search-period-area{
         font-size:14px;
@@ -287,10 +291,10 @@
         user-select: none;
     }
     .prev{
-        left:-10px;
+        left:7px;
     }
     .next {
-        right: -10px;
+        right: -20px;
     }
     .prev:hover, .next:hover {
         background-color:lightcoral;
@@ -299,6 +303,10 @@
     }
     .graph-area{
         position: relative;
+        width:calc(100% - 20px);
+    }
+    .graph-canvas{
+        cursor: pointer;
     }
 </style>
 <?php
@@ -363,6 +371,7 @@
                     <path d="M11 14h2v-3h3V9h-3V6h-2v3H8v2h3z"></path>
                 </svg> --}}
             @include('admin.layouts.flash-message')
+            <div id ="block-container" style="display: none">
             @if (count($top_blocks) > 0)
                 <div class="grid-stack">
                     @foreach ($top_blocks as $key => $item)
@@ -393,17 +402,11 @@
                             <div class='grid-contents'>
                                 @if($item->block_type == config('const.top_block_type_codes')['live_video_danger'] || $item->block_type == config('const.top_block_type_codes')['live_video_pit'])
                                     @if(isset($item->cameras) && count($item->cameras) > 0 && isset($item->selected_camera))
-                                        <div class="camera-id">カメラID： {{$item->selected_camera->camera_id}}</div>
+                                        <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
+                                        <div class="camera-id">カメラID： {{$item->selected_camera['camera_id']}}</div>
                                         <div id={{"image_container_".$item->id}} class="image-container"></div>
                                         <div class="streaming-video" id = {{'streaming_video_'.$item->id}}>
-                                            <?php
-                                                foreach($item->cameras as $camera_item){
-                                                    if ($item->selected_camera->camera_id == $camera_item->camera_id){
-                                                        $item->selected_camera->access_token = $camera_item->access_token;
-                                                    }
-                                                }
-                                            ?>
-                                            <safie-streaming-player data-camera-id='{{$item->selected_camera->camera_id}}' data-token='{{$item->selected_camera->access_token}}'>
+                                            <safie-streaming-player data-camera-id='{{$item->selected_camera['camera_id']}}' data-token='{{$item->selected_camera['access_token']}}'>
                                             </safie-streaming-player>
                                         </div>
                                     @endif
@@ -412,11 +415,11 @@
                                         <?php
                                             $video_path = '';
                                             $video_path .= asset('storage/video/').'/';
-                                            $video_path .= $item->danger_detection->video_file_path;
+                                            $video_path .= $item->danger_detection['video_file_path'];
 
-                                            $thumb_path = asset('storage/thumb/').'/'.$item->danger_detection->thumb_img_path;
+                                            $thumb_path = asset('storage/thumb/').'/'.$item->danger_detection['thumb_img_path'];
                                         ?>
-                                        <div class="camera-id">カメラID：{{$item->danger_detection->camera_no}}</div>
+                                        <div class="camera-id">カメラID：{{$item->danger_detection['camera_no']}}</div>
                                         <div class="movie" video-path = "{{$video_path}}">
                                             <a data-target="movie0000"
                                                 {{-- onclick="videoPlay(this, '{{$video_path}}')"  --}}
@@ -425,10 +428,10 @@
                                             </a>
                                         </div>
                                         <video style="" class = 'video-play' src = '{{$video_path}}' type= 'video/mp4' controls></video>
-                                        <div class="cap">検知時間：<time>{{date('Y/m/d H:i', strtotime($item->danger_detection->starttime))}}</time></div>
+                                        <div class="cap">検知時間：<time>{{date('Y/m/d H:i', strtotime($item->danger_detection['starttime']))}}</time></div>
                                         <div class="cap">検知条件：
                                             <time>
-                                                {{isset($item->danger_detection->detection_action_id) && $item->danger_detection->detection_action_id > 0 ? config('const.action_cond_statement')[$item->danger_detection->detection_action_id] : ''}}
+                                                {{isset($item->danger_detection['detection_action_id']) && $item->danger_detection['detection_action_id'] > 0 ? config('const.action_cond_statement')[$item->danger_detection['detection_action_id']] : ''}}
                                             </time>
                                         </div>
                                     @else
@@ -437,9 +440,9 @@
                                 @elseif($item->block_type == config('const.top_block_type_codes')['detect_list_danger'])
                                     @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
                                         <div class="search-period-area">
-                                            <input onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
+                                            <input class="starttime" onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                             <span>～</span>
-                                            <input onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
+                                            <input class="endtime" onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
                                         </div>
                                     @endif
                                     @if (isset($item->danger_detections) && count($item->danger_detections) > 0)
@@ -454,11 +457,12 @@
                                             </thead>
                                             <tbody>
                                             @foreach ($item->danger_detections as $detection_item)
+                                                <?php $detection_item = (array)$detection_item; ?>
                                                 <tr>
-                                                    <td>{{date('Y/m/d H:i', strtotime($detection_item->starttime))}}</td>
-                                                    <td>{{$detection_item->location_name}}</td>
-                                                    <td>{{$detection_item->installation_position}}</td>
-                                                    <td>{{$detection_item->detection_action_id > 0 ? config('const.action')[$detection_item->detection_action_id] : ''}}</td>
+                                                    <td>{{date('Y/m/d H:i', strtotime($detection_item['starttime']))}}</td>
+                                                    <td>{{$detection_item['location_name']}}</td>
+                                                    <td>{{$detection_item['installation_position']}}</td>
+                                                    <td>{{$detection_item['detection_action_id'] > 0 ? config('const.action')[$detection_item['detection_action_id']] : ''}}</td>
                                                 </tr>
                                             @endforeach
                                             </tbody>
@@ -468,7 +472,7 @@
                                     @endif
                                 @elseif($item->block_type == config('const.top_block_type_codes')['live_graph_danger'])
                                     @if(isset($item->selected_camera))
-                                        <div class="camera-id">カメラID：{{$item->selected_camera->camera_id}}</div>
+                                        <div class="camera-id">カメラID：{{$item->selected_camera['camera_id']}}</div>
                                     @endif
                                     <div class="period-select-buttons">
                                         <?php
@@ -480,7 +484,7 @@
                                         <button onclick="changeXlength(this, '12')" type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>">12時間</button>
                                     </div>
                                     <div class="graph-area">
-                                        <canvas id="live_graph_danger" class="graph-canvas"></canvas>
+                                        <canvas onclick="location.href='{{route('admin.danger.detail')}}'" id="live_graph_danger" class="graph-canvas"></canvas>
                                         <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
                                         <input type="hidden" class="time_period" value="{{$time_period}}"/>
                                     </div>
@@ -515,9 +519,9 @@
                                             }
                                         ?>
                                         <div class="search-period-area">
-                                            <input onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
+                                            <input class="starttime" onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                             <span>～</span>
-                                            <input onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
+                                            <input class="endtime" onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
                                         </div>
                                         <div class="period-select-buttons">
                                             @if ($search_period < 1)
@@ -546,14 +550,17 @@
                                             <input type="hidden" class="min-time" value="{{date('Y-m-d H:i:s', strtotime($item->starttime))}}"/>
                                             <a class="prev" onclick="moveXRange(this, -1)">❮</a>
                                             <a class="next" onclick="moveXRange(this, 1)">❯</a>
-                                            <canvas id="past_graph_danger" class="graph-canvas"></canvas>
+                                            <canvas onclick="location.href='{{route('admin.danger.past_analysis')}}'+'?change_params=change&starttime=' + '{{date('Y-m-d', strtotime($item->starttime))}}'
+                                                + '&endtime='+'{{date('Y-m-d', strtotime($item->endtime))}}'+'&selected_search_option=1&time_period='+'{{$time_period}}'"
+                                                id="past_graph_danger" class="graph-canvas"></canvas>
                                             <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
                                             <input type="hidden" class="time_period" value="{{$time_period}}"/>
+                                            <input type="hidden" class="search_period" value="{{$search_period}}"/>
                                         </div>
                                     @endif
                                 @elseif($item->block_type == config('const.top_block_type_codes')['pit_history'])
                                     @if(isset($item->selected_camera))
-                                        <div class="camera-id">カメラID：{{$item->selected_camera->camera_id}}</div>
+                                        <div class="camera-id">カメラID：{{$item->selected_camera['camera_id']}}</div>
                                     @endif
                                     @if (isset($item->pit_detections) && count($item->pit_detections) > 0)
                                         <?php $sum = 0;?>
@@ -568,15 +575,15 @@
                                             </thead>
                                             <tbody>
                                             @foreach ($item->pit_detections as $detection_item)
-                                                @if($detection_item->nb_entry != $detection_item->nb_exit)
+                                                @if($detection_item['nb_entry'] != $detection_item['nb_exit'])
                                                 <?php
-                                                    $sum += ($detection_item->nb_entry - $detection_item->nb_exit);
-                                                    $total_data[date('Y-m-d H:i:s', strtotime($detection_item->starttime))] = $sum;
+                                                    $sum += ($detection_item['nb_entry'] - $detection_item['nb_exit']);
+                                                    $total_data[date('Y-m-d H:i:s', strtotime($detection_item['starttime']))] = $sum;
                                                 ?>
                                                 <tr>
-                                                    <td>{{date('Y-m-d H:i:s', strtotime($detection_item->starttime))}}</td>
-                                                    <td>{{$detection_item->nb_entry > $detection_item->nb_exit ? '入場' : '退場'}} </td>
-                                                    <td><span class="{{$detection_item->nb_entry > $detection_item->nb_exit ? 'f-red' : 'f-blue'}}">{{$detection_item->nb_entry - $detection_item->nb_exit}}</span></td>
+                                                    <td>{{date('Y-m-d H:i:s', strtotime($detection_item['starttime']))}}</td>
+                                                    <td>{{$detection_item['nb_entry'] > $detection_item['nb_exit'] ? '入場' : '退場'}} </td>
+                                                    <td><span class="{{$detection_item['nb_entry'] > $detection_item['nb_exit'] ? 'f-red' : 'f-blue'}}">{{$detection_item['nb_entry'] - $detection_item['nb_exit']}}</span></td>
                                                     <td>{{$sum}}</td>
                                                 </tr>
                                                 @endif
@@ -605,18 +612,18 @@
                                             </a>
                                         </div>
                                         <video style="" class = 'video-play' src = '{{$video_path}}' type= 'video/mp4' controls></video>
-                                        <div class="cap">検知時間：<time>{{date('Y/m/d H:i', strtotime($item->pit_detection->starttime))}}</time></div>
-                                        <div class="cap">検知条件：<time>時間オーバー({{$item->pit_detection->max_permission_time.'分'}})</time>
-                                        </div>
+                                        <div class="cap">検知時間：<time>{{date('Y/m/d H:i', strtotime($item->pit_detection->detect_time))}}</time></div>
+                                        <div class="cap">検知条件：<time>時間オーバー({{$item->pit_detection->max_permission_time.'分'}})</time></div>
+                                        <div class="cap">{{"　　　　　"}}<time>ピット内人数({{$item->pit_detection->sum_in_pit.'人'}})</time></div>
                                     @else
                                         <div class="no-data">検知データがありません。</div>
                                     @endif
                                 @elseif($item->block_type == config('const.top_block_type_codes')['detect_list_pit'])
                                     @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
                                     <div class="search-period-area">
-                                        <input onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
+                                        <input class="starttime" onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                         <span>～</span>
-                                        <input onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
+                                        <input class="endtime" onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
                                     </div>
                                     @endif
                                     @if (isset($item->pit_detections) && count($item->pit_detections) > 0)
@@ -631,9 +638,9 @@
                                             <tbody>
                                             @foreach ($item->pit_detections as $detection_item)
                                                 <tr>
-                                                    <td>{{date('Y/m/d H:i', strtotime($detection_item->starttime))}}</td>
-                                                    <td>時間オーバー({{$detection_item->max_permission_time.'分'}})</td>
-                                                    <td>{{isset($detection_item->sum_in_pit) ? $detection_item->sum_in_pit.'人' : ''}}</td>
+                                                    <td>{{date('Y/m/d H:i', strtotime($detection_item['detect_time']))}}</td>
+                                                    <td>時間オーバー({{$detection_item['max_permission_time'].'分'}})</td>
+                                                    <td>{{isset($detection_item['sum_in_pit']) ? $detection_item['sum_in_pit'].'人' : ''}}</td>
                                                 </tr>
                                             @endforeach
                                             </tbody>
@@ -643,7 +650,7 @@
                                     @endif
                                 @elseif ($item->block_type == config('const.top_block_type_codes')['live_graph_pit'])
                                     @if(isset($item->selected_camera))
-                                        <div class="camera-id">カメラID：{{$item->selected_camera->camera_id}}</div>
+                                        <div class="camera-id">カメラID：{{$item->selected_camera['camera_id']}}</div>
                                     @endif
                                     <div class="period-select-buttons">
                                         <?php
@@ -655,13 +662,17 @@
                                         <button onclick="changeXlength(this, '12')" type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>">12時間</button>
                                     </div>
                                     <div class="graph-area">
-                                        <canvas id="live_graph_pit" class="graph-canvas"></canvas>
+                                        <canvas onclick="location.href='{{route('admin.pit.detail')}}'" id="live_graph_pit" class="graph-canvas"></canvas>
                                         <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
                                         <input type="hidden" class="time_period" value="{{$time_period}}"/>
                                     </div>
                                 @elseif ($item->block_type == config('const.top_block_type_codes')['past_graph_pit'])
                                     @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
                                         <?php
+                                            $selected_camera = '';
+                                            if (isset($item->selected_camera)){
+                                                $selected_camera = $item->selected_camera['id'];
+                                            }
                                             $time_period = '3';
                                             if (isset($item->time_period) && $item->time_period != '') $time_period = $item->time_period;
                                             $starttime = date('Y-m-d', strtotime($item->starttime));
@@ -690,9 +701,9 @@
                                             }
                                         ?>
                                         <div class="search-period-area">
-                                            <input onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
+                                            <input class="starttime" onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                             <span>～</span>
-                                            <input onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
+                                            <input class="endtime" onchange="changePeriod(this, 'endtime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->endtime))}}"/>
                                         </div>
                                         <div class="period-select-buttons">
                                             @if ($search_period < 1)
@@ -720,9 +731,12 @@
                                             <input type="hidden" class="min-time" value="{{date('Y-m-d H:i:s', strtotime($item->starttime))}}"/>
                                             <a class="prev" onclick="moveXRange(this, -1)">❮</a>
                                             <a class="next" onclick="moveXRange(this, 1)">❯</a>
-                                            <canvas id="past_graph_pit" class="graph-canvas"></canvas>
+                                            <canvas onclick="location.href='{{route('admin.pit.past_analysis')}}'+'?change_params=change&starttime=' + '{{date('Y-m-d', strtotime($item->starttime))}}'
+                                                + '&endtime='+'{{date('Y-m-d', strtotime($item->endtime))}}'+'&time_period='+'{{$time_period}}'+'&selected_camera='+'{{$selected_camera}}'"
+                                                onclick="location.href='{{route('admin.pit.past_analysis')}}'" id="past_graph_pit" class="graph-canvas"></canvas>
                                             <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
                                             <input type="hidden" class="time_period" value="{{$time_period}}"/>
+                                            <input type="hidden" class="search_period" value="{{$search_period}}"/>
                                         </div>
                                     @endif
                                 @else
@@ -734,6 +748,7 @@
                     @endforeach
                 </div>
             @endif
+            </div>
             <div class="no-data top-no-data" style="font-size: 16px;display:<?php echo count($top_blocks) == 0 ? 'block' : 'none' ?>">
                 表示項目を追加することでデータを表示できます。
             </div>
@@ -761,6 +776,7 @@
             @csrf
                 <input name="selected_top_block" id = 'selected_top_block' type="hidden"/>
                 <input name="selected_camera_data" id = 'selected_camera' type="hidden"/>
+                <input name="scroll_top" id="scroll_top" type="hidden" value="{{isset($scroll_top) ? $scroll_top : ''}}"/>
                 <div class="scroll active sp-pl0">
                     <table class="table2 text-centre">
                         <thead>
@@ -816,8 +832,8 @@
         4:'black',
     }
     var actions = <?php echo json_encode(config('const.action'));?>;
-    GridStack.init(options);
     var stages = {};
+    var layers = {};
 
     function videoPlay(e, path){
         var video = document.getElementById('video-container');
@@ -994,7 +1010,11 @@
         var conent_node = $('.grid-contents', $(e).parent().parent());
         $('.extentsion-content', $('#extension-modal')).append('<div class="modal-title">' + title + '</div>')
         $('.extentsion-content', $('#extension-modal')).append(conent_node.clone());
+
+        $('.image-container', conent_node).attr('id', '');
+        $('.streaming-video', conent_node).attr('id', '');
         $('.graph-canvas', conent_node).attr('id', '');
+        drawRules();
         refreshGraph();
         load();
         $('.video-open', $('#extension-modal')).unbind();
@@ -1015,6 +1035,12 @@
                 $('html, body').removeClass('lock');
                 $('.modal-overlay').remove();
                 $('#extension-modal').unwrap("<div class='modal-wrap'></div>");
+                var image_container_id = '';
+                var image_containter_element = $('.image-container', $('.extentsion-content', $('#extension-modal')));
+                if (image_containter_element.length > 0){
+                    image_container_id = image_containter_element.attr('id');
+                }
+
                 var graph_canvas_id = '';
                 var graph_canvas_element = $('.graph-canvas', $('.extentsion-content', $('#extension-modal')));
                 if (graph_canvas_element.length > 0){
@@ -1026,6 +1052,15 @@
                         if ($(this).attr('id') == '') $(this).attr('id', graph_canvas_id);
                     })
                 }
+                if (image_container_id != ''){
+                    $('.image-container').each(function(){
+                        if ($(this).attr('id') == '') $(this).attr('id', image_container_id);
+                    })
+                    $('.streaming-video').each(function(){
+                        if ($(this).attr('id') == '') $(this).attr('id', 'streaming_video_' + image_container_id.replace('image_container_', ''));
+                    })
+                }
+                drawRules();
                 load();
                 refreshGraph();
             });
@@ -1185,6 +1220,10 @@
                 min_time = min_time != '' ? new Date(min_x_time): new Date();
                 max_time = new Date(min_time);
                 if (!isNaN(parseInt(x_range))) x_range = parseInt(x_range);
+                var endtime = new Date(block_data.endtime);
+                endtime.setHours(23);
+                endtime.setMinutes(59);
+                endtime.setSeconds(59);
                 switch(x_range){
                     case 3:
                         grid_unit = 15;
@@ -1192,6 +1231,9 @@
                         x_display_format = {'minute': 'H:mm'};
                         tooltipFormat = "H:mm";
                         max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 6:
                         grid_unit = 30;
@@ -1199,6 +1241,9 @@
                         x_display_format = {'minute': 'H:mm'};
                         tooltipFormat = "H:mm";
                         max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 12:
                         grid_unit = 60;
@@ -1206,6 +1251,9 @@
                         x_display_format = {'minute': 'H:mm'};
                         tooltipFormat = "H:mm";
                         max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 24:
                         grid_unit = 60;
@@ -1213,6 +1261,9 @@
                         x_display_format = {'minute': 'H:mm'};
                         tooltipFormat = "H:mm";
                         max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 'time':
                         grid_unit = 60;
@@ -1220,6 +1271,9 @@
                         x_display_format = {'minute': 'DD日H時'};
                         tooltipFormat = "MM/DD H:mm";
                         max_time.setDate(max_time.getDate() + 1);
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 'day':
                         grid_unit = 1;
@@ -1227,6 +1281,9 @@
                         x_display_format = {'day': 'M/DD'};
                         tooltipFormat = "YY/MM/DD";
                         max_time.setDate(max_time.getDate() + 7);
+                        if (endtime.getMinutes() == 0){
+                            endtime.setSeconds(endtime.getSeconds() - 1);
+                        }
                         break;
                     case 'week':
                         grid_unit = 1;
@@ -1234,6 +1291,9 @@
                         x_display_format = {'week': 'M/DD'};
                         tooltipFormat = "YY/MM/DD";
                         max_time.setDate(max_time.getDate() + 28);
+                        if (endtime.getMinutes() == 0){
+                            endtime.setSeconds(endtime.getSeconds() - 1);
+                        }
                         break;
                     case 'month':
                         grid_unit = 1;
@@ -1241,15 +1301,13 @@
                         x_display_format = {'month': 'YYYY/MM'};
                         tooltipFormat = "YY/MM";
                         max_time.setMonth(max_time.getMonth() + 6);
+                        if (endtime.getMinutes() == 0){
+                            endtime.setSeconds(endtime.getSeconds() - 1);
+                        }
                         break;
                 }
-                if (block_data.endtime != undefined && block_data.endtime != null){
-                    var endtime = new Date(block_data.endtime);
-                    endtime.setHours(24);
-                    endtime.setMinutes(0);
-                    endtime.setSeconds(0);
-                    if (max_time.getTime() > endtime.getTime()) max_time = new Date(endtime);
-                }
+                if (max_time.getTime() > endtime.getTime()) max_time = new Date(endtime);
+
                 break;
         }
         graph_data = resortPitData(graph_data, x_range);
@@ -1406,6 +1464,10 @@
                 min_time = min_time != '' ? new Date(min_x_time): new Date();
                 max_time = new Date(min_time);
                 if (!isNaN(parseInt(x_range))) x_range = parseInt(x_range);
+                var endtime = new Date(block_data.endtime);
+                endtime.setHours(23);
+                endtime.setMinutes(59);
+                endtime.setSeconds(59);
                 switch(x_range){
                     case 3:
                         grid_unit = 15;
@@ -1413,6 +1475,9 @@
                         x_display_format = {'minute': 'H:mm'};
                         tooltipFormat = "H:mm";
                         max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 6:
                         grid_unit = 30;
@@ -1420,6 +1485,9 @@
                         x_display_format = {'minute': 'H:mm'};
                         tooltipFormat = "H:mm";
                         max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 12:
                         grid_unit = 60;
@@ -1427,6 +1495,9 @@
                         x_display_format = {'minute': 'H:mm'};
                         tooltipFormat = "H:mm";
                         max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 24:
                         grid_unit = 60;
@@ -1434,6 +1505,9 @@
                         x_display_format = {'minute': 'H:mm'};
                         tooltipFormat = "H:mm";
                         max_time.setHours(max_time.getHours() + parseInt(x_range));
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 'time':
                         grid_unit = 60;
@@ -1441,6 +1515,9 @@
                         x_display_format = {'minute': 'DD日H時'};
                         tooltipFormat = "MM/DD H:mm";
                         max_time.setDate(max_time.getDate() + 1);
+                        if (endtime.getMinutes() == 59){
+                            endtime.setSeconds(endtime.getSeconds() + 1);
+                        }
                         break;
                     case 'day':
                         grid_unit = 1;
@@ -1448,6 +1525,9 @@
                         x_display_format = {'day': 'M/DD'};
                         tooltipFormat = "YY/MM/DD";
                         max_time.setDate(max_time.getDate() + 7);
+                        if (endtime.getMinutes() == 0){
+                            endtime.setSeconds(endtime.getSeconds() - 1);
+                        }
                         break;
                     case 'week':
                         grid_unit = 1;
@@ -1455,6 +1535,9 @@
                         x_display_format = {'week': 'M/DD'};
                         tooltipFormat = "YY/MM/DD";
                         max_time.setDate(max_time.getDate() + 28);
+                        if (endtime.getMinutes() == 0){
+                            endtime.setSeconds(endtime.getSeconds() - 1);
+                        }
                         break;
                     case 'month':
                         grid_unit = 1;
@@ -1462,15 +1545,12 @@
                         x_display_format = {'month': 'YYYY/MM'};
                         tooltipFormat = "YY/MM";
                         max_time.setMonth(max_time.getMonth() + 6);
+                        if (endtime.getMinutes() == 0){
+                            endtime.setSeconds(endtime.getSeconds() - 1);
+                        }
                         break;
                 }
-                if (block_data.endtime != undefined && block_data.endtime != null){
-                    var endtime = new Date(block_data.endtime);
-                    endtime.setHours(24);
-                    endtime.setMinutes(0);
-                    endtime.setSeconds(0);
-                    if (max_time.getTime() > endtime.getTime()) max_time = new Date(endtime);
-                }
+                if (max_time.getTime() > endtime.getTime()) max_time = new Date(endtime);
                 graph_data = resortDangerData(graph_data, x_range);
                 break;
         }
@@ -1673,10 +1753,14 @@
     function moveXRange(e, increament = 1){
         var min_time = $('.min-time', $(e).parent()).val();
         var time_period = $('.time_period', $(e).parent()).val();
+        var search_period = $('.search_period', $(e).parent()).val();
         var block_data = JSON.parse($('.block-data', $(e).parent()).val());
         if (min_time != undefined && min_time != '' && time_period != undefined && time_period != ''){
             min_time = formatDateTime(min_time);
             var endtime = formatDateTime(block_data.endtime);
+            endtime.setHours(24);
+            endtime.setMinutes(0);
+            endtime.setSeconds(0);
             var starttime = formatDateTime(block_data.starttime);
             if (!isNaN(parseInt(time_period))) time_period = parseInt(time_period);
             switch(time_period){
@@ -1718,7 +1802,7 @@
                     }
                     break;
                 case 'day':
-                    // if (search_period < 7) return;
+                    if (search_period < 7) return;
                     if (increament == 1){
                         min_time.setDate(min_time.getDate() + 7);
                         if (min_time.getTime() >= endtime.getTime()) {
@@ -1747,7 +1831,7 @@
                     }
                     break;
                 case 'month':
-                    // if (search_period <= 180) return;
+                    if (search_period <= 180) return;
                     if (increament == 1){
                         min_time.setMonth(min_time.getMonth() + 6);
                         if (min_time.getTime() >= endtime.getTime()) {
@@ -1773,6 +1857,7 @@
         });
         $(e).addClass('selected');
         $('.time_period', $(e).parent().next()).val(x_range);
+        $('.min-time', $(e).parent().next()).val($('.starttime', $(e).parent().prev()).val());
         refreshGraph();
 
         var block_data = JSON.parse($('.block-data', $(e).parent().next()).val());
@@ -1800,8 +1885,6 @@
     }
 
     function changePeriod(e, type='starttime', block_id){
-        console.log('type', type, block_id);
-        console.log('val', e.value);
         var changed_data = [];
         changed_data.push({
             id:block_id,
@@ -1811,52 +1894,109 @@
         $('#camera_form').submit();
     }
 
-    $(document).ready(function() {
-        refresshCameraImg();
+    function drawFigure(figure_points, figure_color = null, ratio = 0.5, key){
+        var figure_points = sortFigurePoints(figure_points);
+        var drawing_point_data = [];
+        figure_points.map(item => {
+            drawing_point_data.push(item.x * ratio);
+            drawing_point_data.push(item.y * ratio);
+        });
+        drawing_point_data.push(figure_points[0].x * ratio);
+        drawing_point_data.push(figure_points[0].y * ratio);
+        var figure_area = new Konva.Line({
+            points: drawing_point_data,
+            stroke: figure_color != null ? figure_color : 'black',
+            strokeWidth: 2,
+            lineCap: 'round',
+            lineJoin: 'round',
+        });
+        layers[key].add(figure_area);
+    }
+
+    function drawRules(){
         //live video and draw stage on it-----------------
         $('.image-container').each(function(){
             var image_container_id = $(this).attr('id');
-            var streaming_video_id = 'streaming_video_' + image_container_id.replace('image_container_', '');
-            stages[image_container_id] = new Konva.Stage({
-                container: $(this).attr('id'),
-                width: $('#' + streaming_video_id).width(),
-                height: $('#' + streaming_video_id).height(),
-            });
-            var layer = new Konva.Layer();
-            stages[image_container_id].add(layer);
+            if (image_container_id != ''){
+                var streaming_video_id = 'streaming_video_' + image_container_id.replace('image_container_', '');
+                var ratio = parseFloat($('#' + streaming_video_id).width()/1280).toFixed(4);
+                stages[image_container_id] = new Konva.Stage({
+                    container: $(this).attr('id'),
+                    width: $('#' + streaming_video_id).width(),
+                    height: $('#' + streaming_video_id).height(),
+                });
+                layers[image_container_id] = new Konva.Layer();
+                stages[image_container_id].add(layers[image_container_id]);
+                var block_data = JSON.parse($('.block-data', $(this).parent()).val());
+                if (block_data.rules != undefined){
+                    block_data.rules.map(rule_item => {
+                        if (rule_item.points != undefined){
+                            var points = JSON.parse(rule_item.points);
+                            drawFigure(points, rule_item.color, ratio, image_container_id);
+                        } else {
+                            var blue_points = JSON.parse(rule_item.blue_points);
+                            var red_points = JSON.parse(rule_item.red_points);
+                            drawFigure(red_points, 'red', ratio, image_container_id);
+                            drawFigure(blue_points, 'blue', ratio, image_container_id);
+                        }
+                    })
+                }
+            }
         })
         //-----------------------------------------------
-        $('.video-open').click(function(){
-            var video_path = $(this).parent().attr('video-path');
-            videoPlay(this, video_path);
-        })
-
-        refreshGraph();
+    }
+        $(document).ready(function() {
+        refresshCameraImg();
+        GridStack.init(options);
         setTimeout(() => {
-            $('.grid-stack').on('change', function(event) {
-                var changed_data = [];
-                $('.grid-stack-item', event.target).each(function(){
-                    changed_data.push({
-                        id:$(this).attr('data-id'),
-                        gs_x:$(this).attr('gs-x'),
-                        gs_y:$(this).attr('gs-y'),
-                        gs_w:$(this).attr('gs-w'),
-                        gs_h:$(this).attr('gs-h'),
+            $('.video-open').click(function(){
+                var video_path = $(this).parent().attr('video-path');
+                videoPlay(this, video_path);
+            })
+
+            refreshGraph();
+            $('#block-container').show();
+            //scroll winodw-------------------
+            var scroll_top = "<?php echo $scroll_top;?>";
+            if (!isNaN(parseInt(scroll_top))){
+                $(window).scrollTop(parseInt(scroll_top));
+            }
+            $(window).scroll(function(){
+                $('#scroll_top').val($(this).scrollTop());
+            })
+            //-----------------------------
+            drawRules();
+            setTimeout(() => {
+                $('.grid-stack').on('change', function(event) {
+                    var changed_data = [];
+                    $('.grid-stack-item', event.target).each(function(){
+                        changed_data.push({
+                            id:$(this).attr('data-id'),
+                            gs_x:$(this).attr('gs-x'),
+                            gs_y:$(this).attr('gs-y'),
+                            gs_w:$(this).attr('gs-w'),
+                            gs_h:$(this).attr('gs-h'),
+                        });
                     });
-                })
-                updateTopBlockData(changed_data);
-                $('.image-container').each(function(){
-                    var image_container_id = $(this).attr('id');
-                    var streaming_video_id = 'streaming_video_' + image_container_id.replace('image_container_', '');
-                    if (stages[image_container_id] != undefined){
-                        stages[image_container_id].width($('#' + streaming_video_id).width());
-                        stages[image_container_id].height($('#' + streaming_video_id).height());
+                    var check_normal_flag = false;
+                    changed_data.map(changed_item => {
+                        if (changed_item.gs_w > 1) check_normal_flag = true
+                    })
+                    if (check_normal_flag == true){
+                        updateTopBlockData(changed_data);
                     }
-                })
+                    $('.image-container').each(function(){
+                        var image_container_id = $(this).attr('id');
+                        var streaming_video_id = 'streaming_video_' + image_container_id.replace('image_container_', '');
+                        if (stages[image_container_id] != undefined){
+                            stages[image_container_id].width($('#' + streaming_video_id).width());
+                            stages[image_container_id].height($('#' + streaming_video_id).height());
+                        }
+                    })
 
-            });
+                });
+            }, 500);
         }, 500);
-
     })
 
 </script>

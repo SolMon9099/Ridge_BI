@@ -13,27 +13,68 @@ use App\Service\TopService;
 
 class TopController extends AdminController
 {
-    public function index()
+    public function index(Request $request_params)
     {
         $top_blocks = TopService::search()->get()->all();
         foreach ($top_blocks as $item) {
             $request = [];
             switch ($item->block_type) {
                 case config('const.top_block_type_codes')['live_video_danger']:
-                case config('const.top_block_type_codes')['recent_detect_danger']:
                     if (!isset($danger_cameras)) {
-                        $danger_cameras = DangerService::getAllCameras();
+                        $danger_cameras = DangerService::getAllCameras()->toArray();
                         $access_tokens = [];
+                        $temp = [];
                         foreach ($danger_cameras as $camera) {
-                            if ($camera->contract_no == null) {
+                            if ($camera['contract_no'] == null) {
                                 continue;
                             }
-                            if (!in_array($camera->contract_no, array_keys($access_tokens))) {
-                                $safie_service = new SafieApiService($camera->contract_no);
-                                $access_tokens[$camera->contract_no] = $safie_service->access_token;
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
-                            $camera->access_token = $access_tokens[$camera->contract_no];
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            $temp[] = $camera;
                         }
+                        $danger_cameras = $temp;
+                    }
+                    $item->cameras = $danger_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array)json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+                    $item->rules = null;
+                    if ($item->selected_camera != null){
+                        $item->rules = DangerService::getRulesByCameraID($item->selected_camera['id'])->toArray();
+                    }
+                    break;
+                case config('const.top_block_type_codes')['recent_detect_danger']:
+                    if (!isset($danger_cameras)) {
+                        $danger_cameras = DangerService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($danger_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            $temp[] = $camera;
+                        }
+                        $danger_cameras = $temp;
                     }
                     $item->cameras = $danger_cameras;
 
@@ -43,7 +84,7 @@ class TopController extends AdminController
                         if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
                             $request['selected_camera'] = $options['selected_camera'];
                             foreach ($item->cameras as $camera_item) {
-                                if ($camera_item->id == $options['selected_camera']) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
                                     $item->selected_camera = $camera_item;
                                 }
                             }
@@ -63,7 +104,7 @@ class TopController extends AdminController
                             $request['endtime'] = $options['endtime'];
                         }
                     }
-                    $unlimit_danger_detections = DangerService::searchDetections($request)->get();
+                    $unlimit_danger_detections = DangerService::searchDetections($request)->get()->toArray();
 
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
@@ -82,25 +123,28 @@ class TopController extends AdminController
                             $request['endtime'] = $options['endtime'];
                         }
                     }
-                    $list_danger_detections = DangerService::searchDetections($request)->get();
+                    $list_danger_detections = DangerService::searchDetections($request)->get()->toArray();
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
                     $item->danger_detections = $list_danger_detections;
                     break;
                 case config('const.top_block_type_codes')['live_graph_danger']:
                     if (!isset($danger_cameras)) {
-                        $danger_cameras = DangerService::getAllCameras();
+                        $danger_cameras = DangerService::getAllCameras()->toArray();
                         $access_tokens = [];
+                        $temp = [];
                         foreach ($danger_cameras as $camera) {
-                            if ($camera->contract_no == null) {
+                            if ($camera['contract_no'] == null) {
                                 continue;
                             }
-                            if (!in_array($camera->contract_no, array_keys($access_tokens))) {
-                                $safie_service = new SafieApiService($camera->contract_no);
-                                $access_tokens[$camera->contract_no] = $safie_service->access_token;
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
-                            $camera->access_token = $access_tokens[$camera->contract_no];
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            $temp[] = $camera;
                         }
+                        $danger_cameras = $temp;
                     }
                     $item->cameras = $danger_cameras;
 
@@ -110,7 +154,7 @@ class TopController extends AdminController
                         if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
                             $request['selected_camera'] = $options['selected_camera'];
                             foreach ($item->cameras as $camera_item) {
-                                if ($camera_item->id == $options['selected_camera']) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
                                     $item->selected_camera = $camera_item;
                                 }
                             }
@@ -133,15 +177,15 @@ class TopController extends AdminController
                             $request['endtime'] = $options['endtime'];
                         }
                     }
-                    $live_danger_detections = DangerService::searchDetections($request)->get()->all();
+                    $live_danger_detections = DangerService::searchDetections($request)->get()->toArray();
 
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
 
                     $all_data = [];
                     foreach ($live_danger_detections as $danger_detection_item) {
-                        if ($danger_detection_item->detection_action_id > 0) {
-                            $all_data[date('Y-m-d H:i H:i', strtotime($danger_detection_item->starttime))][$danger_detection_item->detection_action_id][] = $danger_detection_item;
+                        if ($danger_detection_item['detection_action_id'] > 0) {
+                            $all_data[date('Y-m-d H:i H:i', strtotime($danger_detection_item['starttime']))][$danger_detection_item['detection_action_id']][] = $danger_detection_item;
                         }
                     }
                     $item->danger_live_graph_data = $all_data;
@@ -149,18 +193,21 @@ class TopController extends AdminController
                     break;
                 case config('const.top_block_type_codes')['past_graph_danger']:
                     if (!isset($danger_cameras)) {
-                        $danger_cameras = DangerService::getAllCameras();
+                        $danger_cameras = DangerService::getAllCameras()->toArray();
                         $access_tokens = [];
+                        $temp = [];
                         foreach ($danger_cameras as $camera) {
-                            if ($camera->contract_no == null) {
+                            if ($camera['contract_no'] == null) {
                                 continue;
                             }
-                            if (!in_array($camera->contract_no, array_keys($access_tokens))) {
-                                $safie_service = new SafieApiService($camera->contract_no);
-                                $access_tokens[$camera->contract_no] = $safie_service->access_token;
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
-                            $camera->access_token = $access_tokens[$camera->contract_no];
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            $temp[] = $camera;
                         }
+                        $danger_cameras = $temp;
                     }
                     $item->cameras = $danger_cameras;
                     $item->selected_camera = null;
@@ -169,7 +216,7 @@ class TopController extends AdminController
                         if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
                             $request['selected_camera'] = $options['selected_camera'];
                             foreach ($item->cameras as $camera_item) {
-                                if ($camera_item->id == $options['selected_camera']) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
                                     $item->selected_camera = $camera_item;
                                 }
                             }
@@ -192,34 +239,35 @@ class TopController extends AdminController
                             $request['endtime'] = $options['endtime'];
                         }
                     }
-                    $past_danger_detections = DangerService::searchDetections($request)->get()->all();
+                    $past_danger_detections = DangerService::searchDetections($request)->get()->toArray();
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
 
                     $all_data = [];
                     foreach ($past_danger_detections as $danger_detection_item) {
-                        if ($danger_detection_item->detection_action_id > 0) {
-                            $all_data[date('Y-m-d H:i', strtotime($danger_detection_item->starttime))][$danger_detection_item->detection_action_id][] = $danger_detection_item;
+                        if ($danger_detection_item['detection_action_id'] > 0) {
+                            $all_data[date('Y-m-d H:i', strtotime($danger_detection_item['starttime']))][$danger_detection_item['detection_action_id']][] = $danger_detection_item;
                         }
                     }
                     $item->danger_past_graph_data = $all_data;
                     break;
                 case config('const.top_block_type_codes')['live_video_pit']:
-                case config('const.top_block_type_codes')['recent_detect_pit']:
-                case config('const.top_block_type_codes')['pit_history']:
                     if (!isset($pit_cameras)) {
-                        $pit_cameras = PitService::getAllCameras();
+                        $pit_cameras = PitService::getAllCameras()->toArray();
                         $access_tokens = [];
+                        $temp = [];
                         foreach ($pit_cameras as $camera) {
-                            if ($camera->contract_no == null) {
+                            if ($camera['contract_no'] == null) {
                                 continue;
                             }
-                            if (!in_array($camera->contract_no, array_keys($access_tokens))) {
-                                $safie_service = new SafieApiService($camera->contract_no);
-                                $access_tokens[$camera->contract_no] = $safie_service->access_token;
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
-                            $camera->access_token = $access_tokens[$camera->contract_no];
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            $temp[] = $camera;
                         }
+                        $pit_cameras = $temp;
                     }
                     $item->cameras = $pit_cameras;
 
@@ -229,7 +277,47 @@ class TopController extends AdminController
                         if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
                             $request['selected_camera'] = $options['selected_camera'];
                             foreach ($item->cameras as $camera_item) {
-                                if ($camera_item->id == $options['selected_camera']) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+                    $item->rules = null;
+                    if ($item->selected_camera != null){
+                        $item->rules = PitService::getRulesByCameraID($item->selected_camera['id'])->toArray();
+                    }
+                    break;
+                case config('const.top_block_type_codes')['recent_detect_pit']:
+                case config('const.top_block_type_codes')['pit_history']:
+                    if (!isset($pit_cameras)) {
+                        $pit_cameras = PitService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($pit_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            $temp[] = $camera;
+                        }
+                        $pit_cameras = $temp;
+                    }
+                    $item->cameras = $pit_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
                                     $item->selected_camera = $camera_item;
                                 }
                             }
@@ -252,9 +340,9 @@ class TopController extends AdminController
 
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
-                    $item->pit_detections = $unlimit_pit_detections;
                     $pit_over_data = PitService::extractOverData(array_reverse($unlimit_pit_detections));
                     $pit_over_data = array_reverse($pit_over_data);
+                    $item->pit_detections = $pit_over_data;
                     $item->pit_detection = count($pit_over_data) > 0 ? $pit_over_data[0] : null;
                     break;
                 case config('const.top_block_type_codes')['detect_list_pit']:
@@ -278,18 +366,21 @@ class TopController extends AdminController
                     break;
                 case config('const.top_block_type_codes')['live_graph_pit']:
                     if (!isset($pit_cameras)) {
-                        $pit_cameras = PitService::getAllCameras();
+                        $pit_cameras = PitService::getAllCameras()->toArray();
                         $access_tokens = [];
+                        $temp = [];
                         foreach ($pit_cameras as $camera) {
-                            if ($camera->contract_no == null) {
+                            if ($camera['contract_no'] == null) {
                                 continue;
                             }
-                            if (!in_array($camera->contract_no, array_keys($access_tokens))) {
-                                $safie_service = new SafieApiService($camera->contract_no);
-                                $access_tokens[$camera->contract_no] = $safie_service->access_token;
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
-                            $camera->access_token = $access_tokens[$camera->contract_no];
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            $temp[] = $camera;
                         }
+                        $pit_cameras = $temp;
                     }
                     $item->cameras = $pit_cameras;
 
@@ -299,7 +390,7 @@ class TopController extends AdminController
                         if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
                             $request['selected_camera'] = $options['selected_camera'];
                             foreach ($item->cameras as $camera_item) {
-                                if ($camera_item->id == $options['selected_camera']) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
                                     $item->selected_camera = $camera_item;
                                 }
                             }
@@ -309,7 +400,7 @@ class TopController extends AdminController
                         }
                     } else {
                         $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
-                        $request['selected_camera'] = count($item->cameras) > 0 ? $item->cameras[0]->id : null;
+                        $request['selected_camera'] = count($item->cameras) > 0 ? $item->cameras[0]['id'] : null;
                     }
                     $live_pit_detections = PitService::searchDetections($request, true)->get()->all();
 
@@ -321,18 +412,21 @@ class TopController extends AdminController
                     break;
                 case config('const.top_block_type_codes')['past_graph_pit']:
                     if (!isset($pit_cameras)) {
-                        $pit_cameras = PitService::getAllCameras();
+                        $pit_cameras = PitService::getAllCameras()->toArray();
                         $access_tokens = [];
+                        $temp = [];
                         foreach ($pit_cameras as $camera) {
-                            if ($camera->contract_no == null) {
+                            if ($camera['contract_no'] == null) {
                                 continue;
                             }
-                            if (!in_array($camera->contract_no, array_keys($access_tokens))) {
-                                $safie_service = new SafieApiService($camera->contract_no);
-                                $access_tokens[$camera->contract_no] = $safie_service->access_token;
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
-                            $camera->access_token = $access_tokens[$camera->contract_no];
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            $temp[] = $camera;
                         }
+                        $pit_cameras = $temp;
                     }
                     $item->cameras = $pit_cameras;
 
@@ -342,7 +436,7 @@ class TopController extends AdminController
                         if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
                             $request['selected_camera'] = $options['selected_camera'];
                             foreach ($item->cameras as $camera_item) {
-                                if ($camera_item->id == $options['selected_camera']) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
                                     $item->selected_camera = $camera_item;
                                 }
                             }
@@ -352,7 +446,7 @@ class TopController extends AdminController
                         }
                     } else {
                         $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
-                        $request['selected_camera'] = count($item->cameras) > 0 ? $item->cameras[0]->id : null;
+                        $request['selected_camera'] = count($item->cameras) > 0 ? $item->cameras[0]['id'] : null;
                     }
 
                     $request['starttime'] = date('Y-m-d');
@@ -379,9 +473,9 @@ class TopController extends AdminController
                     break;
             }
         }
-
         return view('admin.top.index')->with([
             'top_blocks' => $top_blocks,
+            'scroll_top' => isset($request_params['scroll_top']) && $request_params['scroll_top'] !== '' ? $request_params['scroll_top'] : null,
         ]);
     }
 
@@ -464,27 +558,27 @@ class TopController extends AdminController
                 return false;
             }
             $last_record_id = 0;
-            if (isset($request['last_record_id']) && $request['last_record_id'] != ''){
-                $last_record_id = (int)$request['last_record_id'];
+            if (isset($request['last_record_id']) && $request['last_record_id'] != '') {
+                $last_record_id = (int) $request['last_record_id'];
             }
             switch ($request['type']) {
                 case 'pit':
                     $params = null;
-                    if (isset($request['camera_id']) && $request['camera_id'] > 0){
-                        $params = ['selected_camera' => (int)$request['camera_id']];
+                    if (isset($request['camera_id']) && $request['camera_id'] > 0) {
+                        $params = ['selected_camera' => (int) $request['camera_id']];
                     }
                     $last_record = PitService::searchDetections($params)->get()->first();
-                    if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d')) ){
+                    if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d'))) {
                         return 1;
                     }
                     break;
                 case 'danger':
                     $params = null;
-                    if (isset($request['camera_id']) && $request['camera_id'] > 0){
-                        $params = ['selected_camera' => (int)$request['camera_id']];
+                    if (isset($request['camera_id']) && $request['camera_id'] > 0) {
+                        $params = ['selected_camera' => (int) $request['camera_id']];
                     }
                     $last_record = DangerService::searchDetections($params)->get()->first();
-                    if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d')) ){
+                    if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d'))) {
                         return 1;
                     }
                     break;
@@ -494,6 +588,7 @@ class TopController extends AdminController
                     break;
             }
         }
+
         return 0;
     }
 
@@ -613,5 +708,11 @@ class TopController extends AdminController
         $request->session()->flash('success', '登録しました。');
 
         return redirect()->route('admin.top.permission_group');
+    }
+
+    public function error(Request $request){
+        return view('admin.top.error')->with([
+            'error_code' => isset($request['error_code']) && $request['error_code'] !== '' ? $request['error_code'] : null,
+        ]);
     }
 }

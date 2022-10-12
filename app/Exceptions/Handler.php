@@ -52,6 +52,7 @@ class Handler extends ExceptionHandler
             // if ($status_code == 404 || $status_code == 502 || $status_code == 500) {
             if($status_code == 404){
                 Log::info("----- 404エラー発生------");
+                return redirect()->route('admin.error', ['error_code'=>$status_code]);
             }
 
             // if ($status_code == 502 || $status_code == 500) {

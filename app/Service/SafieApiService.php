@@ -328,6 +328,9 @@ class SafieApiService
                 $model->status = 1;
             }
             $model->save();
+            if ($response['http_code'] != 200) {
+                return 'http_code_'.$response['http_code'];
+            }
         }
 
         return $res;

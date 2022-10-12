@@ -150,7 +150,7 @@
                     <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
                     <button style="margin-left: 10px;" onclick="resetHeatMap({{$camera_id}})" type='button' class="reset-heatmap-button">再取得</button>
                 </div>
-                <div style="color: #999;">※カメラの位置や画角を変更した場合は、<br/>AI検知精度の再計算を行う必要がありますので、<br/>「再計算」ボタンを押してください。
+                <div style="color: #999;">※カメラの位置や画角を変更した場合は、<br/>AI検知精度の再取得を行う必要がありますので、<br/>「再取得」ボタンを押してください。
                 </div>
             </div>
         </div>

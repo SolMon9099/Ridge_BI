@@ -143,7 +143,9 @@ class PitService
                 'cameras.camera_id as camera_no',
                 'locations.name as location_name',
                 'pit_detection_rules.max_permission_time',
-                'pit_detection_rules.min_members'
+                'pit_detection_rules.min_members',
+                'pit_detection_rules.red_points',
+                'pit_detection_rules.blue_points',
             )
             ->leftJoin('pit_detection_rules', 'pit_detection_rules.id', 'pit_detections.rule_id')
             ->leftJoin('cameras', 'cameras.id', 'pit_detections.camera_id')
@@ -199,7 +201,7 @@ class PitService
         }
         $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
 
-        return $camera_query->get()->all();
+        return $camera_query->get();
     }
 
     public static function extractOverData($data)
@@ -209,6 +211,7 @@ class PitService
         $max_permission_time = [];
         $min_members = [];
         $over_start_time = [];
+        $over_start_index = [];
         $last_over_record = [];
         foreach ($data as $index => $item) {
             $nb_entry = $item->nb_entry;
@@ -227,19 +230,33 @@ class PitService
                 if (!isset($over_start_time[$item->rule_id])) {
                     $over_start_time[$item->rule_id] = $item->starttime;
                 }
+                if (!isset($over_start_index[$item->rule_id]) || $over_start_index[$item->rule_id] == null){
+                    $over_start_index[$item->rule_id] = $index;
+                }
                 $item->sum_in_pit = $sum_in_pit[$item->rule_id];
                 if (strtotime($item->starttime) - strtotime($over_start_time[$item->rule_id]) >= $max_permission_time[$item->rule_id] * 60) {
-                    $temp[] = $item;
+                    // $temp[] = $item;
+                    $add_item = $data[$over_start_index[$item->rule_id]];
+                    $add_item->detect_time = date('Y-m-d H:i:s', strtotime($add_item->starttime) + $max_permission_time[$item->rule_id] * 60);
+                    if(!in_array($add_item, $temp)){
+                        $temp[] = $add_item;
+                    }
                 }
-                $last_over_record[$item->rule_id] = $item;
+                // $last_over_record[$item->rule_id] = $item;
             } else {
-                if (isset($over_start_time[$item->rule_id])) {
+                if (isset($over_start_time[$item->rule_id]) && isset($over_start_index[$item->rule_id]) && $over_start_index[$item->rule_id] != null) {
                     if (strtotime($item->starttime) - strtotime($over_start_time[$item->rule_id]) >= $max_permission_time[$item->rule_id] * 60) {
-                        if (isset($last_over_record[$item->rule_id]) && !in_array($last_over_record[$item->rule_id], $temp)) {
-                            $temp[] = $last_over_record[$item->rule_id];
+                        // if (isset($last_over_record[$item->rule_id]) && !in_array($last_over_record[$item->rule_id], $temp)) {
+                        //     $temp[] = $last_over_record[$item->rule_id];
+                        // }
+                        $add_item = $data[$over_start_index[$item->rule_id]];
+                        $add_item->detect_time = date('Y-m-d H:i:s', strtotime($add_item->starttime) + $max_permission_time[$item->rule_id] * 60);
+                        if(!in_array($add_item, $temp)){
+                            $temp[] = $add_item;
                         }
                     }
                     $over_start_time[$item->rule_id] = null;
+                    $over_start_index[$item->rule_id] = null;
                 }
             }
 
@@ -271,11 +288,33 @@ class PitService
             //     } while ($cond_flag);
             // }
         }
-        foreach ($last_over_record as $last_item) {
-            if (!in_array($last_item, $temp)) {
-                $temp[] = $last_item;
+
+        // foreach ($last_over_record as $last_item) {
+        //     if (!in_array($last_item, $temp)) {
+        //         $temp[] = $last_item;
+        //     }
+        // }
+
+        //sort by detect time-----
+        if (count($temp) > 1){
+            do
+            {
+                $swapped = false;
+                for( $i = 0, $c = count( $temp ) - 1; $i < $c; $i++ )
+                {
+                    if(strtotime($temp[$i]->detect_time) > strtotime($temp[$i + 1]->detect_time))
+                    {
+                        list( $temp[$i + 1], $temp[$i] ) =
+                                array( $temp[$i], $temp[$i + 1] );
+                        $swapped = true;
+                    }
+                }
             }
+            while( $swapped );
+
         }
+
+        //------------------------
 
         return $temp;
     }

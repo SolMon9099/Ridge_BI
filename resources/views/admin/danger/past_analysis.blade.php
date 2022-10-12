@@ -349,9 +349,9 @@
     starttime.setSeconds(0);
     var endtime = $('#endtime').val();
     endtime = formatDateTime(endtime);
-    endtime.setHours(24);
-    endtime.setMinutes(0);
-    endtime.setSeconds(0);
+    endtime.setHours(23);
+    endtime.setMinutes(59);
+    endtime.setSeconds(59);
 
     var min_time = new Date(starttime);
     min_time.setHours(0);
@@ -377,6 +377,9 @@
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 6:
                 grid_unit = 30;
@@ -384,6 +387,9 @@
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 12:
                 grid_unit = 60;
@@ -391,6 +397,9 @@
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 24:
                 grid_unit = 60;
@@ -398,6 +407,9 @@
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 'time':
                 grid_unit = 60;
@@ -405,6 +417,9 @@
                 displayFormat = {'minute': 'DD日H時'};
                 tooltip = "MM/DD H:mm";
                 max_time.setDate(max_time.getDate() + 1);
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 'day':
                 grid_unit = 1;
@@ -412,6 +427,9 @@
                 displayFormat = {'day': 'M/DD'};
                 tooltip = "YY/MM/DD";
                 max_time.setDate(max_time.getDate() + 7);
+                if (endtime.getMinutes() == 0){
+                    endtime.setSeconds(endtime.getSeconds() - 1);
+                }
                 break;
             case 'week':
                 grid_unit = 1;
@@ -419,6 +437,9 @@
                 displayFormat = {'week': 'M/DD'};
                 tooltip = "YY/MM/DD";
                 max_time.setDate(max_time.getDate() + 28);
+                if (endtime.getMinutes() == 0){
+                    endtime.setSeconds(endtime.getSeconds() - 1);
+                }
                 break;
             case 'month':
                 grid_unit = 1;
@@ -426,6 +447,9 @@
                 displayFormat = {'month': 'YYYY/MM'};
                 tooltip = "YY/MM";
                 max_time.setMonth(max_time.getMonth() + 6);
+                if (endtime.getMinutes() == 0){
+                    endtime.setSeconds(endtime.getSeconds() - 1);
+                }
                 break;
         }
     }

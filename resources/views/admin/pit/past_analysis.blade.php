@@ -165,7 +165,7 @@
                                 </thead>
                                 @foreach ($pit_over_detections as $item)
                                     <tr>
-                                        <td>{{$item->starttime}}</td>
+                                        <td>{{$item->detect_time}}</td>
                                         <td>時間オーバー({{$item->max_permission_time.'分'}})</td>
                                         <td>{{isset($item->sum_in_pit) ? $item->sum_in_pit.'人' : ''}}</td>
                                         <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
@@ -309,9 +309,9 @@
     starttime.setSeconds(0);
     var endtime = $('#endtime').val();
     endtime = formatDateTime(endtime);
-    endtime.setHours(24);
-    endtime.setMinutes(0);
-    endtime.setSeconds(0);
+    endtime.setHours(23);
+    endtime.setMinutes(59);
+    endtime.setSeconds(59);
 
     var min_time = new Date(starttime);
     min_time.setHours(0);
@@ -337,6 +337,9 @@
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 6:
                 grid_unit = 30;
@@ -344,6 +347,9 @@
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 12:
                 grid_unit = 60;
@@ -351,6 +357,9 @@
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 24:
                 grid_unit = 60;
@@ -358,6 +367,9 @@
                 displayFormat = {'minute': 'H:mm'};
                 tooltip = "H:mm";
                 max_time.setHours(max_time.getHours() + parseInt(time_period));
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 'time':
                 grid_unit = 60;
@@ -365,6 +377,9 @@
                 displayFormat = {'minute': 'DD日H時'};
                 tooltip = "MM/DD H:mm";
                 max_time.setDate(max_time.getDate() + 1);
+                if (endtime.getMinutes() == 59){
+                    endtime.setSeconds(endtime.getSeconds() + 1);
+                }
                 break;
             case 'day':
                 grid_unit = 1;
@@ -372,6 +387,9 @@
                 displayFormat = {'day': 'M/DD'};
                 tooltip = "YY/MM/DD";
                 max_time.setDate(max_time.getDate() + 7);
+                if (endtime.getMinutes() == 0){
+                    endtime.setSeconds(endtime.getSeconds() - 1);
+                }
                 break;
             case 'week':
                 grid_unit = 1;
@@ -379,6 +397,9 @@
                 displayFormat = {'week': 'M/DD'};
                 tooltip = "YY/MM/DD";
                 max_time.setDate(max_time.getDate() + 28);
+                if (endtime.getMinutes() == 0){
+                    endtime.setSeconds(endtime.getSeconds() - 1);
+                }
                 break;
             case 'month':
                 grid_unit = 1;
@@ -386,6 +407,9 @@
                 displayFormat = {'month': 'YYYY/MM'};
                 tooltip = "YY/MM";
                 max_time.setMonth(max_time.getMonth() + 6);
+                if (endtime.getMinutes() == 0){
+                    endtime.setSeconds(endtime.getSeconds() - 1);
+                }
                 break;
         }
     }
@@ -616,11 +640,6 @@
                 }],
             },
             options: {
-                legend: {
-                    labels: {
-                        fontSize: 20
-                    }
-                },
                 title: {
                     display: false,
                     text: 'ピット内人数推移'
@@ -653,8 +672,8 @@
                         },
                         ticks: {
                             fontSize: 18,
-                            max: max_time,
-                            min: min_time,
+                            // max: max_time,
+                            // min: min_time,
                         }
                     }]
                 },

@@ -131,7 +131,9 @@ class DangerService
             ->select(
                 'danger_area_detections.*',
                 'danger_area_detection_rules.action_id',
+                'danger_area_detection_rules.points',
                 'danger_area_detection_rules.color',
+                'danger_area_detection_rules.name as rule_name',
                 'cameras.installation_position',
                 'cameras.location_id',
                 'cameras.contract_no',
@@ -191,6 +193,6 @@ class DangerService
         }
         $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
 
-        return $camera_query->get()->all();
+        return $camera_query->get();
     }
 }

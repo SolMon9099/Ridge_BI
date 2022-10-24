@@ -42,21 +42,21 @@
                                     @if($from_add_button == true)
                                         @if(count($camera->rules) < config('const.danger_max_figure_numbers'))
                                         <div class="radio">
-                                            <input onclick="enableSubmitButton()" id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
+                                            <input onclick="enableSubmitButton({{$camera->id}})" id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
                                             <label for="radio-{{$camera->id}}" class="radio-label"></label>
                                         </div>
                                         @endif
                                     @else
                                         @if(count($camera->rules) == 0)
                                         <div class="radio">
-                                            <input onclick="enableSubmitButton()" id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
+                                            <input onclick="enableSubmitButton({{$camera->id}})" id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
                                             <label for="radio-{{$camera->id}}" class="radio-label"></label>
                                         </div>
                                         @else
                                             @if(count($camera->rules) < config('const.danger_max_figure_numbers'))
                                             <div class="radio">
                                                 <button type="button" class="edit" onclick="createRule({{$camera->id}})">追加登録</button>
-                                                <input style="display: none" id="radio-{{$camera->id}}" name="selected_camera" value="">
+                                                <input class='text-camera-id' style="display: none" id="radio-{{$camera->id}}" name="selected_camera" value="">
                                             </div>
                                             @endif
                                         @endif
@@ -97,8 +97,9 @@
         }
     </style>
     <script>
-        function enableSubmitButton(){
+        function enableSubmitButton(camera_id){
             $('.btns').show();
+            $('.text-camera-id').val(camera_id);
         }
         function createRule(camera_id){
             $('input[name="selected_camera"]').val(camera_id);

@@ -178,7 +178,7 @@
                         @endforeach
                         @if(count($cameras) == 0)
                         <tr>
-                            <td colspan="6">登録されたカメラがありません。カメラを設定してください</td>
+                            <td colspan="6">ルールが登録されたカメラがありません。ルールを設定してください</td>
                         </tr>
                         @endif
                         </tbody>
@@ -242,8 +242,6 @@
     var time_period = "<?php echo $time_period;?>";
     var selected_camera = "<?php echo $selected_camera;?>";
     var grid_unit = 15;
-    var period_unit = 'minute';
-    var displayFormat = {'minute': 'H:mm'};
     var total_data = <?php echo json_encode($total_data);?>;
 
     function drawGraph(x_data, y_data){
@@ -287,8 +285,8 @@
                     xAxes:[{
                         type: 'time',
                         time: {
-                            unit: period_unit,
-                            displayFormats: displayFormat,
+                            unit: 'minute',
+                            displayFormats: {'minute': 'H:mm'},
                             tooltipFormat:"H:mm",
                             distribution: 'series',
                             stepSize: grid_unit,

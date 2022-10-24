@@ -23,11 +23,19 @@ class ShelfSortedCommand extends Command
     public function handle()
     {
         // ini_set('memory_limit', '4096M');
-        // $danger_file = Storage::disk('video')->get('danger_2022-09-22_15-00-00.mp4');
+        // $danger_file = Storage::disk('video')->get('hanger_2022-10-12_16-00-00.mp4');
+        // $danger_file_1 = Storage::disk('video')->get('hanger_2022-10-12_17-00-00.mp4');
+        // $danger_file_2 = Storage::disk('video')->get('hanger_2022-10-12_18-00-00.mp4');
+        // $danger_file_3 = Storage::disk('video')->get('hanger_2022-10-12_19-00-00.mp4');
+        // $danger_file_4 = Storage::disk('video')->get('hanger_2022-10-12_20-00-00.mp4');
         // $shelf_file = Storage::disk('video')->get('shelf_2022-09-22_16-00-00.mp4');
         // $thief_file = Storage::disk('video')->get('hanger_2022-09-22_15-00-00.mp4');
         // Storage::disk('s3')->put('test_hanger/20220922/2022-09-22_15-00-00.mp4', $thief_file);
-        // Storage::disk('s3')->put('test_danger/20220922/2022-09-22_15-00-00.mp4', $danger_file);
+        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_16-00-00.mp4', $danger_file);
+        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_17-00-00.mp4', $danger_file_1);
+        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_18-00-00.mp4', $danger_file_2);
+        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_19-00-00.mp4', $danger_file_3);
+        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_20-00-00.mp4', $danger_file_4);
         // Storage::disk('s3')->put('test_shelf/20220922/2022-09-22_15-00-00.mp4', $shelf_file);
 
         Log::info('定時撮影チェック開始ーーーーーー');

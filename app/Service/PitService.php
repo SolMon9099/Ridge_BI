@@ -204,15 +204,14 @@ class PitService
         return $camera_query->get();
     }
 
-    public static function extractOverData($data)
+    public function extractOverData($data)
     {
         $temp = [];
+        $added_id_times = [];
         $sum_in_pit = [];
         $max_permission_time = [];
         $min_members = [];
         $over_start_time = [];
-        $over_start_index = [];
-        $last_over_record = [];
         foreach ($data as $index => $item) {
             $nb_entry = $item->nb_entry;
             $nb_exit = $item->nb_exit;
@@ -226,92 +225,85 @@ class PitService
                 $min_members[$item->rule_id] = $item->min_members;
             }
             $sum_in_pit[$item->rule_id] += ($nb_entry - $nb_exit);
+            $item->sum_in_pit = $sum_in_pit[$item->rule_id];
             if ($sum_in_pit[$item->rule_id] >= $min_members[$item->rule_id]) {
-                if (!isset($over_start_time[$item->rule_id])) {
+                if (!isset($over_start_time[$item->rule_id]) || $over_start_time[$item->rule_id] == null) {
                     $over_start_time[$item->rule_id] = $item->starttime;
                 }
-                if (!isset($over_start_index[$item->rule_id]) || $over_start_index[$item->rule_id] == null){
-                    $over_start_index[$item->rule_id] = $index;
-                }
-                $item->sum_in_pit = $sum_in_pit[$item->rule_id];
-                if (strtotime($item->starttime) - strtotime($over_start_time[$item->rule_id]) >= $max_permission_time[$item->rule_id] * 60) {
-                    // $temp[] = $item;
-                    $add_item = $data[$over_start_index[$item->rule_id]];
-                    $add_item->detect_time = date('Y-m-d H:i:s', strtotime($add_item->starttime) + $max_permission_time[$item->rule_id] * 60);
-                    if(!in_array($add_item, $temp)){
-                        $temp[] = $add_item;
-                    }
-                }
-                // $last_over_record[$item->rule_id] = $item;
-            } else {
-                if (isset($over_start_time[$item->rule_id]) && isset($over_start_index[$item->rule_id]) && $over_start_index[$item->rule_id] != null) {
+                $cond_flag = true;
+                $increatment = 1;
+                $add_item = null;
+                do {
                     if (strtotime($item->starttime) - strtotime($over_start_time[$item->rule_id]) >= $max_permission_time[$item->rule_id] * 60) {
-                        // if (isset($last_over_record[$item->rule_id]) && !in_array($last_over_record[$item->rule_id], $temp)) {
-                        //     $temp[] = $last_over_record[$item->rule_id];
+                        if (isset($data[$index - $increatment])) {
+                            $prev_item = $data[$index - $increatment];
+                            if ($item->rule_id == $prev_item->rule_id && ($prev_item->nb_entry - $prev_item->nb_exit > 0)) {
+                                if (strtotime($over_start_time[$item->rule_id]) >= strtotime($prev_item->starttime)) {
+                                    $add_item = clone $data[$index - $increatment];
+                                    $add_item->detect_time = date('Y-m-d H:i:s', strtotime($over_start_time[$item->rule_id]) + $max_permission_time[$item->rule_id] * 60);
+                                    if (!in_array([$item->id, $add_item->detect_time], $added_id_times)) {
+                                        $temp[] = $add_item;
+                                        $added_id_times[] = [$item->id, $add_item->detect_time];
+                                    }
+                                    $over_start_time[$item->rule_id] = date('Y-m-d H:i:s', strtotime($over_start_time[$item->rule_id]) + $max_permission_time[$item->rule_id] * 60);
+                                    $increatment = 0;
+                                    // $cond_flag = false;
+                                }
+                            }
+                        } else {
+                            $cond_flag = false;
+                        }
+                        ++$increatment;
+                    } else {
+                        // if (strtotime($over_start_time[$item->rule_id]) + $max_permission_time[$item->rule_id] * 60 > strtotime($data[count($data) - 1]->starttime)) {
+                        //     if ($nb_entry - $nb_exit > 0) {
+                        //     }
                         // }
-                        $add_item = $data[$over_start_index[$item->rule_id]];
-                        $add_item->detect_time = date('Y-m-d H:i:s', strtotime($add_item->starttime) + $max_permission_time[$item->rule_id] * 60);
-                        if(!in_array($add_item, $temp)){
-                            $temp[] = $add_item;
+                        $cond_flag = false;
+                    }
+                } while ($cond_flag);
+            } else {
+                if (isset($over_start_time[$item->rule_id]) && $over_start_time[$item->rule_id] != null) {
+                    if (strtotime($item->starttime) - strtotime($over_start_time[$item->rule_id]) >= $max_permission_time[$item->rule_id] * 60) {
+                        $cond_flag = true;
+                        $increatment = 1;
+                        $add_item = null;
+                        do {
+                            if (isset($data[$index - $increatment])) {
+                                $prev_item = $data[$index - $increatment];
+                                if ($item->rule_id == $prev_item->rule_id && ($prev_item->nb_entry - $prev_item->nb_exit > 0)) {
+                                    if (strtotime($over_start_time[$item->rule_id]) >= strtotime($prev_item->starttime)) {
+                                        $add_item = clone $data[$index - $increatment];
+                                        $cond_flag = false;
+                                    }
+                                }
+                            } else {
+                                $cond_flag = false;
+                            }
+                            ++$increatment;
+                        } while ($cond_flag);
+
+                        if ($add_item != null) {
+                            $add_item->detect_time = date('Y-m-d H:i:s', strtotime($over_start_time[$item->rule_id]) + $max_permission_time[$item->rule_id] * 60);
+                            if (!in_array([$item->id, $add_item->detect_time], $added_id_times)) {
+                                $temp[] = $add_item;
+                                $added_id_times[] = [$item->id, $add_item->detect_time];
+                            }
                         }
                     }
-                    $over_start_time[$item->rule_id] = null;
-                    $over_start_index[$item->rule_id] = null;
                 }
+                $over_start_time[$item->rule_id] = null;
             }
-
-            // if ($index == 0 && ($nb_entry - $nb_exit < 0)) {
-            //     continue;
-            // }
-            // if ($nb_entry - $nb_exit > 0) {
-            //     if ($index == count($data) - 1) {
-            //         continue;
-            //     }
-            //     $increatment = 1;
-            //     $cond_flag = true;
-            //     do {
-            //         if (isset($data[$index + $increatment])) {
-            //             $next_item = $data[$index + $increatment];
-            //             if ($rule_id == $next_item->rule_id) {
-            //                 if ($next_item->nb_entry - $next_item->nb_exit < 0) {
-            //                     if (strtotime($next_item->starttime) - strtotime($item->starttime) > $max_permission_time * 60) {
-            //                         $temp[] = $item;
-            //                         // $temp[] = $next_item;
-            //                     }
-            //                     $cond_flag = false;
-            //                 }
-            //             }
-            //         } else {
-            //             $cond_flag = false;
-            //         }
-            //         ++$increatment;
-            //     } while ($cond_flag);
-            // }
         }
-
-        // foreach ($last_over_record as $last_item) {
-        //     if (!in_array($last_item, $temp)) {
-        //         $temp[] = $last_item;
-        //     }
-        // }
-
         //sort by detect time-----
-        if (count($temp) > 1){
-            do
-            {
-                $swapped = false;
-                for( $i = 0, $c = count( $temp ) - 1; $i < $c; $i++ )
-                {
-                    if(strtotime($temp[$i]->detect_time) > strtotime($temp[$i + 1]->detect_time))
-                    {
-                        list( $temp[$i + 1], $temp[$i] ) =
-                                array( $temp[$i], $temp[$i + 1] );
-                        $swapped = true;
-                    }
+        if (count($temp) > 1) {
+            usort($temp, function($i_prev, $i_after){
+                if (strtotime($i_prev->detect_time) > strtotime($i_after->detect_time)) {
+                    return 1;
                 }
-            }
-            while( $swapped );
 
+                return 0;
+            });
         }
 
         //------------------------

@@ -458,7 +458,7 @@ input[type=text], input[type=password], input[type=number] {
   display: block;
   margin: 0;
   padding: 20px 15px;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1;
   text-decoration: none;
   /* transition: all 0.3s ease-in-out; */
@@ -491,6 +491,12 @@ input[type=text], input[type=password], input[type=number] {
   text-align: left;
   color: #d7e6fe;
   text-indent: 0 !important;
+}
+#dropmenu li ul li:first-child a{
+	border-radius:0 10px 0 0;
+}
+#dropmenu li ul li:last-child a{
+	border-radius:0 0 10px 0;
 }
 #dropmenu li ul li a:after {
   content: ">";
@@ -817,6 +823,7 @@ p.bk a:before {
   margin: 0 10px 0 0;
 }
 #r-head-right ul {
+	align-items: center;
   display: flex;
 }
 #r-head-right ul li {
@@ -2855,7 +2862,7 @@ p a.add-btn:hover {
 .pagecount {
   margin: 0 auto 0 20px;
   color: #999;
-  font-size: 90%;
+  font-size: 80%;
 }
 @media only screen and (max-width:768px) {
   p a.add-btn {
@@ -4378,7 +4385,7 @@ input[type=submit].tuika {
   border: none !important;
   width: 100%;
   min-width: 150px;
-  border-bottom: 1px solid #999 !important;
+  border-bottom: 1px solid #FFF !important;
   padding: 5px 15px 5px 10px !important;
   border-radius: 0 !important;
   font-size: 14px;
@@ -4653,7 +4660,7 @@ ul.date-list li input[type=text] {
   font-size: 16px;
   padding: 5px 5px 2px 5px;
   border: none;
-  border-bottom: 1px solid #999;
+  border-bottom: 1px solid #FFF;
   border-radius: 0 !important;
   background: none;
 }
@@ -5180,6 +5187,9 @@ ul.camera-list li table td {
   padding: 5px 0 0 0;
   border: none;
 }
+.add-to-toppage + ul.kenchi-list{
+	margin-top: 25px;
+}
 ul.kenchi-list {
   display: flex;
   /* justify-content: space-between; */
@@ -5188,10 +5198,13 @@ ul.kenchi-list {
 ul.kenchi-list li {
   background: #FFF;
   margin-bottom: 25px;
-  margin-right: 5px;
+  margin-right: 2%;
   width: 32%;
   border-radius: 0 50px 0 20px / 0 50px 0 20px;
   box-shadow: 0px 10px 10px -3px rgb(1 24 54 / 10%);
+}
+ul.kenchi-list li:nth-child(3n){
+	margin-right: 0;
 }
 @media only screen and (max-width:768px) {
   ul.kenchi-list {
@@ -5218,7 +5231,7 @@ ul.kenchi-list li .movie .cap {
 }
 ul.kenchi-list li .movie .cap time {
   font-family: Arial, Helvetica, "sans-serif" !important;
-  font-size: 120%;
+  font-size: 110%;
 }
 ul.kenchi-list li .movie .cap p {
   font-size: 14px;
@@ -5319,10 +5332,11 @@ ul.pit-list li {
   border-radius: 10px;
   margin-bottom: 4%;
 }
+
 ul.pit-list li dl {
   display: flex;
   line-height: 1;
-  align-items: center;
+	margin-bottom: 5px;
   justify-content: space-between;
 }
 ul.pit-list li dl dt, ul.pit-list li dd {
@@ -5333,7 +5347,7 @@ ul.pit-list li dl dt {
   color: #666;
 }
 ul.pit-list li dl dt {
-  font-size: 14px;
+  font-size: 13px;
 }
 .icon-map {
   padding-left: 25px;
@@ -5361,11 +5375,9 @@ ul.pit-list li dd:before{
 	margin-right: 10px;
 }
 */
-ul.pit-list li dd {
-  background: rgb(255 255 255 / 90%);
-  border-radius: 5px;
-  margin: 0 0 0 10px;
-  padding: 5px;
+ul.pit-list li:nth-child(1) dl dt{ width: 50%; }
+ul.pit-list li:nth-child(1) dl dd {
+	width: 50%;
 }
 ul.pit-list li h2 + p {
   font-size: 15px;
@@ -5389,7 +5401,7 @@ ul.pit-list li h2, .pit-wrap h2 {
   letter-spacing: .1em;
   color: #0062de;
   margin-bottom: 5px;
-  font-size: 17px;
+  font-size: 15px;
 }
 .n-area {
   display: flex;
@@ -5722,6 +5734,9 @@ ul.time li input {
   display: inline-block;
   margin: 0 5px 0 0;
 }
+.chartjs-size-monitor + .period-select-buttons{
+	margin: 10px 0 0 0;
+}
 .period-select-buttons > button {
   border: none;
   background: rgb(0 98 222 / 10%) !important;
@@ -5822,7 +5837,7 @@ button.add-btn {
 .video-notice{
   color: white;
   text-align: center;
-  font-size: 22px;
+  font-size:1.25vw;
 }
 .add-figure-area{
   margin-top: 15px !important;
@@ -5874,14 +5889,17 @@ button.add-btn {
   margin-top: 150px !important;
 }
 .move-href{
-  text-decoration: underline;
-  color: blue;
+    background: linear-gradient(-135deg,#CC0000,#D4145A);
+    color: #FFF;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 14px;
   cursor: pointer;
 }
 .reset-heatmap-button{
   padding:5px 15px;
-  /* background: linear-gradient(-135deg, #2ebf43, #00db4f); */
-  background-color: #CC0000;
+ background: linear-gradient(-135deg,#CC0000,#D4145A); 
   border-radius: 30px;
   color:white;
   border:none;
@@ -5896,4 +5914,36 @@ button.add-btn {
   border: none;
   text-decoration: underline;
   color: rgba(0, 98, 222, 1);
+}
+.setting-head{
+	margin:10px 0 0 -15px !important;
+}
+.setting-head .time-wrap h4{
+	margin-bottom: 10px !important;
+}
+.title-label + input[type=color]{
+	position: relative;
+    top: 5px;
+}
+ul.time + .error-message + p{
+	font-size: 11px !important;
+}
+.name_input,.members_input,.select-box{
+	box-shadow: 0px 10px 10px -3px rgba(0,0,0,.15);
+}
+.setting-head + .notice-area{
+	margin-top: 10px;
+    font-size: 12px;
+}
+.guide{
+	padding: 10px;
+    box-sizing: border-box;
+    border: 1px dotted #999;
+}
+.guide p:nth-child(3),.guide p:nth-child(4){
+	font-size:12px;
+	color: #CC0000;
+}
+.title-div.mt-7{
+	margin-bottom: 7px;
 }

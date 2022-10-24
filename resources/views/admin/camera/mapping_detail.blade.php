@@ -95,17 +95,15 @@
                             <td>{{$camera->remarks}}</td>
                         </tr>
                         @endforeach
-                        @if(count($cameras) == 0)
-                        <tr>
+                        <tr class="no-camera-record" style="display: none;">
                             <td colspan="6">登録されたカメラがありません。カメラを設定してください</td>
                         </tr>
-                        @endif
                     </tbody>
                 </table>
                 <p class="error-message">カメラを選択してください。</p>
                 <div class="modal-set">
                     @if(count($cameras) > 0)
-                    <button onclick="selectCamera()" type="submit" class="">設 定</button>
+                    <button onclick="selectCamera()" type="submit" class="set-button">設 定</button>
                     @endif
                 </div>
             </div>
@@ -182,13 +180,21 @@
                     selected_camera_ids.push(parseInt(camera_item.camera_id));
                 }
             })
-        })
+        });
+        var cameras = <?php echo $cameras;?>;
         $('.camera_candidates tr').each(function(){
             $(this).show();
-        })
+        });
         selected_camera_ids.map(selected_id => {
             $('#tr_' + selected_id).hide();
-        })
+        });
+        if (selected_camera_ids.length == cameras.length){
+            $('.no-camera-record').show();
+            $('.set-button').hide();
+        } else {
+            $('.no-camera-record').hide();
+            $('.set-button').show();
+        }
     }
 
     function changeFloor(){

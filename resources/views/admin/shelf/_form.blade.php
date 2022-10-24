@@ -410,8 +410,9 @@
             var rule_index = parseInt(circle_id.split('_')[0]);
             var new_x = e.evt.offsetX;
             var new_y = e.evt.offsetY;
-            if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30) {
-                var point_index = rules_object[rule_index].points.findIndex(x => x.id == circle_id);
+            var point_index = rules_object[rule_index].points.findIndex(x => x.id == circle_id);
+            var delta = Math.abs(rules_object[rule_index].points[point_index].x - new_x) + Math.abs(rules_object[rule_index].points[point_index].y - new_y);
+            if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30 || delta > 150) {
                 circle.stopDrag();
                 circle.absolutePosition({x:rules_object[rule_index].points[point_index].x, y:rules_object[rule_index].points[point_index].y});
                 return;

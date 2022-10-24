@@ -218,7 +218,7 @@
                         @endforeach
                         @if(count($cameras) == 0)
                         <tr>
-                            <td colspan="6">登録されたカメラがありません。カメラを設定してください</td>
+                            <td colspan="6">登録されたカメラがありません。ルールを設定してください</td>
                         </tr>
                         @endif
                         </tbody>

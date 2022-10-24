@@ -424,12 +424,19 @@
         circle.on('dragmove', function (e) {
             var new_x = e.evt.offsetX;
             var new_y = e.evt.offsetY;
-            if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30) {
+            var point_index = red_points.findIndex(point => point.id == e.target.id());
+            var delta = null;
+            if (point_index > -1){
+                delta = Math.abs(red_points[point_index].x - new_x) + Math.abs(red_points[point_index].y - new_y);
+            }
+            if (color != null){
+                point_index = blue_points.findIndex(point => point.id == e.target.id());
+                delta = Math.abs(blue_points[point_index].x - new_x) + Math.abs(blue_points[point_index].y - new_y)
+            }
+            if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30 || delta > 150) {
                 if (color == null){
-                    var point_index = red_points.findIndex(point => point.id == e.target.id());
                     circle.absolutePosition({x:red_points[point_index].x, y:red_points[point_index].y});
                 } else {
-                    point_index = blue_points.findIndex(point => point.id == e.target.id());
                     circle.absolutePosition({x:blue_points[point_index].x, y:blue_points[point_index].y});
                 }
                 circle.stopDrag();
@@ -567,8 +574,12 @@
             circle.on('dragmove', function (e) {
                 var new_x = e.evt.offsetX;
                 var new_y = e.evt.offsetY;
-                if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30) {
-                    var point_index = red_points.findIndex(point => point.id == e.target.id());
+                var point_index = red_points.findIndex(point => point.id == e.target.id());
+                var delta = null;
+                if (point_index > -1){
+                    delta = Math.abs(red_points[point_index].x - new_x) + Math.abs(red_points[point_index].y - new_y);
+                }
+                if (mouse_pos.x >= window.innerWidth - 30 || mouse_pos.x <= 230 || mouse_pos.y <= 20 || mouse_pos.y >= window.innerHeight - 30 || delta > 150) {
                     circle.absolutePosition({x:red_points[point_index].x, y:red_points[point_index].y});
                     circle.stopDrag();
                     return;
@@ -658,7 +669,6 @@
                         })
                     }
                     if (count > 0) score = score / count;
-                    console.log('score', score);
                     $('.grid_' + i + '_' + j).css('opacity', calcOpacity(score));
                 }
             }
@@ -711,7 +721,6 @@
         }
         $('.grid-area').css('margin-left', $('.video-area').width() - 1280 > 0 ? ($('.video-area').width() - 1280)/2 : 0);
         window.addEventListener('resize', function(event) {
-            console.log('resize');
             $('.grid-area').css('margin-left', $('.video-area').width() - 1280 > 0 ? ($('.video-area').width() - 1280)/2 : 0);
         }, true);
     });

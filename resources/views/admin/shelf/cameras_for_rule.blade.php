@@ -40,7 +40,7 @@
                             <label for="radio-{{$camera->id}}" class="radio-label"></label>
                         </div>
                     </td>
-                    <td>{{$camera->camera_id}}</td>
+                    <td>{{$camera->serial_no}}</td>
                     <td>{{isset($locations[$camera->location_id])?$locations[$camera->location_id]:''}}</td>
                     <td>{{$camera->floor_number}}</td>
                     <td>{{$camera->installation_position}}</td>

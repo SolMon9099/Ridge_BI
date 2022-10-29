@@ -39,6 +39,7 @@ class CameraService
     {
         $new_Camera = new Camera();
         $new_Camera->camera_id = $params['camera_id'];
+        $new_Camera->serial_no = isset($params['serial_no'])?$params['serial_no']:'';
         if ($params['location_id'] == 0) {
             $new_Camera->location_id = null;
         } else {
@@ -76,7 +77,6 @@ class CameraService
     public static function doUpdate($params, $cur_Camera)
     {
         if (is_object($cur_Camera)) {
-            $cur_Camera->camera_id = $params['camera_id'];
             if ($params['location_id'] == 0) {
                 $cur_Camera->location_id = null;
             } else {
@@ -154,6 +154,23 @@ class CameraService
         }
 
         return $camera_query->get();
+    }
+
+    public static function getCamerasForRules(){
+        $camera_query = Camera::query()->select('cameras.*');
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $camera_query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
+            $camera_query -> where(function($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+            $camera_query->whereNull('locations.deleted_at');
+        }
+        return $camera_query->orderBy('cameras.id', 'asc');
     }
 
     public static function storeMapping($camera_mapping_info)

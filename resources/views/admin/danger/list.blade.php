@@ -24,11 +24,13 @@
                         <ul class="date-list">
                             <li><h4>検出期間</h4></li>
                             <li>
-                                <input type="date" id="starttime" name='starttime' value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')))}}">
+                                <input type="date" id="starttime" name='starttime' onchange="$('#form1').submit()"
+                                    value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')))}}">
                             </li>
                             <li>～</li>
                             <li>
-                                <input type="date" id="endtime" name='endtime' value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'))}}">
+                                <input type="date" id="endtime" name='endtime' onchange="$('#form1').submit()"
+                                    value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'))}}">
                             </li>
                         </ul>
                         <ul class="date-list">
@@ -36,7 +38,7 @@
                             <li><a data-target="rule" class="modal-open setting">選択する</a></li>
                         </ul>
                         <input type= 'hidden' name='rule_ids' id = 'rule_id_input' value="{{ old('rule_ids', (isset($request) && $request->has('rule_ids'))?$request->rule_ids:'')}}"/>
-                        <button type="submit" class="apply">絞り込む</button>
+                        {{-- <button type="submit" class="apply">絞り込む</button> --}}
                     </div>
                 </div>
             </div>
@@ -76,7 +78,7 @@
                     </div>
                 </div>
                 <div class="text">
-                    <p class="camera-id">カメラID:{{$item->camera_no}}</p>
+                    <p class="camera-id">カメラID:{{$item->serial_no}}</p>
                     <ul class="pit-list">
                         <li>
                             <h2 class="icon-map">設置場所</h2>
@@ -94,8 +96,12 @@
                             </dl>
                         </li>
                         <li>
-                            <h2 style="cursor: pointer" class="icon-content" onclick="location.href='{{route('admin.danger.edit', ['danger' => $item->rule_id])}}'">検知内容</h2>
-                            <p>{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action_statement')[$item->detection_action_id] : ''}}</p>
+                            <h2 style="cursor: pointer" class="icon-content" onclick="location.href='{{route('admin.danger.edit', ['danger' => $item->rule_id])}}'">ルール</h2>
+                            <dl>
+                                <dd style="padding-top: 3px;">{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action')[$item->detection_action_id] : ''}}</dd>
+                                <dd><input type="color" readonly value="{{$item->color}}"/></dd>
+                            </dl>
+
                         </li>
                         {{-- <li>
                             <h2 class="icon-condition">検知条件</h2>
@@ -104,12 +110,12 @@
                                 <dd>1人</dd>
                             </dl>
                         </li> --}}
-                        {{-- <li>
-                            <h2 class="icon-rule" onclick="location.href='{{route('admin.danger.edit', ['danger' => $item->rule_id])}}'">ルール</h2>
+                        <li>
+                            <h2 style="cursor: pointer" class="icon-rule" onclick="location.href='{{route('admin.danger.edit', ['danger' => $item->rule_id])}}'">ルール名</h2>
                             <dl>
                                 <dd>{{isset($item->rule_name) ? $item->rule_name : ''}}</dd>
                             </dl>
-                        </li> --}}
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -131,13 +137,15 @@
             <table class="table2 text-centre">
                 <thead>
                 <tr>
-                    <th class="w10"></th>
+                    <th class=""></th>
+                    <th>ルール名</th>
                     <th>カメラNo</th>
                     <th>設置エリア</th>
                     <th>設置フロア</th>
                     <th>設置場所</th>
                     <th>アクション</th>
                     <th>カラー</th>
+                    <th>ルールの設定期間</th>
                     <th>カメラ画像確認</th>
                 </tr>
                 </thead>
@@ -162,7 +170,8 @@
                                 <label for="{{'rule-'.$rule->id}}" class="custom-style"></label>
                             </div>
                         </td>
-                        <td> {{$rule->camera_no}}</td>
+                        <td>{{$rule->name}}</td>
+                        <td>{{$rule->serial_no}}</td>
                         <td>{{$rule->location_name}}</td>
                         <td>{{$rule->floor_number}}</td>
                         <td>{{$rule->installation_position}}</td>
@@ -172,12 +181,13 @@
                             @endforeach
                         </td>
                         <td><input disabled type="color" value = "{{$rule->color}}"></td>
+                        <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
                         <td><img width="100px" src="{{$rule->img}}"/></td>
                     </tr>
                     @endforeach
                     @if(count($rules) == 0)
                     <tr>
-                        <td colspan="8">登録されたルールがありません。ルールを設定してください</td>
+                        <td colspan="10">登録された危険エリア侵入検知のルールがありません。ルールを設定してください</td>
                     </tr>
                     @endif
                 </tbody>
@@ -212,10 +222,6 @@
 </div>
 <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <style>
-    .textarea{
-        max-width: 1200px;
-        width:100%;
-    }
     .v{
         position: relative;
     }
@@ -227,6 +233,8 @@
 </style>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 <script>
+    var stage = null;
+    var initial_width = null;
     function selectRule(){
         var checked_rules = [];
         $('.rule_checkbox').each(function(){
@@ -235,6 +243,7 @@
             }
         })
         $('#rule_id_input').val(JSON.stringify(checked_rules));
+        $('#form1').submit();
     }
 
     function videoPlay(path, points, color, detection_name){
@@ -248,9 +257,10 @@
             var height = $('#video-container').height();
             $('#image-container').width(width);
             $('#image-container').height(height);
+            initial_width = width;
 
             var container = document.getElementById('image-container');
-            var stage = new Konva.Stage({
+            stage = new Konva.Stage({
                 container: 'image-container',
                 width: container.clientWidth,
                 height: container.clientHeight,
@@ -277,6 +287,7 @@
                 });
                 layer.add(figure_area);
             }
+
             drawFigure(points, color, ratio);
             $('.detect-content').html(detection_name);
         }, 1000);
@@ -284,7 +295,7 @@
     function addDashboard(block_type){
         var options = {
             starttime:formatDateLine($('#starttime').val()),
-            endtime:formatDateLine($('#endtime').val())
+            endtime:formatDateLine($('#endtime').val()),
         };
         addToToppage(block_type, options);
     }
@@ -310,6 +321,18 @@
                 }
             })
         }, 60000);
+        window.addEventListener('resize', function(){
+            var width = $('#video-container').width();
+            var height = $('#video-container').height();
+            if (width > 0 && height > 0 && initial_width > 0){
+                $('#image-container').width(width);
+                $('#image-container').height(height);
+                stage.width(width);
+                stage.height(height);
+                var scale = width/initial_width;
+                stage.scale({x:scale, y:scale});
+            }
+        });
     })
 </script>
 @endsection

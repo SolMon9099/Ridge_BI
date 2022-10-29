@@ -41,7 +41,7 @@ class CameraRequest extends FormRequest
             if ($this->action == 'admin.camera.store') {
                 $rules['camera_id'] = ['required', 'max:150', 'unique:cameras,camera_id,NULL,id,deleted_at,NULL'];
             } elseif ($this->action == 'admin.camera.update') {
-                $rules['camera_id'] = ['required', 'max:150', "unique:cameras,camera_id,{$this->p_request->id},id,deleted_at,NULL"];
+                $rules['camera_id'] = ['nullable', 'max:150', "unique:cameras,camera_id,{$this->p_request->id},id,deleted_at,NULL"];
             }
         }
 

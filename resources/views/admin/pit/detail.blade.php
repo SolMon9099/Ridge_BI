@@ -31,7 +31,7 @@
                             </li>
                             <li><a data-target="camera" class="modal-open setting">選択する</a></li>
                             @if($selected_rule != null)
-                                <li><p class="selected-camera">{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
+                                <li><p class="selected-camera">{{$selected_rule->serial_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
                             @endif
 
                         </ul>
@@ -75,6 +75,9 @@
                         <div class="left-right">
                             <div class="left-box" style="position: relative;">
                                 <h3 class="title">最新の検知</h3>
+                                @if(count($pit_over_detections) == 0)
+                                    <div class="no-data">検知データがありません。</div>
+                                @else
                                 <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>"
                                     onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_pit']}})">ダッシュボートへ追加</button>
                                 <table class="table2 text-centre top50">
@@ -82,7 +85,7 @@
                                         <tr>
                                             <th>時間</th>
                                             <th>検知条件</th>
-                                            <th>ピット内人数</th>
+                                            {{-- <th>ピット内人数</th> --}}
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -90,52 +93,69 @@
                                         @foreach ($pit_over_detections as $item)
                                             <tr>
                                                 <td>{{$item->detect_time}}</td>
-                                                <td>時間オーバー({{$item->max_permission_time.'分'}})</td>
-                                                <td>{{isset($item->sum_in_pit) ? $item->sum_in_pit.'人' : ''}}</td>
+                                                <td>{{$item->min_members.'人以上/'.$item->max_permission_time.'分超過'}}</td>
+                                                {{-- <td>{{isset($item->sum_in_pit) ? $item->sum_in_pit.'人' : ''}}</td> --}}
                                                 <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
+                                @endif
                             </div>
                             <div class="right-box" style="position: relative;">
                                 <h3 class="title">入退場履歴</h3>
-                                <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['pit_history']}})">ダッシュボートへ追加</button>
-                                <table class="table2 text-centre top50">
-                                    <thead>
-                                        <tr>
-                                            <th>時間</th>
-                                            <th>検知条件</th>
-                                            <th>人数変化</th>
-                                            <th>ピット内人数</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                            foreach (array_reverse($pit_detections) as $item) {
-                                                if ($item->nb_entry != $item->nb_exit){
-                                                    $sum += ($item->nb_entry - $item->nb_exit);
-                                                    $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
-                                                }
-                                            }
-                                        ?>
-                                        @foreach ($pit_detections as $item)
-                                            @if($item->nb_entry != $item->nb_exit)
-
+                                @if(count($pit_detections) == 0)
+                                    <div class="no-data">検知データがありません。</div>
+                                @else
+                                    <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['pit_history']}})">ダッシュボートへ追加</button>
+                                    <table class="table2 text-centre top50">
+                                        <thead>
                                             <tr>
-                                                <td>{{date('Y-m-d H:i:s', strtotime($item->starttime))}}</td>
-                                                <td>{{$item->nb_entry > $item->nb_exit ? '入場' : '退場'}} </td>
-                                                <td><span class="{{$item->nb_entry > $item->nb_exit ? 'f-red' : 'f-blue'}}">{{$item->nb_entry - $item->nb_exit}}</span></td>
-                                                <td>{{$total_data[date('Y-m-d H:i:s', strtotime($item->starttime))]}}</td>
+                                                <th>時間</th>
+                                                <th>検知条件</th>
+                                                <th>人数変化</th>
+                                                <th>ピット内人数</th>
                                             </tr>
-                                            @endif
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                                $sum_data = array();
+                                                foreach (array_reverse($pit_detections) as $item) {
+                                                    if ($item->nb_entry != $item->nb_exit){
+                                                        $sum += ($item->nb_entry - $item->nb_exit);
+                                                        $sum_data[$item->id] = $sum;
+                                                        if (!isset($total_data[date('Y-m-d H:i:s', strtotime($item->starttime))])) {
+                                                            $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
+                                                        } else {
+                                                            $delta = 1;
+                                                            while(isset($total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)])){
+                                                                $delta += 1;
+                                                            }
+                                                            $total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)] = $sum;
+                                                        }
+                                                    }
+                                                }
+                                            ?>
+                                            @foreach ($pit_detections as $item)
+                                                @if($item->nb_entry != $item->nb_exit)
+
+                                                <tr>
+                                                    <td>{{date('Y-m-d H:i:s', strtotime($item->starttime))}}</td>
+                                                    <td>{{$item->nb_entry > $item->nb_exit ? '入場' : '退場'}} </td>
+                                                    <td><span class="{{$item->nb_entry > $item->nb_exit ? 'f-red' : 'f-blue'}}">{{$item->nb_entry - $item->nb_exit}}</span></td>
+                                                    <td>{{$sum_data[$item->id]}}</td>
+                                                </tr>
+                                                @endif
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
+            @else
+                <div class="no-data">検知データがありません。</div>
             @endif
         </div>
     </div>
@@ -169,7 +189,7 @@
                                     <label class="" for="{{'camera'.$camera->id}}"></label>
                                 </div>
                             </td>
-                            <td>{{$camera->camera_id}}</td>
+                            <td>{{$camera->serial_no}}</td>
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
@@ -178,7 +198,7 @@
                         @endforeach
                         @if(count($cameras) == 0)
                         <tr>
-                            <td colspan="6">ルールが登録されたカメラがありません。ルールを設定してください</td>
+                            <td colspan="6">ピット入退場検知のルールが登録されたカメラがありません。ルールを設定してください</td>
                         </tr>
                         @endif
                         </tbody>
@@ -239,25 +259,34 @@
 <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
 <script>
     var ctx = document.getElementById("myLineChart1");
+    var myLineChart = null;
     var time_period = "<?php echo $time_period;?>";
     var selected_camera = "<?php echo $selected_camera;?>";
     var grid_unit = 15;
     var total_data = <?php echo json_encode($total_data);?>;
 
-    function drawGraph(x_data, y_data){
-        var myLineChart = new Chart(ctx, {
+    function drawGraph(x_data, y_data, point_radius){
+        ctx.innerHTML = '';
+        if (myLineChart != null){
+            myLineChart.destroy();
+        }
+        myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels:x_data,
                 datasets: [{
                     label: '人',
-                    steppedLine:true,
+                    steppedLine:'before',
                     data: y_data,
                     borderColor: "#42b688",
                     backgroundColor: "rgba(66,182,136, 0.3)",
                     pointBackgroundColor:'red',
+                    radius:point_radius,
                     fill:true
-                }]
+                }],
+                mousemove: function(){
+                    return;
+                },
             },
             options: {
                 title: {
@@ -331,6 +360,7 @@
         }
         var time_labels = [];
         var y_data = [];
+        var point_radius = [];
 
         var now = new Date();
         var min_time = new Date();
@@ -351,27 +381,37 @@
 
         while(cur_time.getTime() <= max_time.getTime()){
             time_labels.push(new Date(cur_time));
-            var y_add_flag = false;
+            point_radius.push(0);
+            if (y_data.length > 0){
+                y_data.push(y_data[y_data.length - 1]);
+            } else {
+                y_data.push(null);
+            }
+
             Object.keys(total_data).map((time, index) => {
-                if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000){
+                if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000 && new Date(time).getTime() <= max_time.getTime()){
                     if (index == 0){
-                        y_add_flag = true;
                         if (new Date(time).getTime() != cur_time.getTime()) {
                             time_labels.push(new Date(time));
-                            y_data.push(null);
+                            point_radius.push(0);
+                            if (y_data.length > 0){
+                                y_data.push(y_data[y_data.length - 1]);
+                            } else {
+                                y_data.push(null);
+                            }
                         }
                     } else {
                         time_labels.push(new Date(time));
+                        point_radius.push(3);
+                        y_data.push(total_data[time]);
                     }
-                    y_data.push(total_data[time]);
+                    point_radius[point_radius.length - 1] = 3;
+                    y_data[y_data.length - 1] = total_data[time];
                 }
             })
-            if (y_add_flag == false){
-                y_data.push(null);
-            }
             cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
         }
-        drawGraph(time_labels, y_data);
+        drawGraph(time_labels, y_data, point_radius);
     }
 
     function addDashboard(block_type){
@@ -471,7 +511,7 @@
             // 初期化
             safieStreamingPlayer.defaultProperties = {
                 defaultAccessToken: '<?php echo $access_token;?>',
-                defaultDeviceId: '<?php echo isset($selected_rule) ? $selected_rule->camera_no : '';?>',
+                defaultDeviceId: '<?php echo isset($selected_rule) ? $selected_rule->device_id : '';?>',
                 defaultAutoPlay:true,
                 defaultUserInteractions:false
             };

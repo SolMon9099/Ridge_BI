@@ -24,6 +24,8 @@ class ShelfController extends AdminController
         $locations = LocationService::getAllLocationNames();
         $cameras = ShelfService::getAllCameras();
         $camera_imgs = [];
+        $floor_numbers = [];
+        $installation_positions = [];
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $camera->id)
@@ -31,6 +33,12 @@ class ShelfController extends AdminController
                 ->whereNull('drawing.deleted_at')->get()->first();
             if ($map_data != null) {
                 $camera->floor_number = $map_data->floor_number;
+                if (!in_array($map_data->floor_number, $floor_numbers)){
+                    $floor_numbers[] = $map_data->floor_number;
+                }
+            }
+            if ($camera->installation_position != null && $camera->installation_position != '' && !in_array($camera->installation_position, $installation_positions)){
+                $installation_positions[] = $camera->installation_position;
             }
             $safie_service = new SafieApiService($camera->contract_no);
 
@@ -55,6 +63,8 @@ class ShelfController extends AdminController
             'input' => $request,
             'locations' => $locations,
             'cameras' => $cameras,
+            'installation_positions' => $installation_positions,
+            'floor_numbers' => $floor_numbers,
         ]);
     }
 
@@ -105,11 +115,7 @@ class ShelfController extends AdminController
             abort(403);
         }
         $locations = LocationService::getAllLocationNames();
-        $camera_query = Camera::query();
-        if (Auth::guard('admin')->user()->contract_no != null) {
-            $camera_query->where('contract_no', Auth::guard('admin')->user()->contract_no);
-        }
-        $cameras = $camera_query->orderBy('id', 'asc')->paginate($this->per_page);
+        $cameras = CameraService::getCamerasForRules()->paginate($this->per_page);
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $camera->id)

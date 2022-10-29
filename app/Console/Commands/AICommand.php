@@ -36,7 +36,7 @@ class AICommand extends Command
                 }
                 if (isset($file_content->request_id) && $file_content->request_id > 0) {
                     $safie_service = new SafieApiService($file_content->contract_no);
-                    $media_status = $safie_service->getMediaFileStatus($file_content->camera_no, $file_content->request_id);
+                    $media_status = $safie_service->getMediaFileStatus($file_content->device_id, $file_content->request_id);
                     if ($media_status != null && isset($media_status['state'])) {
                         Log::info($media_status);
                         if ($media_status['state'] !== 'AVAILABLE') {
@@ -52,7 +52,7 @@ class AICommand extends Command
                                 continue;
                             }
                             Log::info('video ok~~~~~~~');
-                            $thumb_image = $safie_service->getDeviceImage($file_content->camera_no, $file_content->starttime_format_for_image);
+                            $thumb_image = $safie_service->getDeviceImage($file_content->device_id, $file_content->starttime_format_for_image);
                             $file_name = date('YmdHis', strtotime($file_content->starttime)).'.mp4';
 
                             $type = $file_content->type;
@@ -84,19 +84,19 @@ class AICommand extends Command
                                     $detection_model = new ThiefDetection();
                                     break;
                             }
-                            Storage::disk('video')->put($folder_name.'\\'.$file_content->camera_no.'\\'.$file_name, $video_data);
+                            Storage::disk('video')->put($folder_name.'\\'.$file_content->device_id.'\\'.$file_name, $video_data);
 
                             $detection_model->camera_id = $file_content->camera_id;
                             $detection_model->rule_id = $file_content->rule_id;
-                            $detection_model->video_file_path = $folder_name.'/'.$file_content->camera_no.'/'.$file_name;
+                            $detection_model->video_file_path = $folder_name.'/'.$file_content->device_id.'/'.$file_name;
                             $detection_model->starttime = $file_content->starttime;
                             $detection_model->endtime = $file_content->endtime;
                             if ($thumb_image != null) {
-                                Storage::disk('thumb')->put($folder_name.'\\'.$file_content->camera_no.'\\'.date('YmdHis', strtotime($file_content->starttime)).'.jpeg', $thumb_image);
-                                $detection_model->thumb_img_path = $folder_name.'/'.$file_content->camera_no.'/'.date('YmdHis', strtotime($file_content->starttime)).'.jpeg';
+                                Storage::disk('thumb')->put($folder_name.'\\'.$file_content->device_id.'\\'.date('YmdHis', strtotime($file_content->starttime)).'.jpeg', $thumb_image);
+                                $detection_model->thumb_img_path = $folder_name.'/'.$file_content->device_id.'/'.date('YmdHis', strtotime($file_content->starttime)).'.jpeg';
                             }
                             $detection_model->save();
-                            $safie_service->deleteMediaFile($file_content->camera_no, $file_content->request_id);
+                            $safie_service->deleteMediaFile($file_content->device_id, $file_content->request_id);
                             Storage::disk('temp')->delete($file);
                         }
                     }
@@ -115,7 +115,7 @@ class AICommand extends Command
         //         if ($file_content != null) {
         //             $file_content = json_decode($file_content);
         //         }
-        //         if (isset($file_content->camera_no) && $file_content->camera_no != '') {
+        //         if (isset($file_content->device_id) && $file_content->device_id != '') {
         //             $type = $file_content->type;
         //             $resource_name = '危険エリア侵入検知';
         //             switch ($type) {
@@ -134,7 +134,7 @@ class AICommand extends Command
         //             }
 
         //             $safie_service = new SafieApiService($file_content->contract_no);
-        //             $request_id = $safie_service->makeMediaFile($file_content->camera_no, $file_content->record_start_time, $file_content->record_end_time, $resource_name);
+        //             $request_id = $safie_service->makeMediaFile($file_content->device_id, $file_content->record_start_time, $file_content->record_end_time, $resource_name);
         //             Log::info('503 retry http code = '.$request_id);
         //             if ($request_id > 0) {
         //                 $file_content->request_id = $request_id;

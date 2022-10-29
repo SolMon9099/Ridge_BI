@@ -164,8 +164,8 @@ li.active .modal-open.blue{
   cursor: pointer;
 }
 .textarea, .textarea_c {
-    width: 70%;
-	max-width: 980px;
+    max-width: 1300px;
+    width:100%;
     position: absolute;
     left: 50%;
     top: 50%;

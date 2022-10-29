@@ -207,6 +207,7 @@ class SafieApiService
             if (count($split_data) > 1) {
                 $code = explode('&', $split_data[1])[0];
             }
+            curl_close($curl);
         }
 
         return $code;
@@ -243,14 +244,15 @@ class SafieApiService
         if (curl_errno($curl)) {
             Log::debug('--- Curl エラー ---');
             echo curl_error($curl);
-
+            curl_close($curl);
             return null;
         }
         if ($httpcode == 200) {
             $response = curl_multi_getcontent($curl);
-
+            curl_close($curl);
             return $response;
         } else {
+            curl_close($curl);
             return null;
         }
     }
@@ -274,11 +276,11 @@ class SafieApiService
         if (curl_errno($curl)) {
             Log::debug('--- Curl エラー ---');
             echo curl_error($curl);
-
+            curl_close($curl);
             return null;
         }
         $response = curl_multi_getcontent($curl);
-
+        curl_close($curl);
         return $response;
     }
 
@@ -516,7 +518,7 @@ class SafieApiService
             $this->generateRefreshToken();
         }
         Log::info('【Finish Delete Api】url:'.$url);
-
+        curl_close($curl);
         return $httpcode;
     }
 
@@ -535,7 +537,7 @@ class SafieApiService
         $response = curl_exec($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         Log::info('httpcode = '.$httpcode);
-
+        curl_close($curl);
         if ($httpcode == 401) {
             $this->generateRefreshToken();
         }

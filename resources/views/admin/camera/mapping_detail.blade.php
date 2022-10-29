@@ -89,7 +89,7 @@
                                 </div>
                             </td>
                             <td>{{$camera->id}}</td>
-                            <td>{{$camera->camera_id}}</td>
+                            <td>{{$camera->serial_no}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
                             <td>{{$camera->remarks}}</td>

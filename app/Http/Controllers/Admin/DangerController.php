@@ -24,6 +24,8 @@ class DangerController extends AdminController
         $locations = LocationService::getAllLocationNames();
         $cameras = DangerService::getAllCameras();
         $camera_imgs = [];
+        $floor_numbers = [];
+        $installation_positions = [];
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $camera->id)
@@ -31,6 +33,12 @@ class DangerController extends AdminController
                 ->whereNull('drawing.deleted_at')->get()->first();
             if ($map_data != null) {
                 $camera->floor_number = $map_data->floor_number;
+                if (!in_array($map_data->floor_number, $floor_numbers)){
+                    $floor_numbers[] = $map_data->floor_number;
+                }
+            }
+            if ($camera->installation_position != null && $camera->installation_position != '' && !in_array($camera->installation_position, $installation_positions)){
+                $installation_positions[] = $camera->installation_position;
             }
             $safie_service = new SafieApiService($camera->contract_no);
 
@@ -66,6 +74,8 @@ class DangerController extends AdminController
             'input' => $request,
             'locations' => $locations,
             'cameras' => $cameras,
+            'installation_positions' => $installation_positions,
+            'floor_numbers' => $floor_numbers,
         ]);
     }
 
@@ -89,11 +99,7 @@ class DangerController extends AdminController
         $danger_rules = $temp;
 
         $locations = LocationService::getAllLocationNames();
-        $camera_query = Camera::query();
-        if (Auth::guard('admin')->user()->contract_no != null) {
-            $camera_query->where('contract_no', Auth::guard('admin')->user()->contract_no);
-        }
-        $cameras = $camera_query->orderBy('id', 'asc')->paginate($this->per_page);
+        $cameras = CameraService::getCamerasForRules()->paginate($this->per_page);
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $camera->id)
@@ -208,7 +214,7 @@ class DangerController extends AdminController
                 $item->floor_number = $map_data->floor_number;
             }
         }
-        $rules = DangerService::doSearch($request)->get()->all();
+        $rules = DangerService::getAllRules()->get()->all();
         $camera_imgs = [];
         foreach ($rules as $rule) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
@@ -217,18 +223,20 @@ class DangerController extends AdminController
                 ->whereNull('drawing.deleted_at')->get()->first();
             if ($map_data != null) {
                 $rule->floor_number = $map_data->floor_number;
+            } else {
+                $rule->floor_number = '';
             }
-            if (!isset($camera_imgs[$rule->camera_no])) {
+            if (!isset($camera_imgs[$rule->device_id])) {
                 if (isset($rule->contract_no)) {
                     $safie_service = new SafieApiService($rule->contract_no);
-                    $camera_image_data = $safie_service->getDeviceImage($rule->camera_no);
+                    $camera_image_data = $safie_service->getDeviceImage($rule->device_id);
                     if ($camera_image_data != null) {
                         $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
                     }
-                    $camera_imgs[$rule->camera_no] = $camera_image_data;
+                    $camera_imgs[$rule->device_id] = $camera_image_data;
                 }
             }
-            $rule->img = $camera_imgs[$rule->camera_no];
+            $rule->img = $camera_imgs[$rule->device_id];
         }
 
         return view('admin.danger.list')->with([
@@ -341,6 +349,9 @@ class DangerController extends AdminController
         if (isset($request['change_params']) && $request['change_params'] == 'change') {
             $change_search_params_flag = true;
         }
+
+        $rules = DangerService::getAllRules()->get()->all();
+
         $search_options = null;
         $search_option_record = SearchOption::query()->where('page_name', 'admin.danger.past_analysis')->where('user_id', Auth::guard('admin')->user()->id)->get()->first();
         if ($search_option_record != null) {
@@ -353,30 +364,32 @@ class DangerController extends AdminController
             $request['starttime'] = $search_options['starttime'];
             $request['endtime'] = $search_options['endtime'];
             $request['time_period'] = $search_options['time_period'];
-            $request['selected_search_option'] = $search_options['selected_search_option'];
+            // $request['selected_search_option'] = $search_options['selected_search_option'];
+            $request['selected_rule'] = isset($search_options['selected_rule']) ? $search_options['selected_rule'] : (count($rules) > 0 ? $rules[0]->id : null);
             $request['selected_rules'] = isset($search_options['selected_rules']) ? $search_options['selected_rules'] : [];
             $request['selected_cameras'] = isset($search_options['selected_cameras']) ? $search_options['selected_cameras'] : [];
             $request['selected_actions'] = isset($search_options['selected_actions']) ? $search_options['selected_actions'] : [];
         }
-        switch ($request['selected_search_option']) {
-            case 1:
-                $request['selected_cameras'] = [];
-                $request['selected_actions'] = [];
-                break;
-            case 2:
-                $request['selected_rules'] = [];
-                $request['selected_actions'] = [];
-                break;
-            case 3:
-                $request['selected_rules'] = [];
-                $request['selected_cameras'] = [];
-                break;
-        }
+        // switch ($request['selected_search_option']) {
+        //     case 1:
+        //         $request['selected_cameras'] = [];
+        //         $request['selected_actions'] = [];
+        //         break;
+        //     case 2:
+        //         $request['selected_rules'] = [];
+        //         $request['selected_actions'] = [];
+        //         break;
+        //     case 3:
+        //         $request['selected_rules'] = [];
+        //         $request['selected_cameras'] = [];
+        //         break;
+        // }
         $search_params = [
             'starttime' => isset($request['starttime']) && $request['starttime'] != '' ? $request['starttime'] : date('Y-m-d', strtotime('-1 week')),
             'endtime' => isset($request['endtime']) && $request['endtime'] != '' ? $request['endtime'] : date('Y-m-d'),
             'time_period' => isset($request['time_period']) ? $request['time_period'] : 'time',
-            'selected_search_option' => isset($request['selected_search_option']) ? $request['selected_search_option'] : 1,
+            // 'selected_search_option' => isset($request['selected_search_option']) ? $request['selected_search_option'] : 1,
+            'selected_rule' => isset($request['selected_rule']) ? $request['selected_rule'] : null,
             'selected_rules' => isset($request['selected_rules']) ? $request['selected_rules'] : [],
             'selected_cameras' => isset($request['selected_cameras']) ? $request['selected_cameras'] : [],
             'selected_actions' => isset($request['selected_actions']) ? $request['selected_actions'] : [],
@@ -394,7 +407,6 @@ class DangerController extends AdminController
                 $all_data[date('Y-m-d H:i', strtotime($item->starttime))][$item->detection_action_id][] = $item;
             }
         }
-        $rules = DangerService::doSearch($request)->get()->all();
         $cameras = DangerService::getAllCameras();
         $camera_imgs = [];
         foreach ($cameras as $camera) {
@@ -416,13 +428,20 @@ class DangerController extends AdminController
                 Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
             }
         }
+        $selected_rule_object = null;
         foreach ($rules as $rule) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $rule->camera_id)
                 ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
-                ->whereNull('drawing.deleted_at')->get()->first();
+                // ->whereNull('drawing.deleted_at')
+                ->get()->first();
             if ($map_data != null) {
                 $rule->floor_number = $map_data->floor_number;
+            } else {
+                $rule->floor_number = '';
+            }
+            if ($rule->id == $search_params['selected_rule']){
+                $selected_rule_object = $rule;
             }
         }
 
@@ -430,6 +449,7 @@ class DangerController extends AdminController
             'all_data' => json_encode(array_reverse($all_data)),
             'request_params' => (array) $search_params,
             'rules' => $rules,
+            'selected_rule_object' => $selected_rule_object,
             'cameras' => $cameras,
             'from_top' => $from_top,
             'last_number' => count($danger_detections) > 0 ? $danger_detections[0]->id : null,

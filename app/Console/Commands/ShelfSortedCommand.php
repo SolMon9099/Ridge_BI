@@ -39,8 +39,8 @@ class ShelfSortedCommand extends Command
         // Storage::disk('s3')->put('test_shelf/20220922/2022-09-22_15-00-00.mp4', $shelf_file);
 
         Log::info('定時撮影チェック開始ーーーーーー');
-        $shelf_detection_rules = ShelfDetectionRule::select('shelf_detection_rules.*', 'cameras.camera_id as camera_no', 'cameras.contract_no')
-            ->leftJoin('cameras', 'cameras.id', 'shelf_detection_rules.camera_id')->get()->unique('camera_no');
+        $shelf_detection_rules = ShelfDetectionRule::select('shelf_detection_rules.*', 'cameras.camera_id as device_id', 'cameras.contract_no')
+            ->leftJoin('cameras', 'cameras.id', 'shelf_detection_rules.camera_id')->get()->unique('device_id');
         if (count($shelf_detection_rules) > 0) {
             $now_hour = (int) date('H');
             if ($now_hour > 23) {
@@ -51,11 +51,11 @@ class ShelfSortedCommand extends Command
                 if ((int) $item->hour == $now_hour && (int) $item->mins == $now_min) {
                     Log::info('save image start = '.$now_hour.' : '.$now_min);
                     $safie_service = new SafieApiService($item->contract_no);
-                    $camera_image_data = $safie_service->getDeviceImage($item->camera_no);
+                    $camera_image_data = $safie_service->getDeviceImage($item->device_id);
                     if ($camera_image_data != null) {
                         $file_name = date('YmdHis').'.jpeg';
                         $date = date('Ymd');
-                        $device_id = $item->camera_no;
+                        $device_id = $item->device_id;
                         Storage::disk('s3')->put('shelf_sorted/'.$device_id.'/'.$date.'/'.$file_name, $camera_image_data);
                         Log::info('image_ur = '.'shelf_sorted/'.$device_id.'/'.$date.'/'.$file_name);
                     }

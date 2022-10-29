@@ -5,8 +5,9 @@
     $starttime = (isset($request_params) && isset($request_params['starttime']))?date('Y-m-d', strtotime($request_params['starttime'])) :date('Y-m-d');
     $endtime = (isset($request_params) && isset($request_params['endtime']))?date('Y-m-d', strtotime($request_params['endtime'])):date('Y-m-d');
     $search_period = (strtotime($endtime) - strtotime($starttime))/86400;
-    $selected_search_option = old('selected_search_option', (isset($request_params) && isset($request_params['selected_search_option']))?$request_params['selected_search_option']:1);
+    // $selected_search_option = old('selected_search_option', (isset($request_params) && isset($request_params['selected_search_option']))?$request_params['selected_search_option']:1);
 
+    $selected_rule_id = old('selected_rule', isset($request_params) && isset($request_params['selected_rule'])?$request_params['selected_rule']:null);
     $selected_rule_ids = old('selected_rules', isset($request_params) && isset($request_params['selected_rules'])?$request_params['selected_rules']:[]);
     $selected_camera_ids = old('selected_cameras', isset($request_params) && isset($request_params['selected_cameras'])?$request_params['selected_cameras']:[]);
     $selected_action_ids = old('selected_actions', isset($request_params) && isset($request_params['selected_actions'])?$request_params['selected_actions']:[]);
@@ -33,19 +34,26 @@
                     <h4>検出期間</h4>
                     </li>
                     <li style="width:113px;">
-                        <input id='starttime' type="date" name='starttime' onchange="search()" value="{{ old('starttime', $starttime)}}">
+                        <input id='starttime' type="date" name='starttime' onchange="$('#form1').submit()" value="{{ old('starttime', $starttime)}}">
                     </li>
                     <li>～</li>
                     <li>
-                        <input id='endtime' type="date" name='endtime' onchange="search()" value="{{ old('endtime', $endtime)}}">
+                        <input id='endtime' type="date" name='endtime' onchange="$('#form1').submit()" value="{{ old('endtime', $endtime)}}">
                     </li>
+                </ul>
+                <ul class="date-list">
+                    <li><h4>ルール</h4></li>
+                    <li><a data-target="rule" class="modal-open setting">選択する</a></li>
+                    @if(isset($selected_rule_object))
+                        <li><p class="selected-camera">{{$selected_rule_object->name.'('.$selected_rule_object->serial_no.')'. '：'. $selected_rule_object->location_name.'('.$selected_rule_object->installation_position.')'}}</p></li>
+                    @endif
                 </ul>
                 </div>
             </div>
             </div>
             <div class="list">
                 <div class="inner active">
-                    <ul class="tab_sub">
+                    {{-- <ul class="tab_sub">
                         <input type='hidden' name='selected_search_option' id = 'selected_search_option' value=""/>
                         <li class="{{$selected_search_option == 1 ? 'active':'' }}">
                             <a data-target="rule" class="modal-open blue" onclick="setSelectedSearchOption(1)">ルールから選択</a>
@@ -56,7 +64,7 @@
                         <li class="{{$selected_search_option == 3 ? 'active':'' }}">
                             <a data-target="action" class="modal-open blue" onclick="setSelectedSearchOption(3)">アクションから選択</a>
                         </li>
-                    </ul>
+                    </ul> --}}
                     <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['past_graph_danger']}})">ダッシュボートへ追加</button>
                     <div class="active sp-ma-right">
                         <div class="period-select-buttons">
@@ -125,13 +133,15 @@
                 <table class="table2 text-centre">
                     <thead>
                     <tr>
-                        <th class="w10"></th>
+                        <th class=""></th>
+                        <th>ルール名</th>
                         <th>カメラNo</th>
                         <th>設置エリア</th>
                         <th>設置フロア</th>
                         <th>設置場所</th>
                         <th>アクション</th>
                         <th>カラー</th>
+                        <th>ルールの設定期間</th>
                         <th>カメラ画像確認</th>
                     </tr>
                     </thead>
@@ -140,15 +150,16 @@
                         <tr>
                             <td class="stick-t">
                                 <div class="checkbtn-wrap">
-                                    @if (in_array($rule->id, $selected_rule_ids))
-                                        <input name='selected_rules[]' value = '{{$rule->id}}' class='rule_checkbox' type="checkbox" id="{{'rule-'.$rule->id}}" checked>
+                                    @if ($rule->id == $selected_rule_id)
+                                        <input name='selected_rule' value = '{{$rule->id}}' type="radio" id="{{'rule-'.$rule->id}}" checked>
                                     @else
-                                        <input name='selected_rules[]' value = '{{$rule->id}}' class='rule_checkbox' type="checkbox" id="{{'rule-'.$rule->id}}">
+                                        <input name='selected_rule' value = '{{$rule->id}}' type="radio" id="{{'rule-'.$rule->id}}">
                                     @endif
-                                    <label for="{{'rule-'.$rule->id}}" class="custom-style"></label>
+                                    <label for="{{'rule-'.$rule->id}}"></label>
                                 </div>
                             </td>
-                            <td> {{$rule->camera_no}}</td>
+                            <td>{{$rule->name}}</td>
+                            <td>{{$rule->serial_no}}</td>
                             <td>{{$rule->location_name}}</td>
                             <td>{{$rule->floor_number}}</td>
                             <td>{{$rule->installation_position}}</td>
@@ -158,12 +169,13 @@
                                 @endforeach
                             </td>
                             <td><input disabled type="color" value = "{{$rule->color}}"></td>
-                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$rule->camera_no.'.jpeg'}}"/></td>
+                            <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
+                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$rule->device_id.'.jpeg'}}"/></td>
                         </tr>
                         @endforeach
                         @if(count($rules) == 0)
                         <tr>
-                            <td colspan="8">登録されたルールがありません。ルールを設定してください</td>
+                            <td colspan="10">登録された危険エリア侵入検知のルールがありません。ルールを設定してください</td>
                         </tr>
                         @endif
                     </tbody>
@@ -209,7 +221,7 @@
                                     <label class="custom-style" for="{{'camera'.$camera->id}}}}"></label>
                                 </div>
                             </td>
-                            <td>{{$camera->camera_id}}</td>
+                            <td>{{$camera->serial_no}}</td>
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
@@ -218,7 +230,7 @@
                         @endforeach
                         @if(count($cameras) == 0)
                         <tr>
-                            <td colspan="6">登録されたカメラがありません。ルールを設定してください</td>
+                            <td colspan="6">危険エリア侵入検知のルールが登録されたカメラがありません。ルールを設定してください</td>
                         </tr>
                         @endif
                         </tbody>
@@ -280,22 +292,18 @@
 </div>
 <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
 <style>
-    .textarea{
-        max-width: 1200px;
-        width:100%;
-    }
     .inner{
         position: relative;
     }
     .add-to-toppage{
         position: absolute;
         right:0px;
-        top:0px;
+        top:-20px;
     }
     .period-select-buttons{
         position: absolute;
         right: 10px;
-        top: 45px!important;
+        top: 20px!important;
     }
     .prev, .next {
         cursor: pointer;
@@ -326,14 +334,11 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
 <script>
-    function search(){
-        $('#form1').submit();
-    }
-
-    function setSelectedSearchOption(value){
-        $('#selected_search_option').val(value);
-    }
+    // function setSelectedSearchOption(value){
+    //     $('#selected_search_option').val(value);
+    // }
     var ctx = document.getElementById("myLineChart1");
+    var myLineChart = null;
     var color_set = {
         1:'red',
         2:'#42b688',
@@ -454,7 +459,7 @@
         }
     }
 
-    var selected_search_option = "<?php echo $selected_search_option;?>"
+    var selected_rule = "<?php echo $selected_rule_id;?>";
     var all_data = <?php echo $all_data;?>;
     var actions = <?php echo json_encode(config('const.action'));?>;
     var selected_rules = <?php echo json_encode($selected_rule_ids);?>;
@@ -661,7 +666,7 @@
                 var y_add_flag = false;
                 Object.keys(graph_data).map((detect_time, index) => {
                     var detect_time_object = new Date(detect_time);
-                    if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000){
+                    if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000 && detect_time_object.getTime() <= max_time.getTime()){
                         if (index == 0){
                             y_add_flag = true;
                             if  (detect_time_object.getTime() != cur_time.getTime()){
@@ -719,11 +724,18 @@
             })
         });
 
-        var myLineChart = new Chart(ctx, {
+        ctx.innerHTML = '';
+        if (myLineChart != null){
+            myLineChart.destroy();
+        }
+        myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: date_labels,
-                datasets
+                datasets,
+                mousemove: function(){
+                    return;
+                },
             },
             options: {
                 title: {
@@ -764,10 +776,11 @@
             starttime:formatDateLine(new Date($('#starttime').val())),
             endtime:formatDateLine(new Date($('#endtime').val())),
             time_period:grpah_init_type,
+            selected_rule:parseInt(selected_rule) > 0 ? parseInt(selected_rule) : null,
             selected_rules:selected_rules.length == 0?{}:selected_rules,
             selected_cameras:selected_cameras.length == 0?{}:selected_cameras,
             selected_actions:selected_actions.length == 0?{}:selected_actions,
-            selected_search_option:parseInt(selected_search_option)
+            // selected_search_option:parseInt(selected_search_option)
         };
         saveSearchOptions('admin.danger.past_analysis', search_params);
     }
@@ -777,10 +790,11 @@
             starttime:formatDateLine(new Date($('#starttime').val())),
             endtime:formatDateLine(new Date($('#endtime').val())),
             time_period:grpah_init_type,
+            selected_rule:parseInt(selected_rule) > 0 ? parseInt(selected_rule) : null,
             selected_rules:selected_rules.length == 0?{}:selected_rules,
             selected_cameras:selected_cameras.length == 0?{}:selected_cameras,
             selected_actions:selected_actions.length == 0?{}:selected_actions,
-            selected_search_option:parseInt(selected_search_option)
+            // selected_search_option:parseInt(selected_search_option)
         };
         addToToppage(block_type, options);
     }

@@ -56,6 +56,7 @@ $(function () {
                 video.pause();
             }
 		}
+        $('#image-container', $('.modal-wrap')).empty();
       $('#redcover img').fadeIn();
       $('#redcover img').fadeOut();
       $('#redcover').animate({

@@ -22,6 +22,20 @@ class CameraController extends AdminController
     {
         $cameras = CameraService::doSearch($request)->paginate($this->per_page);
         $locations = LocationService::getAllLocationNames();
+
+        $floor_numbers = [];
+        $all_cameras = CameraService::doSearch()->get()->all();
+        foreach($all_cameras as $camera){
+            $map_data = CameraMappingDetail::select()
+                ->where('camera_id', $camera->id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->get()->first();
+            if ($map_data != null) {
+                if (!in_array($map_data->floor_number, $floor_numbers)){
+                    $floor_numbers[] = $map_data->floor_number;
+                }
+            }
+        }
         $user_contract_no = Auth::guard('admin')->user()->contract_no;
         if ($user_contract_no != null) {
             $safie_service = new SafieApiService($user_contract_no);
@@ -54,6 +68,7 @@ class CameraController extends AdminController
             'cameras' => $cameras,
             'locations' => $locations,
             'input' => $request,
+            'floor_numbers' => $floor_numbers,
         ]);
     }
 

@@ -80,6 +80,13 @@ class LocationService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $location_query->where('contract_no', Auth::guard('admin')->user()->contract_no);
         }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $location_query -> where(function($q) {
+                $q->orWhere('manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
         $locations = $location_query->orderBy('id', 'asc')->get();
         $locations_array = [];
         foreach ($locations as $location) {

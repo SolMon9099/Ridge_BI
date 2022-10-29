@@ -15,15 +15,17 @@
                             @if(isset($devices) && isset($devices['list']) && count($devices['list']) > 0)
                             @foreach ($devices['list'] as $camera_item)
                                 @if ($camera_item['device_id'] == old('camera_id', isset($camera->camera_id)?$camera->camera_id:''))
-                                    <option value="{{$camera_item['device_id']}}" selected>{{$camera_item['device_id']}}</option>
+                                    <option value="{{$camera_item['device_id']}}" selected>{{$camera_item['serial']}}</option>
                                 @else
-                                    <option value="{{$camera_item['device_id']}}">{{$camera_item['device_id']}}</option>
+                                    <option value="{{$camera_item['device_id']}}">{{$camera_item['serial']}}</option>
                                 @endif
                             @endforeach
                             @endif
                         </select>
+                        <input type="hidden" id="camera_serial_no" name="serial_no" value="{{old('serial_no', isset($camera->serial_no)?$camera->serial_no:'')}}">
                     @else
-                        <input type="text" id="camera_id" readonly name="camera_id" value="{{ old('camera_id', isset($camera->camera_id)?$camera->camera_id:'')}}">
+                        <input type="hidden" id="camera_id" readonly value="{{isset($camera->camera_id)?$camera->camera_id:''}}">
+                        <input type="text" id="camera_serial_no" readonly value="{{isset($camera->serial_no)?$camera->serial_no:''}}">
                     @endif
                     @error('camera_id')
                     <p class="error-message">{{ $message }}</p>
@@ -206,6 +208,7 @@
     function selectCamera(e) {
         clearCameraPoint();
         selected_camera_id = e.value;
+        $('#camera_serial_no').val(e.options[e.selectedIndex].text);
     }
 
     function initImageData(){

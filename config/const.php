@@ -219,8 +219,8 @@ return [
         19 => 'admin.thief.cameras_for_rule',
     ],
 
-    'camera_start_time' => '08:00:00',
-    'camera_end_time' => '21:00:00',
+    'camera_start_time' => '00:00:00',
+    'camera_end_time' => '23:59:59',
     'request_interval' => 1,        //分
     'detection_video_length' => 30,    //秒
     'pit_time_options' => [15, 30, 45, 60, 75, 90, 105, 120],
@@ -322,67 +322,50 @@ return [
         5 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         6 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         7 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         8 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         9 => [
             'delete' => '削除',
-            // 'change_camera' => '指定カメラ変更',
-            // 'change_period' => '期間変更',
+            'change_rule' => '指定ルール変更',
         ],
         10 => [
             'delete' => '削除',
-            // 'change_camera' => '指定カメラ変更',
-            // 'change_period' => '期間変更',
+            'change_rule' => '指定ルール変更',
         ],
         11 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            // 'change_period' => '期間変更',
         ],
         12 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            // 'change_period' => '期間変更',
-            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         13 => [
             'delete' => '削除',
-            'change_camera' => '指定カメラ変更',
-            // 'change_period' => '期間変更',
-            // 'change_x_axis' => 'グラフの横軸変更',
+            'change_rule' => '指定ルール変更',
         ],
         14 => [
             'delete' => '削除',
-            'change_camera' => '指定カメラ変更',
-            // 'change_period' => '期間変更',
-            // 'change_x_axis' => 'グラフの横軸変更',
+            'change_rule' => '指定ルール変更',
         ],
         15 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            // 'change_period' => '期間変更',
-            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         16 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
-            // 'change_period' => '期間変更',
-            // 'change_x_axis' => 'グラフの横軸変更',
         ],
         17 => [
             'delete' => '削除',

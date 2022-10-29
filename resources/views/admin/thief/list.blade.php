@@ -74,7 +74,7 @@
                     </div>
                 </div>
                 <div class="text">
-                    <p class="camera-id">カメラID:{{$item->camera_no}}</p>
+                    <p class="camera-id">カメラID:{{$item->serial_no}}</p>
                     <ul class="pit-list">
                         <li>
                             <h2 class="icon-map">設置場所</h2>
@@ -144,7 +144,7 @@
                                 <label for="{{'rule-'.$rule->id}}" class="custom-style"></label>
                             </div>
                         </td>
-                        <td> {{$rule->camera_no}}</td>
+                        <td>{{$rule->serial_no}}</td>
                         <td>{{$rule->location_name}}</td>
                         <td>{{$rule->floor_number}}</td>
                         <td>{{$rule->installation_position}}</td>
@@ -153,7 +153,7 @@
                     @endforeach
                     @if(count($rules) == 0)
                     <tr>
-                        <td colspan="6">登録されたルールがありません。ルールを設定してください</td>
+                        <td colspan="6">登録された大量盗難検知のルールがありません。ルールを設定してください</td>
                     </tr>
                     @endif
                 </tbody>

@@ -15,7 +15,8 @@ class ShelfService
             'shelf_detection_rules.*',
             'cameras.installation_position',
             'cameras.location_id',
-            'cameras.camera_id as camera_no',
+            'cameras.camera_id as device_id',
+            'cameras.serial_no',
             'locations.name as location_name'
         )->leftJoin('cameras', 'cameras.id', '=', 'shelf_detection_rules.camera_id')
         ->leftJoin('locations', 'locations.id', 'cameras.location_id');
@@ -23,6 +24,13 @@ class ShelfService
             $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
         if ($params != null) {
+            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+                $rules -> where(function($q) {
+                    $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                    $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                    $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+                });
+            }
             if (isset($params['selected_cameras']) && !is_array($params['selected_cameras']) && $params['selected_cameras'] != '') {
                 $selected_cameras = json_decode($params['selected_cameras']);
                 $rules->whereIn('shelf_detection_rules.camera_id', $selected_cameras);
@@ -57,7 +65,13 @@ class ShelfService
             $camera_query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
         $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
-
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $camera_query -> where(function($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
         return $camera_query->get()->all();
     }
 
@@ -150,7 +164,8 @@ class ShelfService
                 'cameras.installation_position',
                 'cameras.location_id',
                 'cameras.contract_no',
-                'cameras.camera_id as camera_no',
+                'cameras.camera_id as device_id',
+                'cameras.serial_no',
                 'locations.name as location_name'
             )
             ->leftJoin('shelf_detection_rules', 'shelf_detection_rules.id', 'shelf_detections.rule_id')
@@ -180,6 +195,13 @@ class ShelfService
         }
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $query -> where(function($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
         }
         $query->orderByDesc('shelf_detections.starttime');
 

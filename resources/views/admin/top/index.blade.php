@@ -201,16 +201,16 @@
         text-align: center;
     }
     .time{
-        width:37%;
+        width:10%;
     }
     .area{
-        width:21%;
+        width:20%;
     }
     .location{
-        width:21%;
+        width:20%;
     }
     .action{
-        width:21%;
+        width:15%;
     }
     .list-table > thead{
         background: #0062de;
@@ -318,6 +318,7 @@
     $manager_allowed_pages = $login_user->manager_allowed_pages;
     $top_allowed_pages = ['TOP', '検知リスト', '過去グラフ'];
 ?>
+
 <div id="wrapper">
     <div id="r-content">
 	    <div class="sp-ma">
@@ -339,7 +340,7 @@
                                         <li class="menu-li"><a href="{{route($url).'?from_top=true'}}">{{$item['name']}}</a></li>
                                         @if($item['name'] == 'TOP')
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">リアルタイム映像</a></li>
-                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">グラフ</a></li>
+                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">当日グラフ</a></li>
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">最新の検知</a></li>
                                             @if ($url == 'admin.pit.detail')
                                                 <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">入退場履歴</a></li>
@@ -351,7 +352,7 @@
                                         <li class="menu-li"><a href="{{route($url).'?from_top=true'}}">{{$item['name']}}</a></li>
                                         @if($item['name'] == 'TOP')
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">リアルタイム映像</a></li>
-                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">グラフ</a></li>
+                                            <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">当日グラフ</a></li>
                                             <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">最新の検知</a></li>
                                             @if ($url == 'admin.pit.detail')
                                                 <li class="menu-sub-li"><a href="{{route($url).'?from_top=true'}}">入退場履歴</a></li>
@@ -403,7 +404,7 @@
                                 @if($item->block_type == config('const.top_block_type_codes')['live_video_danger'] || $item->block_type == config('const.top_block_type_codes')['live_video_pit'])
                                     @if(isset($item->cameras) && count($item->cameras) > 0 && isset($item->selected_camera))
                                         <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
-                                        <div class="camera-id">カメラID： {{$item->selected_camera['camera_id']}}</div>
+                                        <div class="camera-id">カメラID： {{$item->selected_camera['serial_no']}}</div>
                                         <div id={{"image_container_".$item->id}} class="image-container"></div>
                                         <div class="streaming-video" id = {{'streaming_video_'.$item->id}}>
                                             <safie-streaming-player data-camera-id='{{$item->selected_camera['camera_id']}}' data-token='{{$item->selected_camera['access_token']}}'>
@@ -419,7 +420,7 @@
 
                                             $thumb_path = asset('storage/thumb/').'/'.$item->danger_detection['thumb_img_path'];
                                         ?>
-                                        <div class="camera-id">カメラID：{{$item->danger_detection['camera_no']}}</div>
+                                        <div class="camera-id">カメラID：{{$item->danger_detection['serial_no']}}</div>
                                         <div class="movie" video-path = "{{$video_path}}">
                                             <a data-target="movie0000"
                                                 {{-- onclick="videoPlay(this, '{{$video_path}}')"  --}}
@@ -449,9 +450,10 @@
                                         <table class="danger-detect-list list-table">
                                             <thead>
                                                 <tr>
+                                                    <th>カメラNo</th>
                                                     <th class="time">時間</th>
-                                                    <th class="area">設置エリア</th>
-                                                    <th class="location">設置場所</th>
+                                                    <th class="">設置エリア</th>
+                                                    <th class="">設置場所</th>
                                                     <th class="action">アクション</th>
                                                 </tr>
                                             </thead>
@@ -459,6 +461,7 @@
                                             @foreach ($item->danger_detections as $detection_item)
                                                 <?php $detection_item = (array)$detection_item; ?>
                                                 <tr>
+                                                    <td>{{$detection_item['serial_no']}}</td>
                                                     <td>{{date('Y/m/d H:i', strtotime($detection_item['starttime']))}}</td>
                                                     <td>{{$detection_item['location_name']}}</td>
                                                     <td>{{$detection_item['installation_position']}}</td>
@@ -472,7 +475,7 @@
                                     @endif
                                 @elseif($item->block_type == config('const.top_block_type_codes')['live_graph_danger'])
                                     @if(isset($item->selected_camera))
-                                        <div class="camera-id">カメラID：{{$item->selected_camera['camera_id']}}</div>
+                                        <div class="camera-id">カメラID：{{$item->selected_camera['serial_no']}}</div>
                                     @endif
                                     <div class="period-select-buttons">
                                         <?php
@@ -491,6 +494,19 @@
                                 @elseif($item->block_type == config('const.top_block_type_codes')['past_graph_danger'])
                                     @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
                                         <?php
+                                            $selected_rule = '';
+                                            if (isset($item->selected_rule) && $item->selected_rule > 0){
+                                                $selected_rule = $item->selected_rule;
+                                            }
+                                            $selected_rule_object = null;
+                                            if ($selected_rule > 0){
+                                                foreach($item->rules as $rule_item){
+                                                    if ($rule_item->id == $selected_rule){
+                                                        $selected_rule_object = $rule_item;
+                                                    }
+                                                }
+                                            }
+
                                             $time_period = '3';
                                             if (isset($item->time_period) && $item->time_period != '') $time_period = $item->time_period;
                                             $starttime = date('Y-m-d', strtotime($item->starttime));
@@ -518,6 +534,8 @@
                                                 }
                                             }
                                         ?>
+
+                                        <div class="camera-id">{{$selected_rule_object != null ? $selected_rule_object->name.'('.$selected_rule_object->serial_no. ')' : ''}}</div>
                                         <div class="search-period-area">
                                             <input class="starttime" onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                             <span>～</span>
@@ -551,7 +569,7 @@
                                             <a class="prev" onclick="moveXRange(this, -1)">❮</a>
                                             <a class="next" onclick="moveXRange(this, 1)">❯</a>
                                             <canvas onclick="location.href='{{route('admin.danger.past_analysis')}}'+'?change_params=change&starttime=' + '{{date('Y-m-d', strtotime($item->starttime))}}'
-                                                + '&endtime='+'{{date('Y-m-d', strtotime($item->endtime))}}'+'&selected_search_option=1&time_period='+'{{$time_period}}'"
+                                                + '&endtime='+'{{date('Y-m-d', strtotime($item->endtime))}}'+'&selected_rule='+{{$selected_rule}}+'&time_period='+'{{$time_period}}'"
                                                 id="past_graph_danger" class="graph-canvas"></canvas>
                                             <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
                                             <input type="hidden" class="time_period" value="{{$time_period}}"/>
@@ -560,10 +578,20 @@
                                     @endif
                                 @elseif($item->block_type == config('const.top_block_type_codes')['pit_history'])
                                     @if(isset($item->selected_camera))
-                                        <div class="camera-id">カメラID：{{$item->selected_camera['camera_id']}}</div>
+                                        <div class="camera-id">カメラID：{{$item->selected_camera['serial_no']}}</div>
                                     @endif
                                     @if (isset($item->pit_detections) && count($item->pit_detections) > 0)
-                                        <?php $sum = 0;?>
+                                        <?php
+                                            $sum = 0;
+                                            $sum_data = array();
+                                            foreach ($item->pit_detections as $detection_item) {
+                                                if($detection_item['nb_entry'] != $detection_item['nb_exit']){
+                                                    $sum += ($detection_item['nb_entry'] - $detection_item['nb_exit']);
+                                                    $sum_data[$detection_item->id] = $sum;
+                                                    $total_data[date('Y-m-d H:i:s', strtotime($detection_item['starttime']))] = $sum;
+                                                }
+                                            }
+                                        ?>
                                         <table class="pit-detect-list list-table">
                                             <thead>
                                                 <tr>
@@ -574,19 +602,13 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                            @foreach ($item->pit_detections as $detection_item)
-                                                @if($detection_item['nb_entry'] != $detection_item['nb_exit'])
-                                                <?php
-                                                    $sum += ($detection_item['nb_entry'] - $detection_item['nb_exit']);
-                                                    $total_data[date('Y-m-d H:i:s', strtotime($detection_item['starttime']))] = $sum;
-                                                ?>
+                                            @foreach (array_reverse($item->pit_detections) as $detection_item)
                                                 <tr>
                                                     <td>{{date('Y-m-d H:i:s', strtotime($detection_item['starttime']))}}</td>
                                                     <td>{{$detection_item['nb_entry'] > $detection_item['nb_exit'] ? '入場' : '退場'}} </td>
                                                     <td><span class="{{$detection_item['nb_entry'] > $detection_item['nb_exit'] ? 'f-red' : 'f-blue'}}">{{$detection_item['nb_entry'] - $detection_item['nb_exit']}}</span></td>
-                                                    <td>{{$sum}}</td>
+                                                    <td>{{$sum_data[$detection_item->id]}}</td>
                                                 </tr>
-                                                @endif
                                             @endforeach
                                             </tbody>
                                         </table>
@@ -603,7 +625,7 @@
 
                                             $thumb_path = asset('storage/thumb/').'/'.$item->pit_detection->thumb_img_path;
                                         ?>
-                                        <div class="camera-id">カメラID：{{$item->pit_detection->camera_no}}</div>
+                                        <div class="camera-id">カメラID：{{$item->pit_detection->serial_no}}</div>
                                         <div class="movie" video-path = "{{$video_path}}">
                                             <a data-target="movie0000"
                                                 {{-- onclick="videoPlay(this, '{{$video_path}}')"  --}}
@@ -613,7 +635,7 @@
                                         </div>
                                         <video style="" class = 'video-play' src = '{{$video_path}}' type= 'video/mp4' controls></video>
                                         <div class="cap">検知時間：<time>{{date('Y/m/d H:i', strtotime($item->pit_detection->detect_time))}}</time></div>
-                                        <div class="cap">検知条件：<time>時間オーバー({{$item->pit_detection->max_permission_time.'分'}})</time></div>
+                                        <div class="cap">検知条件：<time>{{$item->pit_detection->min_members.'人以上/'.$item->pit_detection->max_permission_time.'分超過'}}</time></div>
                                         <div class="cap">{{"　　　　　"}}<time>ピット内人数({{$item->pit_detection->sum_in_pit.'人'}})</time></div>
                                     @else
                                         <div class="no-data">検知データがありません。</div>
@@ -630,6 +652,7 @@
                                         <table class="pit-detect-list list-table">
                                             <thead>
                                                 <tr>
+                                                    <th>カメラNo</th>
                                                     <th class="time">時間</th>
                                                     <th>検知条件</th>
                                                     <th>ピット内人数</th>
@@ -638,8 +661,9 @@
                                             <tbody>
                                             @foreach ($item->pit_detections as $detection_item)
                                                 <tr>
+                                                    <td>{{$detection_item['serial_no']}}</td>
                                                     <td>{{date('Y/m/d H:i', strtotime($detection_item['detect_time']))}}</td>
-                                                    <td>時間オーバー({{$detection_item['max_permission_time'].'分'}})</td>
+                                                    <td>{{$detection_item['min_members'].'人以上/'. $detection_item['max_permission_time'].'分超過'}}</td>
                                                     <td>{{isset($detection_item['sum_in_pit']) ? $detection_item['sum_in_pit'].'人' : ''}}</td>
                                                 </tr>
                                             @endforeach
@@ -650,7 +674,7 @@
                                     @endif
                                 @elseif ($item->block_type == config('const.top_block_type_codes')['live_graph_pit'])
                                     @if(isset($item->selected_camera))
-                                        <div class="camera-id">カメラID：{{$item->selected_camera['camera_id']}}</div>
+                                        <div class="camera-id">カメラID：{{$item->selected_camera['serial_no']}}</div>
                                     @endif
                                     <div class="period-select-buttons">
                                         <?php
@@ -669,9 +693,17 @@
                                 @elseif ($item->block_type == config('const.top_block_type_codes')['past_graph_pit'])
                                     @if (isset($item->starttime) && $item->starttime != '' && isset($item->endtime) && $item->endtime != '')
                                         <?php
-                                            $selected_camera = '';
-                                            if (isset($item->selected_camera)){
-                                                $selected_camera = $item->selected_camera['id'];
+                                            $selected_rule = '';
+                                            if (isset($item->selected_rule) && $item->selected_rule > 0){
+                                                $selected_rule = $item->selected_rule;
+                                            }
+                                            $selected_rule_object = null;
+                                            if ($selected_rule > 0){
+                                                foreach($item->rules as $rule_item){
+                                                    if ($rule_item->id == $selected_rule){
+                                                        $selected_rule_object = $rule_item;
+                                                    }
+                                                }
                                             }
                                             $time_period = '3';
                                             if (isset($item->time_period) && $item->time_period != '') $time_period = $item->time_period;
@@ -700,6 +732,7 @@
                                                 }
                                             }
                                         ?>
+                                        <div class="camera-id">{{$selected_rule_object != null ? $selected_rule_object->name.'('.$selected_rule_object->serial_no. ')' : ''}}</div>
                                         <div class="search-period-area">
                                             <input class="starttime" onchange="changePeriod(this, 'starttime', {{$item->id}})" type="date" value="{{date('Y-m-d', strtotime($item->starttime))}}"/>
                                             <span>～</span>
@@ -732,7 +765,7 @@
                                             <a class="prev" onclick="moveXRange(this, -1)">❮</a>
                                             <a class="next" onclick="moveXRange(this, 1)">❯</a>
                                             <canvas onclick="location.href='{{route('admin.pit.past_analysis')}}'+'?change_params=change&starttime=' + '{{date('Y-m-d', strtotime($item->starttime))}}'
-                                                + '&endtime='+'{{date('Y-m-d', strtotime($item->endtime))}}'+'&time_period='+'{{$time_period}}'+'&selected_camera='+'{{$selected_camera}}'"
+                                                + '&endtime='+'{{date('Y-m-d', strtotime($item->endtime))}}'+'&time_period='+'{{$time_period}}'+'&selected_rule='+'{{$selected_rule}}'"
                                                 onclick="location.href='{{route('admin.pit.past_analysis')}}'" id="past_graph_pit" class="graph-canvas"></canvas>
                                             <input type="hidden" class="block-data" value="{{json_encode($item)}}"/>
                                             <input type="hidden" class="time_period" value="{{$time_period}}"/>
@@ -755,6 +788,12 @@
         </div>
 	</div>
 </div>
+
+<form action="{{route('admin.top')}}" method="get" name="form" id="top_form">
+@csrf
+<input name="scroll_top" id="scroll_top" type="hidden" value="{{isset($scroll_top) ? $scroll_top : ''}}"/>
+<input name="selected_top_block" id = 'selected_top_block' type="hidden"/>
+
 <!--MODAL -->
 <div id="movie0000" class="modal-content">
     <div class="textarea">
@@ -772,35 +811,49 @@
 <div id="camera" class="modal-content">
     <div class="textarea">
         <div class="listing">
-            <form action="{{route('admin.top')}}" method="get" name="form" id="camera_form">
-            @csrf
-                <input name="selected_top_block" id = 'selected_top_block' type="hidden"/>
-                <input name="selected_camera_data" id = 'selected_camera' type="hidden"/>
-                <input name="scroll_top" id="scroll_top" type="hidden" value="{{isset($scroll_top) ? $scroll_top : ''}}"/>
-                <div class="scroll active sp-pl0">
-                    <table class="table2 text-centre">
-                        <thead>
-                        <tr>
-                            <th class="w10"></th>
-                            <th>カメラNo</th>
-                            <th>設置エリア</th>
-                            <th>設置場所</th>
-                            <th>カメラ画像確認</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                    <div class="modal-set">
-                        <button onclick="changeSelectCamera()" type="button" class="modal-close">設 定</button>
-                    </div>
+            <input id = 'selected_camera' type="hidden"/>
+            <div class="scroll active sp-pl0">
+                <table class="table2 text-centre">
+                    <thead>
+                    <tr>
+                        <th class="w10"></th>
+                        <th>カメラNo</th>
+                        <th>設置エリア</th>
+                        <th>設置場所</th>
+                        <th>カメラ画像確認</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="modal-set">
+                    <button onclick="changeSelectCamera()" type="button" class="modal-close">設 定</button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
     <p class="closemodal"><a class="modal-close">×</a></p>
 </div>
 <!-- -->
+
+<!--MODAL -->
+<div id="rule" class="modal-content">
+    <div class="textarea">
+        <div class="listing">
+            <input id = 'selected_rule' type="hidden"/>
+            <div class="scroll active sp-pl0">
+                <table class="table2 text-centre">
+                </table>
+                <div class="modal-set">
+                    <button onclick="changeSelectRule()" type="button" class="modal-close">設 定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="closemodal"><a class="modal-close">×</a></p>
+</div>
+<!-- -->
+
 <!--MODAL -->
 <div id="extension-modal" class="modal-content">
     <div class="extentsion-content">
@@ -808,6 +861,7 @@
     <p class="closemodal"><a class="modal-close">×</a></p>
 </div>
 <!-- -->
+</form>
 <div id="dialog-confirm" title="test" style="display:none">
     <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
     <span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
@@ -831,9 +885,11 @@
         3:'#42539a',
         4:'black',
     }
+    var myLineChart = {};
     var actions = <?php echo json_encode(config('const.action'));?>;
     var stages = {};
     var layers = {};
+
 
     function videoPlay(e, path){
         var video = document.getElementById('video-container');
@@ -922,6 +978,7 @@
         $('[data-menu-id="'+ block_item.id + '"]').hide();
         $('.close-gear-icon').hide();
         $('svg', $('.gear-block')).show();
+        $('#selected_rule').val('');
         switch(action){
             case 'delete':
                 delete_id = block_item.id;
@@ -969,7 +1026,7 @@
                         tr_record += '</div>';
                         tr_record += '</td>';
 
-                        tr_record += '<td>' + camera.camera_id + '</td>';
+                        tr_record += '<td>' + camera.serial_no + '</td>';
                         tr_record += '<td>' + camera.location_name + '</td>';
                         tr_record += '<td>' + camera.installation_position + '</td>';
                         tr_record += '<td><img width="100px" src="' + '<?php echo asset("storage/recent_camera_image/") ;?>' + '/' + camera.camera_id + '.jpeg"/></td>';
@@ -983,7 +1040,167 @@
                     })
                 }
                 break;
-            case 'change_period':
+            case 'change_rule':
+                if (block_item.rules != undefined && block_item.rules.length > 0){
+                    $('html, body').addClass('lock');
+                    $('body').append('<div class="modal-overlay"></div>');
+                    $('.modal-overlay').fadeIn('fast');
+                    $('#rule').wrap("<div class='modal-wrap'></div>");
+                    $('.modal-wrap').fadeIn();
+                    $('#rule').show();
+
+                    $('#rule').fadeIn('fast');
+                    $('.textarea').click(function (e) {
+                        e.stopPropagation();
+                    });
+                    $('.modal-wrap, .modal-close, .ok').off().click(function () {
+                        $('#rule').fadeOut('fast');
+                        $('.modal-overlay').fadeOut('fast', function () {
+                            $('html, body').removeClass('lock');
+                            $('.modal-overlay').remove();
+                            $('#rule').unwrap("<div class='modal-wrap'></div>");
+                        });
+                        $('table', $('#rule')).empty();
+                    });
+
+                    $('#selected_top_block').val(block_item.id);
+                    var table_content = '';
+                    switch (block_item.block_type){
+                        case parseInt("<?php echo config('const.top_block_type_codes')['detect_list_pit'];?>"):
+                            table_content += '<thead><tr>';
+                            table_content += '<th></th><th>ルール名</th><th>カメラNo</th><th>設置エリア</th><th>設置場所</th><th>ルールの設定期間</th><th>カメラ画像確認</th>';
+                            table_content += '</tr></thead>';
+                            table_content += '<tbody>';
+                            block_item.rules.map(rule => {
+                                var checked = '';
+                                if (block_item.selected_rules != undefined && block_item.selected_rules != null && block_item.selected_rules.includes(rule.id.toString())){
+                                    checked = 'checked';
+                                }
+                                table_content += '<tr>';
+                                table_content += '<td class="stick-t">';
+                                table_content += '<div class="checkbtn-wrap radio-wrap-div">';
+                                table_content += '<input class="rule_checkbox" value = "' + rule.id + '" type="checkbox" id="rule' + rule.id + '"' + checked + '/>';
+                                table_content += '<label class="custom-style" for="rule' + rule.id + '"></label>';
+                                table_content += '</div>';
+                                table_content += '</td>';
+
+                                table_content += '<td>' + (rule.name != null ? rule.name : '') + '</td>';
+                                table_content += '<td>' + rule.serial_no + '</td>';
+                                table_content += '<td>' + rule.location_name + '</td>';
+                                table_content += '<td>' + rule.installation_position + '</td>';
+                                table_content += '<td>' + formatDateLine(rule.created_at) + '～' + (rule.deleted_at != null ? formatDateLine(rule.deleted_at) :'') + '</td>';
+                                table_content += '<td><img width="100px" src="' + '<?php echo asset("storage/recent_camera_image/") ;?>' + '/' + rule.device_id + '.jpeg"/></td>';
+                                table_content += '</tr>';
+                            })
+                            table_content += '</tbody>';
+                            break;
+                        case parseInt("<?php echo config('const.top_block_type_codes')['detect_list_danger'];?>"):
+                            table_content += '<thead><tr>';
+                            table_content += '<th></th><th>ルール名</th><th>カメラNo</th><th>設置エリア</th><th>設置場所</th><th>アクション</th><th>カラー</th><th>ルールの設定期間</th><th>カメラ画像確認</th>';
+                            table_content += '</tr></thead>';
+                            table_content += '<tbody>';
+                            block_item.rules.map(rule => {
+                                var checked = '';
+                                if (block_item.selected_rules != undefined && block_item.selected_rules != null && block_item.selected_rules.includes(rule.id.toString())){
+                                    checked = 'checked';
+                                }
+                                table_content += '<tr>';
+                                table_content += '<td class="stick-t">';
+                                table_content += '<div class="checkbtn-wrap radio-wrap-div">';
+                                table_content += '<input class="rule_checkbox" value = "' + rule.id + '" type="checkbox" id="rule' + rule.id + '"' + checked + '/>';
+                                table_content += '<label class="custom-style" for="rule' + rule.id + '"></label>';
+                                table_content += '</div>';
+                                table_content += '</td>';
+
+                                table_content += '<td>' + (rule.name != null ? rule.name : '') + '</td>';
+                                table_content += '<td>' + rule.serial_no + '</td>';
+                                table_content += '<td>' + rule.location_name + '</td>';
+                                table_content += '<td>' + rule.installation_position + '</td>';
+
+                                table_content += '<td>'
+                                var action_ids = rule.action_id;
+                                action_ids = JSON.parse(action_ids);
+                                action_ids.map(action_id => {
+                                    table_content += '<div>' + actions[action_id] + '</div>';
+                                })
+                                table_content += '</td>';
+                                table_content += '<td><input disabled type="color" value ="' + rule.color + '"</td>';
+
+                                table_content += '<td>' + formatDateLine(rule.created_at) + '～' + (rule.deleted_at != null ? formatDateLine(rule.deleted_at) :'') + '</td>';
+                                table_content += '<td><img width="100px" src="' + '<?php echo asset("storage/recent_camera_image/") ;?>' + '/' + rule.device_id + '.jpeg"/></td>';
+                                table_content += '</tr>';
+                            })
+                            table_content += '</tbody>';
+                            break;
+                        case parseInt("<?php echo config('const.top_block_type_codes')['past_graph_pit'];?>"):
+                            table_content += '<thead><tr>';
+                            table_content += '<th></th><th>ルール名</th><th>カメラNo</th><th>設置エリア</th><th>設置場所</th><th>ルールの設定期間</th><th>カメラ画像確認</th>';
+                            table_content += '</tr></thead>';
+                            table_content += '<tbody>';
+                            block_item.rules.map(rule => {
+                                var checked = '';
+                                if (block_item.selected_rule > 0 && rule.id == block_item.selected_rule) checked = 'checked';
+                                table_content += '<tr>';
+                                table_content += '<td class="stick-t">';
+                                table_content += '<div class="checkbtn-wrap radio-wrap-div">';
+                                table_content += '<input class="selected_rule" name="selected_rule" value = "' + rule.id + '" type="radio" id="rule' + rule.id + '"' + checked + '/>';
+                                table_content += '<label for="rule' + rule.id + '"></label>';
+                                table_content += '</div>';
+                                table_content += '</td>';
+
+                                table_content += '<td>' + (rule.name != null ? rule.name : '') + '</td>';
+                                table_content += '<td>' + rule.serial_no + '</td>';
+                                table_content += '<td>' + rule.location_name + '</td>';
+                                table_content += '<td>' + rule.installation_position + '</td>';
+                                table_content += '<td>' + formatDateLine(rule.created_at) + '～' + (rule.deleted_at != null ? formatDateLine(rule.deleted_at) :'') + '</td>';
+                                table_content += '<td><img width="100px" src="' + '<?php echo asset("storage/recent_camera_image/") ;?>' + '/' + rule.device_id + '.jpeg"/></td>';
+                                table_content += '</tr>';
+                            })
+                            table_content += '</tbody>';
+                            break;
+                        case parseInt("<?php echo config('const.top_block_type_codes')['past_graph_danger'];?>"):
+                            table_content += '<thead><tr>';
+                            table_content += '<th></th><th>ルール名</th><th>カメラNo</th><th>設置エリア</th><th>設置場所</th><th>アクション</th><th>カラー</th><th>ルールの設定期間</th><th>カメラ画像確認</th>';
+                            table_content += '</tr></thead>';
+                            table_content += '<tbody>';
+                            block_item.rules.map(rule => {
+                                var checked = '';
+                                if (block_item.selected_rule > 0 && rule.id == block_item.selected_rule) checked = 'checked';
+                                table_content += '<tr>';
+                                table_content += '<td class="stick-t">';
+                                table_content += '<div class="checkbtn-wrap radio-wrap-div">';
+                                table_content += '<input class="selected_rule" name="selected_rule" value = "' + rule.id + '" type="radio" id="rule' + rule.id + '"' + checked + '/>';
+                                table_content += '<label for="rule' + rule.id + '"></label>';
+                                table_content += '</div>';
+                                table_content += '</td>';
+
+                                table_content += '<td>' + (rule.name != null ? rule.name : '') + '</td>';
+                                table_content += '<td>' + rule.serial_no + '</td>';
+                                table_content += '<td>' + rule.location_name + '</td>';
+                                table_content += '<td>' + rule.installation_position + '</td>';
+
+                                table_content += '<td>'
+                                var action_ids = rule.action_id;
+                                action_ids = JSON.parse(action_ids);
+                                action_ids.map(action_id => {
+                                    table_content += '<div>' + actions[action_id] + '</div>';
+                                })
+                                table_content += '</td>';
+                                table_content += '<td><input disabled type="color" value ="' + rule.color + '"</td>';
+                                table_content += '<td>' + formatDateLine(rule.created_at) + '～' + (rule.deleted_at != null ? formatDateLine(rule.deleted_at) :'') + '</td>';
+                                table_content += '<td><img width="100px" src="' + '<?php echo asset("storage/recent_camera_image/") ;?>' + '/' + rule.device_id + '.jpeg"/></td>';
+                                table_content += '</tr>';
+                            })
+                            table_content += '</tbody>';
+                            break;
+                    }
+                    $('table', $('#rule')).append(table_content);
+                    $('.selected_rule').click(function(){
+                        var selected_rule_id = $(this).attr('id');
+                        selected_rule_id = selected_rule_id.replace('rule', '');
+                        $('#selected_rule').val(selected_rule_id);
+                    })
+                }
                 break;
             case 'change_x_axis':
                 break;
@@ -1165,21 +1382,24 @@
             case 'day':
                 Object.keys(data).map(date_time => {
                     var date = formatDateLine(date_time);
-                    if (temp[date] == undefined) temp[date] = 0;
+                    if (temp[date] == undefined) temp[date] = sum;
+                    sum += data[date_time];
                     temp[date] += data[date_time];
                 })
                 break;
             case 'week':
                 Object.keys(data).map(date_time => {
                     var date = formatYearWeekNum(date_time);
-                    if (temp[date] == undefined) temp[date] = 0;
+                    if (temp[date] == undefined) temp[date] = sum;
+                    sum += data[date_time];
                     temp[date] += data[date_time];
                 })
                 break;
             case 'month':
                 Object.keys(data).map(date_time => {
                     var date = formatYearMonth(date_time);
-                    if (temp[date] == undefined) temp[date] = 0;
+                    if (temp[date] == undefined) temp[date] = sum;
+                    sum += data[date_time];
                     temp[date] += data[date_time];
                 })
                 break;
@@ -1318,38 +1538,47 @@
 
         var time_labels = [];
         var y_data = [];
+        var point_radius = [];
 
         while(cur_time.getTime() <= max_time.getTime()){
             time_labels.push(new Date(cur_time));
+            point_radius.push(0);
+            if (y_data.length > 0){
+                y_data.push(y_data[y_data.length - 1]);
+            } else {
+                y_data.push(null);
+            }
 
             if (x_range == 'day' || x_range == 'week' || x_range == 'month'){
                 var date_key = formatDateLine(cur_time);
                 if (x_range == 'week') date_key = formatYearWeekNum(cur_time);
                 if (x_range == 'month') date_key = formatYearMonth(cur_time);
-                if (graph_data[date_key] == undefined){
-                    y_data.push(null);
-                } else {
-                    y_data.push(graph_data[date_key]);
+                if (graph_data[date_key] != undefined){
+                    y_data[y_data.length - 1] = graph_data[date_key];
+                    point_radius[point_radius.length - 1] = 3;
                 }
             } else {
-                var y_add_flag = false;
                 Object.keys(graph_data).map((time, index) => {
-                    if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000){
+                    if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000 && new Date(time).getTime() <= max_time.getTime()){
                         if (index == 0){
-                            y_add_flag = true;
                             if (new Date(time).getTime() != cur_time.getTime()) {
                                 time_labels.push(new Date(time));
-                                y_data.push(null);
+                                point_radius.push(0);
+                                if (y_data.length > 0){
+                                    y_data.push(y_data[y_data.length - 1]);
+                                } else {
+                                    y_data.push(null);
+                                }
                             }
                         } else {
                             time_labels.push(new Date(time));
+                            y_data.push(graph_data[time]);
+                            point_radius.push(3);
                         }
-                        y_data.push(graph_data[time]);
+                        point_radius[point_radius.length - 1] = 3;
+                        y_data[y_data.length - 1] = graph_data[time];
                     }
                 })
-                if (y_add_flag == false){
-                    y_data.push(null);
-                }
             }
 
             switch(x_range){
@@ -1370,20 +1599,27 @@
                     break;
             }
         }
-
-        var myLineChart = new Chart(ctx, {
+        ctx.innerHTML = '';
+        if (myLineChart[block_data.id] != undefined){
+            myLineChart[block_data.id].destroy();
+        }
+        myLineChart[block_data.id] = new Chart(ctx, {
             type: 'line',
             data: {
                 labels:time_labels,
                 datasets: [{
                     label: '人',
-                    steppedLine:true,
+                    steppedLine:'before',
                     data: y_data,
                     borderColor: "#42b688",
                     backgroundColor: "rgba(66,182,136, 0.3)",
                     pointBackgroundColor:'red',
+                    radius:point_radius,
                     fill:true
-                }]
+                }],
+                mousemove: function(){
+                    return;
+                },
             },
             options: {
                 legend: {
@@ -1618,7 +1854,7 @@
                 var y_add_flag = false;
                 Object.keys(graph_data).map((detect_time, index) => {
                     var detect_time_object = new Date(detect_time);
-                    if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000){
+                    if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000 && detect_time_object.getTime() <= max_time.getTime()){
                         if (index == 0){
                             y_add_flag = true;
                             if  (detect_time_object.getTime() != cur_time.getTime()){
@@ -1674,12 +1910,18 @@
                 lineTension:0,
             })
         });
-
-        var myLineChart = new Chart(ctx, {
+        ctx.innerHTML = '';
+        if (myLineChart[block_data.id] != undefined){
+            myLineChart[block_data.id].destroy();
+        }
+        myLineChart[block_data.id] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: date_labels,
-                    datasets
+                    datasets,
+                    mousemove: function(){
+                        return;
+                    },
                 },
                 options: {
                     legend: {
@@ -1874,14 +2116,44 @@
         }
     }
 
+    function changeSelectRule(){
+        var changed_data = [];
+        if ($('#selected_rule').val() > 0){
+            changed_data.push({
+                id:$('#selected_top_block').val(),
+                selected_rule:$('#selected_rule').val(),
+            })
+        } else {
+            var checked_rules = [];
+            $('.rule_checkbox').each(function(){
+                if ($(this).is(":checked")){
+                    checked_rules.push($(this).val());
+                }
+            })
+            changed_data.push({
+                id:$('#selected_top_block').val(),
+                selected_rules:checked_rules,
+            })
+        }
+
+        updateTopBlockData(changed_data);
+        setTimeout(() => {
+            $('#top_form').submit();
+        }, 500);
+    }
+
     function changeSelectCamera(){
+        console.log('ssss');
         var changed_data = [];
         changed_data.push({
             id:$('#selected_top_block').val(),
             selected_camera:$('#selected_camera').val(),
         })
         updateTopBlockData(changed_data);
-        $('#camera_form').submit();
+        setTimeout(() => {
+            $('#top_form').submit();
+        }, 500);
+
     }
 
     function changePeriod(e, type='starttime', block_id){
@@ -1891,7 +2163,9 @@
             [type]:e.value
         })
         updateTopBlockData(changed_data);
-        $('#camera_form').submit();
+        setTimeout(() => {
+            $('#top_form').submit();
+        }, 500);
     }
 
     function drawFigure(figure_points, figure_color = null, ratio = 0.5, key){

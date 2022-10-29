@@ -24,6 +24,8 @@ class PitController extends AdminController
         $locations = LocationService::getAllLocationNames();
         $cameras = PitService::getAllCameras();
         $camera_imgs = [];
+        $floor_numbers = [];
+        $installation_positions = [];
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $camera->id)
@@ -31,6 +33,12 @@ class PitController extends AdminController
                 ->whereNull('drawing.deleted_at')->get()->first();
             if ($map_data != null) {
                 $camera->floor_number = $map_data->floor_number;
+                if (!in_array($map_data->floor_number, $floor_numbers)){
+                    $floor_numbers[] = $map_data->floor_number;
+                }
+            }
+            if ($camera->installation_position != null && $camera->installation_position != '' && !in_array($camera->installation_position, $installation_positions)){
+                $installation_positions[] = $camera->installation_position;
             }
             $safie_service = new SafieApiService($camera->contract_no);
 
@@ -55,6 +63,8 @@ class PitController extends AdminController
             'pits' => $pits,
             'locations' => $locations,
             'cameras' => $cameras,
+            'installation_positions' => $installation_positions,
+            'floor_numbers' => $floor_numbers,
             'input' => $request,
         ]);
     }
@@ -75,11 +85,7 @@ class PitController extends AdminController
         $pit_rules = $temp;
 
         $locations = LocationService::getAllLocationNames();
-        $camera_query = Camera::query();
-        if (Auth::guard('admin')->user()->contract_no != null) {
-            $camera_query->where('contract_no', Auth::guard('admin')->user()->contract_no);
-        }
-        $cameras = $camera_query->orderBy('id', 'asc')->paginate($this->per_page);
+        $cameras = CameraService::getCamerasForRules()->paginate($this->per_page);
         foreach ($cameras as $camera) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $camera->id)
@@ -207,7 +213,7 @@ class PitController extends AdminController
             }
             $item->floor_number = $floor_data[$item->camera_id];
         }
-        $rules = PitService::doSearch($request)->get()->all();
+        $rules = PitService::getAllRules()->get()->all();
         foreach ($rules as $rule) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $rule->camera_id)
@@ -215,6 +221,8 @@ class PitController extends AdminController
                 ->whereNull('drawing.deleted_at')->get()->first();
             if ($map_data != null) {
                 $rule->floor_number = $map_data->floor_number;
+            } else {
+                $rule->floor_number = '';
             }
         }
 
@@ -322,27 +330,7 @@ class PitController extends AdminController
 
     public function past_analysis(Request $request)
     {
-        $cameras = PitService::getAllCameras();
-        $camera_imgs = [];
-        foreach ($cameras as $camera) {
-            $map_data = CameraMappingDetail::select('drawing.floor_number')
-                ->where('camera_id', $camera->id)
-                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
-                ->whereNull('drawing.deleted_at')->get()->first();
-            if ($map_data != null) {
-                $camera->floor_number = $map_data->floor_number;
-            }
-            if ($camera->contract_no == null) {
-                continue;
-            }
-            $safie_service = new SafieApiService($camera->contract_no);
-
-            if (!isset($camera_imgs[$camera->camera_id])) {
-                $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-                $camera_imgs[$camera->camera_id] = $camera_image_data;
-                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
-            }
-        }
+        $rules = PitService::getAllRules()->get()->all();
         $from_top = false;
         if (isset($request['from_top']) && $request['from_top'] == true) {
             $from_top = true;
@@ -361,23 +349,37 @@ class PitController extends AdminController
         if ($search_options != null && $change_search_params_flag == false) {
             $search_options = json_decode($search_options);
             $search_options = (array) $search_options;
-            $request['selected_camera'] = $search_options['selected_camera'];
+            // $request['selected_camera'] = $search_options['selected_camera'];
+            $request['selected_rule'] = isset($search_options['selected_rule']) ? $search_options['selected_rule'] : (count($rules) > 0 ? $rules[0]->id : null);
             $request['starttime'] = $search_options['starttime'];
             $request['endtime'] = $search_options['endtime'];
             $request['time_period'] = $search_options['time_period'];
-            $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
         } else {
-            $selected_rule = PitService::doSearch($request)->orderByDesc('pit_detection_rules.id')->get()->first();
-            if (!(isset($request['selected_camera']) && $request['selected_camera'] > 0)) {
-                if ($selected_rule != null) {
-                    $request['selected_camera'] = $selected_rule->camera_id;
+            if (!(isset($request['selected_rule']) && $request['selected_rule'] > 0)) {
+                if (count($rules) > 0) {
+                    $request['selected_rule'] = $rules[0]->id;
                 }
             }
         }
+        $selected_rule_object = null;
+        foreach ($rules as $rule) {
+            $map_data = CameraMappingDetail::select('drawing.floor_number')
+                ->where('camera_id', $rule->camera_id)
+                ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                ->whereNull('drawing.deleted_at')->get()->first();
+            if ($map_data != null) {
+                $rule->floor_number = $map_data->floor_number;
+            } else {
+                $rule->floor_number = '';
+            }
+            if ($request['selected_rule'] == $rule->id){
+                $selected_rule_object = $rule;
+            }
+        }
         $search_params = [];
-        if (isset($request['selected_camera']) && $request['selected_camera'] != '') {
+        if ($selected_rule_object != null) {
             $search_params = [
-                'selected_camera' => $request['selected_camera'],
+                'selected_rule' => $request['selected_rule'],
                 'starttime' => isset($request['starttime']) && $request['starttime'] != '' ? $request['starttime'] : date('Y-m-d'),
                 'endtime' => isset($request['endtime']) && $request['endtime'] != '' ? $request['endtime'] : date('Y-m-d'),
                 'time_period' => isset($request['time_period']) ? $request['time_period'] : 3,
@@ -397,8 +399,8 @@ class PitController extends AdminController
             'pit_detections' => $pit_detections,
             'pit_over_detections' => array_reverse($pit_over_detections),
             'request_params' => (array) $search_params,
-            'cameras' => $cameras,
-            'selected_rule' => $selected_rule,
+            'rules' => $rules,
+            'selected_rule_object' => $selected_rule_object,
             'from_top' => $from_top,
             'last_number' => count($pit_detections) > 0 ? $pit_detections[0]->id : null,
         ]);

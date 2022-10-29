@@ -6,6 +6,7 @@ use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
 use App\Models\DangerAreaDetection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DangerService
 {
@@ -15,7 +16,8 @@ class DangerService
             'danger_area_detection_rules.*',
             'cameras.installation_position',
             'cameras.location_id',
-            'cameras.camera_id as camera_no',
+            'cameras.camera_id as device_id',
+            'cameras.serial_no',
             'cameras.contract_no',
             'locations.name as location_name'
         )->leftJoin('cameras', 'cameras.id', '=', 'danger_area_detection_rules.camera_id')
@@ -24,6 +26,13 @@ class DangerService
             $danger_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
         if ($params != null) {
+            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+                $danger_rules -> where(function($q) {
+                    $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                    $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                    $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+                });
+            }
             if (isset($params['selected_cameras']) && !is_array($params['selected_cameras']) && $params['selected_cameras'] != '') {
                 $selected_cameras = json_decode($params['selected_cameras']);
                 $danger_rules->whereIn('danger_area_detection_rules.camera_id', $selected_cameras);
@@ -46,6 +55,35 @@ class DangerService
                     ->where('drawing.floor_number', 'LIKE', '%'.$params->floor_number.'%');
             }
         }
+
+        return $danger_rules;
+    }
+
+    public static function getAllRules()
+    {
+        $danger_rules = DB::table('danger_area_detection_rules')
+            ->select(
+                'danger_area_detection_rules.*',
+                'cameras.installation_position',
+                'cameras.location_id',
+                'cameras.camera_id as device_id',
+                'cameras.serial_no',
+                'cameras.contract_no',
+                'locations.name as location_name'
+            )->leftJoin('cameras', 'cameras.id', '=', 'danger_area_detection_rules.camera_id')
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $danger_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $danger_rules -> where(function($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
+
+        $danger_rules->orderByRaw('-danger_area_detection_rules.deleted_at', 'DESC')->orderByDesc('danger_area_detection_rules.updated_at');
 
         return $danger_rules;
     }
@@ -137,7 +175,8 @@ class DangerService
                 'cameras.installation_position',
                 'cameras.location_id',
                 'cameras.contract_no',
-                'cameras.camera_id as camera_no',
+                'cameras.camera_id as device_id',
+                'cameras.serial_no',
                 'locations.name as location_name'
             )
             ->leftJoin('danger_area_detection_rules', 'danger_area_detection_rules.id', 'danger_area_detections.rule_id')
@@ -162,6 +201,9 @@ class DangerService
                     $query->whereIn('danger_area_detections.rule_id', $rule_ids);
                 }
             }
+            if (isset($params['selected_rule']) && $params['selected_rule'] > 0) {
+                $query->where('danger_area_detections.rule_id', $params['selected_rule']);
+            }
             if (isset($params['selected_rules']) && is_array($params['selected_rules']) && count($params['selected_rules']) > 0) {
                 $query->whereIn('danger_area_detections.rule_id', $params['selected_rules']);
             }
@@ -179,6 +221,13 @@ class DangerService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $query -> where(function($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
         $query->orderByDesc('danger_area_detections.starttime');
 
         return $query;
@@ -192,6 +241,13 @@ class DangerService
             $camera_query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
         $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $camera_query -> where(function($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
 
         return $camera_query->get();
     }

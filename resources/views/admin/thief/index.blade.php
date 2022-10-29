@@ -40,7 +40,7 @@
                             <li><a data-target="camera" class="modal-open setting">選択する</a></li>
                             <input type= 'hidden' name='selected_cameras' id = 'cameras_input' value="{{ old('selected_cameras', (isset($input) && $input->has('selected_cameras'))?$input->selected_cameras:'')}}"/>
                             {{-- @if($selected_rule != null)
-                                <li><p class="selected-camera">{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
+                                <li><p class="selected-camera">{{$selected_rule->serial_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
                             @endif --}}
                         </ul>
                         <ul class="date-list">
@@ -63,17 +63,39 @@
                         <ul class="date-list">
                             <li><h4>設置フロア</h4></li>
                             <li>
-                                <div>
-                                    <input type="text" name="floor_number" value="{{ old('floor_number', (isset($input) && $input->has('floor_number'))?$input->floor_number:'')}}"/>
+                                <div class="select-c">
+                                    <select name="floor_number">
+                                        <option value="">選択する</option>
+                                    @foreach($floor_numbers as $floor)
+                                        @if (isset($input) && $input->has('floor_number') && $input->floor_number == $floor)
+                                        <option value="{{$floor}}" selected>{{$floor}}</option>
+                                        @else
+                                        <option value="{{$floor}}">{{$floor}}</option>
+                                        @endif
+                                    @endforeach
+                                    </select>
                                 </div>
+                                {{-- <input type="text" name="floor_number" value="{{ old('floor_number', (isset($input) && $input->has('floor_number'))?$input->floor_number:'')}}"/> --}}
                             </li>
                         </ul>
                         <ul class="date-list">
                             <li><h4>設置場所</h4></li>
                             <li>
-                                <div>
-                                    <input type="text" name="installation_position" value="{{ old('installation_position', (isset($input) && $input->has('installation_position'))?$input->installation_position:'')}}"/>
+                                <div class="select-c">
+                                    <select name="installation_position">
+                                    <option value="">選択する</option>
+                                    @foreach($installation_positions as $position)
+                                        @if (isset($input) && $input->has('installation_position') && $input->installation_position == $position)
+                                        <option value="{{$position}}" selected>{{$position}}</option>
+                                        @else
+                                        <option value="{{$position}}">{{$position}}</option>
+                                        @endif
+                                    @endforeach
+                                    </select>
                                 </div>
+                                {{-- <div>
+                                    <input type="text" name="installation_position" value="{{ old('installation_position', (isset($input) && $input->has('installation_position'))?$input->installation_position:'')}}"/>
+                                </div> --}}
                             </li>
                         </ul>
                         <button type="submit" class="apply">絞り込む</button>
@@ -109,7 +131,7 @@
                         <tr>
                             <td><button type="button" class="edit" onclick="location.href='{{route('admin.thief.edit', ['thief' => $thief->id])}}'">編集</button></td>
                             <td>{{$thief->name}}</td>
-                            <td>{{$thief->camera_no}}</td>
+                            <td>{{$thief->serial_no}}</td>
                             <td>{{isset($locations[$thief->location_id])?$locations[$thief->location_id]:''}}</td>
                             <td>{{$thief->floor_number}}</td>
                             <td>{{$thief->installation_position}}</td>
@@ -177,7 +199,7 @@
                                 <label class="custom-style" for="{{'camera'.$camera->id}}"></label>
                             </div>
                         </td>
-                        <td>{{$camera->camera_id}}</td>
+                        <td>{{$camera->serial_no}}</td>
                         <td>{{$camera->location_name}}</td>
                         <td>{{$camera->floor_number}}</td>
                         <td>{{$camera->installation_position}}</td>
@@ -186,7 +208,7 @@
                     @endforeach
                     @if(count($cameras) == 0)
                     <tr>
-                        <td colspan="6">ルールが登録されたカメラがありません。ルールを設定してください</td>
+                        <td colspan="6">大量盗難検知のルールが登録されたカメラがありません。ルールを設定してください</td>
                     </tr>
                     @endif
                     </tbody>

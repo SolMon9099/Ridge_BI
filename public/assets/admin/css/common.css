@@ -2488,6 +2488,8 @@ ul.service-list li {
   position: -webkit-sticky;
   top: 0;
   z-index: 9;
+  background: white;
+  border-bottom: 1px lightgray;
 }
 .table2.top50 thead {
   top: 50px;
@@ -5491,6 +5493,8 @@ button.reset {
 .n-area2 {
   display: flex;
   justify-content: space-between;
+  width:1280px;
+  height:720px;
 }
 .n-area2 > div {
   width: 20%;
@@ -5899,7 +5903,7 @@ button.add-btn {
 }
 .reset-heatmap-button{
   padding:5px 15px;
- background: linear-gradient(-135deg,#CC0000,#D4145A); 
+ background: linear-gradient(-135deg,#CC0000,#D4145A);
   border-radius: 30px;
   color:white;
   border:none;
@@ -5946,4 +5950,27 @@ ul.time + .error-message + p{
 }
 .title-div.mt-7{
 	margin-bottom: 7px;
+}
+.radio .edit{
+    background-color: white;
+}
+.loader{
+    border: 16px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid #3498db;
+    width: 120px!important;
+    height: 120px;
+    -webkit-animation: spin 2s linear infinite; /* Safari */
+    animation: spin 2s linear infinite;
+    margin:auto;
+}
+/* Safari */
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

@@ -6,6 +6,7 @@ use App\Models\Camera;
 use App\Models\PitDetectionRule;
 use App\Models\PitDetection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PitService
 {
@@ -15,7 +16,8 @@ class PitService
             'pit_detection_rules.*',
             'cameras.installation_position',
             'cameras.location_id',
-            'cameras.camera_id as camera_no',
+            'cameras.camera_id as device_id',
+            'cameras.serial_no',
             'locations.name as location_name'
         )->leftJoin('cameras', 'cameras.id', '=', 'pit_detection_rules.camera_id')
         ->leftJoin('locations', 'locations.id', 'cameras.location_id');
@@ -23,6 +25,13 @@ class PitService
             $pit_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
         if ($params != null) {
+            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+                $pit_rules -> where(function($q) {
+                    $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                    $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                    $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+                });
+            }
             if (isset($params['selected_cameras']) && !is_array($params['selected_cameras']) && $params['selected_cameras'] != '') {
                 $selected_cameras = json_decode($params['selected_cameras']);
                 $pit_rules->whereIn('pit_detection_rules.camera_id', $selected_cameras);
@@ -47,6 +56,35 @@ class PitService
         }
 
         return $pit_rules;
+    }
+
+    public static function getAllRules()
+    {
+        $rules = DB::table('pit_detection_rules')
+            ->select(
+                'pit_detection_rules.*',
+                'cameras.installation_position',
+                'cameras.location_id',
+                'cameras.camera_id as device_id',
+                'cameras.serial_no',
+                'cameras.contract_no',
+                'locations.name as location_name'
+            )->leftJoin('cameras', 'cameras.id', '=', 'pit_detection_rules.camera_id')
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $rules -> where(function($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
+
+        $rules->orderByRaw('-pit_detection_rules.deleted_at', 'DESC')->orderByDesc('pit_detection_rules.updated_at');
+
+        return $rules;
     }
 
     public static function saveData($params)
@@ -140,12 +178,14 @@ class PitService
                 'cameras.installation_position',
                 'cameras.location_id',
                 'cameras.contract_no',
-                'cameras.camera_id as camera_no',
+                'cameras.camera_id as device_id',
+                'cameras.serial_no',
                 'locations.name as location_name',
                 'pit_detection_rules.max_permission_time',
                 'pit_detection_rules.min_members',
                 'pit_detection_rules.red_points',
                 'pit_detection_rules.blue_points',
+                'pit_detection_rules.name as rule_name',
             )
             ->leftJoin('pit_detection_rules', 'pit_detection_rules.id', 'pit_detections.rule_id')
             ->leftJoin('cameras', 'cameras.id', 'pit_detections.camera_id')
@@ -172,6 +212,15 @@ class PitService
                     $query->whereIn('pit_detections.rule_id', $rule_ids);
                 }
             }
+            if (isset($params['selected_rules']) && is_array($params['selected_rules']) && count($params['selected_rules']) > 0) {
+                $query->whereIn('pit_detections.rule_id', $params['selected_rules']);
+            }
+            if (isset($params['selected_rule']) && $params['selected_rule'] > 0) {
+                $query->where('pit_detections.rule_id', $params['selected_rule']);
+            }
+            if (isset($params['rule_id']) && $params['rule_id'] > 0) {
+                $query->where('pit_detections.rule_id', $params['rule_id']);
+            }
             if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
                 $query->whereIn('pit_detection_rules.camera_id', $params['selected_cameras']);
             }
@@ -187,6 +236,13 @@ class PitService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $query -> where(function($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
         $query->orderByDesc('pit_detections.starttime');
 
         return $query;
@@ -200,11 +256,18 @@ class PitService
             $camera_query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
         $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
+            $camera_query -> where(function($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
 
         return $camera_query->get();
     }
 
-    public function extractOverData($data)
+    public static function extractOverData($data)
     {
         $temp = [];
         $added_id_times = [];
@@ -255,49 +318,46 @@ class PitService
                         }
                         ++$increatment;
                     } else {
-                        // if (strtotime($over_start_time[$item->rule_id]) + $max_permission_time[$item->rule_id] * 60 > strtotime($data[count($data) - 1]->starttime)) {
-                        //     if ($nb_entry - $nb_exit > 0) {
-                        //     }
-                        // }
                         $cond_flag = false;
                     }
                 } while ($cond_flag);
             } else {
                 if (isset($over_start_time[$item->rule_id]) && $over_start_time[$item->rule_id] != null) {
-                    if (strtotime($item->starttime) - strtotime($over_start_time[$item->rule_id]) >= $max_permission_time[$item->rule_id] * 60) {
-                        $cond_flag = true;
-                        $increatment = 1;
-                        $add_item = null;
-                        do {
+                    $cond_flag = true;
+                    $increatment = 1;
+                    $add_item = null;
+                    do {
+                        if (strtotime($item->starttime) - strtotime($over_start_time[$item->rule_id]) >= $max_permission_time[$item->rule_id] * 60) {
                             if (isset($data[$index - $increatment])) {
                                 $prev_item = $data[$index - $increatment];
                                 if ($item->rule_id == $prev_item->rule_id && ($prev_item->nb_entry - $prev_item->nb_exit > 0)) {
                                     if (strtotime($over_start_time[$item->rule_id]) >= strtotime($prev_item->starttime)) {
                                         $add_item = clone $data[$index - $increatment];
-                                        $cond_flag = false;
+                                        $add_item->detect_time = date('Y-m-d H:i:s', strtotime($over_start_time[$item->rule_id]) + $max_permission_time[$item->rule_id] * 60);
+                                        if (!in_array([$item->id, $add_item->detect_time], $added_id_times)) {
+                                            $temp[] = $add_item;
+                                            $added_id_times[] = [$item->id, $add_item->detect_time];
+                                        }
+                                        $over_start_time[$item->rule_id] = date('Y-m-d H:i:s', strtotime($over_start_time[$item->rule_id]) + $max_permission_time[$item->rule_id] * 60);
+                                        $increatment = 0;
+                                        // $cond_flag = false;
                                     }
                                 }
                             } else {
                                 $cond_flag = false;
                             }
                             ++$increatment;
-                        } while ($cond_flag);
-
-                        if ($add_item != null) {
-                            $add_item->detect_time = date('Y-m-d H:i:s', strtotime($over_start_time[$item->rule_id]) + $max_permission_time[$item->rule_id] * 60);
-                            if (!in_array([$item->id, $add_item->detect_time], $added_id_times)) {
-                                $temp[] = $add_item;
-                                $added_id_times[] = [$item->id, $add_item->detect_time];
-                            }
+                        } else {
+                            $cond_flag = false;
                         }
-                    }
+                    } while ($cond_flag);
                 }
                 $over_start_time[$item->rule_id] = null;
             }
         }
         //sort by detect time-----
         if (count($temp) > 1) {
-            usort($temp, function($i_prev, $i_after){
+            usort($temp, function ($i_prev, $i_after) {
                 if (strtotime($i_prev->detect_time) > strtotime($i_after->detect_time)) {
                     return 1;
                 }

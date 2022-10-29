@@ -52,9 +52,19 @@
                     <ul class="date-list">
                         <li><h4>設置フロア</h4></li>
                         <li>
-                            <div>
-                                <input type="text" name="floor_number" value="{{ old('floor_number', (isset($input) && $input->has('floor_number'))?$input->floor_number:'')}}"/>
+                            <div class="select-c">
+                                <select name="floor_number">
+                                    <option value="">選択する</option>
+                                @foreach($floor_numbers as $floor)
+                                    @if (isset($input) && $input->has('floor_number') && $input->floor_number == $floor)
+                                    <option value="{{$floor}}" selected>{{$floor}}</option>
+                                    @else
+                                    <option value="{{$floor}}">{{$floor}}</option>
+                                    @endif
+                                @endforeach
+                                </select>
                             </div>
+                            {{-- <input type="text" name="floor_number" value="{{ old('floor_number', (isset($input) && $input->has('floor_number'))?$input->floor_number:'')}}"/> --}}
                         </li>
                     </ul>
                     <ul class="date-list">
@@ -108,7 +118,7 @@
                 <table class="table" style="margin-top: 10px;">
                     <tr>
                         <th>カメラNo.</th>
-                        <td>{{$camera->camera_id}}</td>
+                        <td>{{$camera->serial_no}}</td>
                     </tr>
                     <tr>
                         <th>設置エリア</th>

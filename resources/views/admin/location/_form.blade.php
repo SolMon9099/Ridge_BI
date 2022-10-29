@@ -51,7 +51,7 @@
                         @endforeach
                     </select>
                     </li>
-                    <li>
+                    {{-- <li>
                     <select name="managers[]" class="w90">
                         <option value="0">選択する</option>
                         @foreach($managers as $admin)
@@ -59,7 +59,7 @@
                         @endforeach
                     </select>
                     <button type="button" class="history2 delete_manager">削除</button>
-                    </li>
+                    </li> --}}
                     @endif
                 </ul>
                 @error('managers.*')

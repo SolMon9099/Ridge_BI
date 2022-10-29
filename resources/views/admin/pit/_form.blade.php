@@ -80,23 +80,20 @@
                         @endfor
                     @endfor
                 </div>
-                <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
-                <p class="error-message area" style="display: none">エリアを選択してください。</p>
-                <div id="debug"></div>
+            <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
+            <p class="error-message area" style="display: none">エリアを選択してください。</p>
+            <div id="debug"></div>
+            @if(!$super_admin_flag)
+            <div class="btns" id="direction">
+                <button type="button" class="ok save-btn" onclick="saveRule()">決定</button>
             </div>
+            @endif
         </div>
-
-
-
-        @if(!$super_admin_flag)
-        <div class="btns" id="direction">
-            <button type="button" class="ok save-btn" onclick="saveRule()">決定</button>
-        </div>
-        @endif
+        <div class="loader" style="display: none"></div>
     </div>
-    <input type="hidden" value="" name="red_points_data" id = 'red_points_data'/>
-    <input type="hidden" value="" name="blue_points_data" id = 'blue_points_data'/>
 </div>
+<input type="hidden" value="" name="red_points_data" id = 'red_points_data'/>
+<input type="hidden" value="" name="blue_points_data" id = 'blue_points_data'/>
 <!--MODAL -->
 <div id="howto" class="modal-content">
     <div class="textarea">
@@ -652,28 +649,47 @@
     }
 
     function changeHeatMap(e){
+        $('#ai_guide').attr('disabled', true);
         if (e.checked){
-            for (var i = 0; i < 72; i++){
-                for(var j=0; j<128; j++){
-                    var score = null;
-                    var count = 0;
-                    if (heatmap_records != undefined && heatmap_records.length > 0){
-                        heatmap_records.map(heat_item => {
-                            if (heat_item.heatmap_data != null && heat_item.heatmap_data.length > 0){
-                                if (!isNaN(parseInt(heat_item.heatmap_data[i][j]))){
-                                    if (score === null) score = 0;
-                                    score += parseFloat(heat_item.heatmap_data[i][j]);
-                                    count++;
+            setTimeout(() => {
+                $('.video-area').hide();
+                $('.loader').show();
+            }, 100);
+            setTimeout(() => {
+                for (var i = 0; i < 72; i++){
+                    for(var j=0; j<128; j++){
+                        var score = null;
+                        var count = 0;
+                        if (heatmap_records != undefined && heatmap_records.length > 0){
+                            heatmap_records.map(heat_item => {
+                                if (heat_item.heatmap_data != null && heat_item.heatmap_data.length > 0){
+                                    if (!isNaN(parseInt(heat_item.heatmap_data[i][j]))){
+                                        if (score === null) score = 0;
+                                        score += parseFloat(heat_item.heatmap_data[i][j]);
+                                        count++;
+                                    }
                                 }
-                            }
-                        })
+                            })
+                        }
+                        if (count > 0) score = score / count;
+                        $('.grid_' + i + '_' + j).css('opacity', calcOpacity(score));
                     }
-                    if (count > 0) score = score / count;
-                    $('.grid_' + i + '_' + j).css('opacity', calcOpacity(score));
                 }
-            }
+                $('.video-area').show();
+                $('.loader').hide();
+                $('#ai_guide').attr('disabled', false);
+            }, 500);
         } else {
-            $('.grid').css('opacity', 0);
+            setTimeout(() => {
+                $('.video-area').hide();
+                $('.loader').show();
+            }, 100);
+            setTimeout(() => {
+                $('.grid').css('opacity', 0);
+                $('.video-area').show();
+                $('.loader').hide();
+                $('#ai_guide').attr('disabled', false);
+            }, 500);
         }
     }
     function getHeadtMapData(){

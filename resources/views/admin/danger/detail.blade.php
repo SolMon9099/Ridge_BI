@@ -35,7 +35,7 @@
                             </li>
                             <li><a data-target="camera" class="modal-open setting">選択する</a></li>
                             @if($selected_rule != null)
-                                <li><p class="selected-camera">{{$selected_rule->camera_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
+                                <li><p class="selected-camera">{{$selected_rule->serial_no. '：'. $selected_rule->location_name.'('.$selected_rule->installation_position.')'}}</p></li>
                             @endif
                         </ul>
                     </div>
@@ -79,9 +79,11 @@
             @endif
             <div style="position: relative;">
                 <h3 class="title">最新の検知</h3>
+                @if(count($danger_detections) > 0)
                 <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" style="top:0;"
                     onclick="addDashboard({{config('const.top_block_type_codes')['recent_detect_danger']}})">ダッシュボートへ追加
                 </button>
+                @endif
             </div>
             @if(count($danger_detections) == 0)
                 <div class="no-data">検知データがありません。</div>
@@ -109,7 +111,7 @@
                         </div>
                     </div>
                     <div class="text">
-                        <p class="camera-id">カメラID:{{$item->camera_no}}</p>
+                        <p class="camera-id">カメラID:{{$item->serial_no}}</p>
                         <ul class="pit-list">
                             <li>
                                 <h2 class="icon-map">設置場所</h2>
@@ -187,7 +189,7 @@
                                     <label class="" for="{{'camera'.$camera->id}}"></label>
                                 </div>
                             </td>
-                            <td>{{$camera->camera_id}}</td>
+                            <td>{{$camera->serial_no}}</td>
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
@@ -196,7 +198,7 @@
                         @endforeach
                         @if(count($cameras) == 0)
                         <tr>
-                            <td colspan="6">ルールが登録されたカメラがありません。ルールを設定してください</td>
+                            <td colspan="6">危険エリア侵入検知のルールが登録されたカメラがありません。ルールを設定してください</td>
                         </tr>
                         @endif
                         </tbody>
@@ -284,6 +286,7 @@
         4:'black',
     }
     var ctx = document.getElementById("myLineChart1");
+    var myLineChart = null;
     var time_period = "<?php echo $time_period;?>";
     var selected_camera = "<?php echo $selected_camera;?>";
     var grid_unit = 15;
@@ -348,7 +351,7 @@
                 var detect_time_object = new Date();
                 detect_time_object.setHours(parseInt(detect_hour));
                 detect_time_object.setMinutes(parseInt(detect_mins));
-                if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000){
+                if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000 && detect_time_object.getTime() <= max_time.getTime()){
                     if (index == 0){
                         y_add_flag = true;
                         if  (detect_time_object.getTime() != cur_time.getTime()){
@@ -387,11 +390,18 @@
                 lineTension:0,
             })
         });
-        var myLineChart = new Chart(ctx, {
+        ctx.innerHTML = '';
+        if (myLineChart != null){
+            myLineChart.destroy();
+        }
+        myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: date_labels,
-                datasets
+                datasets,
+                mousemove: function(){
+                    return;
+                },
             },
             options: {
                 title: {
@@ -452,7 +462,7 @@
             // 初期化
             safieStreamingPlayer.defaultProperties = {
                 defaultAccessToken: '<?php echo $access_token;?>',
-                defaultDeviceId: '<?php echo isset($selected_rule) ? $selected_rule->camera_no : '';?>',
+                defaultDeviceId: '<?php echo isset($selected_rule) ? $selected_rule->device_id : '';?>',
                 defaultAutoPlay:true,
                 defaultUserInteractions:false
             };

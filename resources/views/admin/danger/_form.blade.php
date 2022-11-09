@@ -21,140 +21,114 @@
     @include('admin.layouts.flash-message')
     <div class="scroll" style="position: relative;">
         <h3>検知設定</h3>
-        <div class="setting-head">
-            <div id="rule_items">
-                <p class="close-items"><a class="close-icon">×</a></p>
-                <div>
-                    <label class="title-label">ルール名：</label>
-                    <input type="text" class="rule_name" />
-                </div>
-                <p class="error-message rule-name" style="display: none">ルール名を6文字以内で入力してください</p>
-                <div class="radio-area">
-                    <label class="title-label">図形：</label>
-                    <select name = '' class="select-box select-figure" style="">
-                        <option value="0" selected>四角形</option>
-                        <option value="1">多角形</option>
-                    </select>
-                    {{-- <input id="radio-rect" type="radio" value="0" checked>
-                    <label for="radio-rect" class="radio-label radio-label-rect">四角形</label>
-                    <input id="radio-polygon" type="radio" value="1">
-                    <label for="radio-polygon" class="radio-label radio-label-polygon">多角形</label> --}}
-                </div>
-                <div class="title-div">
-                    <label class="title-label">カラー選択：</label>
-                    <input type="color" class="color" value=""/>
-                </div>
-                <div class="content-div action-div">
-                    <label class="title-label">アクション：</label>
-                    <select style="" class="select-box">
-                        <option value=""></option>
-                        @foreach($action_options as $id => $action)
-                            <option value={{$id}}>{{$action}}</option>
-                        @endforeach
-                    </select>
-                    {{-- @foreach($action_options as $id => $action)
-                        <div>
-                            <input value={{$id}} type="checkbox" id="{{'action_'.$id}}">
-                            <label class="custom-style" for="{{'action_'.$id}}"></label>{{$action}}
-                        </div>
-                    @endforeach --}}
-                </div>
-                <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
-                <button type="button" class="draw-btn area-draw-btn" style="display: none;">エリア選択</button>
+        @if(isset($view_only))
+            @foreach ($rules as $index=>$rule)
+            <div>
+                <label style="margin-right: 20px"><span class="title-span">ルール名</span>：{{$rule->name}}</label>
+                <label class=""><span class="title-span">アクション</span>：{{count($rule->action_id) > 0 ? $action_options[$rule->action_id[0]] : ''}}</label>
             </div>
-            <div id="rule_item_area">
-                @foreach ($rules as $index=>$rule)
-                <div class="rule_items" data-index = {{$index}}>
-                    <p class="close-items"><a class="close-icon" onclick="removeFigure({{$index}})">×</a></p>
+
+            @endforeach
+        @else
+            <div class="setting-head">
+                <div id="rule_items">
+                    <p class="close-items"><a class="close-icon">×</a></p>
                     <div>
                         <label class="title-label">ルール名：</label>
-                        <input value="{{$rule->name}}" onchange="changeName(this, '{{$index}}')" type="text" class="rule_name" />
+                        <input type="text" class="rule_name" />
                     </div>
                     <p class="error-message rule-name" style="display: none">ルール名を6文字以内で入力してください</p>
                     <div class="radio-area">
                         <label class="title-label">図形：</label>
-                        <select name={{'figure_type_'.$index}} class="select-box" style=""
-                        disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}>
-                            @if(count($rule->points) == 4)
-                                <option value="0" selected>四角形</option>
-                                <option value="1">多角形</option>
-                            @else
-                                <option value="0">四角形</option>
-                                <option value="1" selected>多角形</option>
-                            @endif
+                        <select name = '' class="select-box select-figure" style="">
+                            <option value="0" selected>四角形</option>
+                            <option value="1">多角形</option>
                         </select>
-                        {{-- @if(count($rule->points) == 4)
-                            <input disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}
-                                id={{"radio-rect_".$index}} name={{'figure_type_'.$index}} type="radio" value="0" onchange="changeFigure(this, '{{$index}}')" checked>
-                            <label for={{"radio-rect_".$index}} class="radio-label">四角形</label>
-                            <input disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}
-                                id={{"radio-polygon_".$index}} name={{'figure_type_'.$index}} type="radio" value="1" onchange="changeFigure(this, '{{$index}}')">
-                            <label for={{"radio-polygon_".$index}} class="radio-label">多角形</label>
-                        @else
-                            <input disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}
-                                id={{"radio-rect_".$index}} name={{'figure_type_'.$index}} type="radio" value="0" onchange="changeFigure(this, '{{$index}}')">
-                            <label for={{"radio-rect_".$index}} class="radio-label">四角形</label>
-                            <input disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}
-                                id={{"radio-polygon_".$index}} name={{'figure_type_'.$index}} type="radio" value="1" onchange="changeFigure(this, '{{$index}}')" checked>
-                            <label for={{"radio-polygon_".$index}} class="radio-label">多角形</label>
-                        @endif --}}
-
                     </div>
                     <div class="title-div">
                         <label class="title-label">カラー選択：</label>
-                        <input onchange="changeColor(this, '{{$index}}')" type="color" class="color" value="{{isset($rule->color) ? $rule->color:'#000000'}}"/>
+                        <input type="color" class="color" value=""/>
                     </div>
                     <div class="content-div action-div">
                         <label class="title-label">アクション：</label>
-                        <select name={{'figure_type_'.$index}} class="select-box" onchange="changeActions(this, {{$index}})">
+                        <select style="" class="select-box">
                             <option value=""></option>
                             @foreach($action_options as $id => $action)
-                                @if (in_array($id, $rule->action_id))
-                                    <option value={{$id}} selected>{{$action}}</option>
-                                @else
-                                    <option value={{$id}}>{{$action}}</option>
-                                @endif
+                                <option value={{$id}}>{{$action}}</option>
                             @endforeach
                         </select>
-                            {{-- @foreach($action_options as $id => $action)
-                            <div>
-                                @if (in_array($id, $rule->action_id))
-                                    <input value={{$id}} type="checkbox" id="{{$index.'_action_'.$id}}" checked>
-                                @else
-                                    <input value={{$id}} type="checkbox" id="{{$index.'_action_'.$id}}">
-                                @endif
-                                <label onclick="changeActions({{$index.' ,'.$id}})" class="custom-style" for="{{$index.'_action_'.$id}}"></label>{{$action}}
-                            </div>
-                            @endforeach --}}
                     </div>
                     <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
-                    @if(count($rule->points) != 4)
-                        <button type="button" class="draw-btn disabled-btn area-draw-btn">エリア選択</button>
-                    @endif
+                    <button type="button" class="draw-btn area-draw-btn" style="display: none;">エリア選択</button>
                 </div>
-                @endforeach
-            </div>
+                <div id="rule_item_area">
+                    @foreach ($rules as $index=>$rule)
+                    <div class="rule_items" data-index = {{$index}}>
+                        <p class="close-items"><a class="close-icon" onclick="removeFigure({{$index}})">×</a></p>
+                        <div>
+                            <label class="title-label">ルール名：</label>
+                            <input value="{{$rule->name}}" onchange="changeName(this, '{{$index}}')" type="text" class="rule_name" />
+                        </div>
+                        <p class="error-message rule-name" style="display: none">ルール名を6文字以内で入力してください</p>
+                        <div class="radio-area">
+                            <label class="title-label">図形：</label>
+                            <select name={{'figure_type_'.$index}} class="select-box" style=""
+                            disabled = {{$index == count($rules) - 1 && count($rules) < $max_figure_numbers ? true : false }}>
+                                @if(count($rule->points) == 4)
+                                    <option value="0" selected>四角形</option>
+                                    <option value="1">多角形</option>
+                                @else
+                                    <option value="0">四角形</option>
+                                    <option value="1" selected>多角形</option>
+                                @endif
+                            </select>
+                        </div>
+                        <div class="title-div">
+                            <label class="title-label">カラー選択：</label>
+                            <input onchange="changeColor(this, '{{$index}}')" type="color" class="color" value="{{isset($rule->color) ? $rule->color:'#000000'}}"/>
+                        </div>
+                        <div class="content-div action-div">
+                            <label class="title-label">アクション：</label>
+                            <select name={{'figure_type_'.$index}} class="select-box" onchange="changeActions(this, {{$index}})">
+                                <option value=""></option>
+                                @foreach($action_options as $id => $action)
+                                    @if (in_array($id, $rule->action_id))
+                                        <option value={{$id}} selected>{{$action}}</option>
+                                    @else
+                                        <option value={{$id}}>{{$action}}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <p class="error-message rule-select" style="display: none">アクションを選択してください。</p>
+                        @if(count($rule->points) != 4)
+                            <button type="button" class="draw-btn disabled-btn area-draw-btn">エリア選択</button>
+                        @endif
+                    </div>
+                    @endforeach
+                </div>
 
-            <div class="add-figure-area">
-                <button type="button" onclick="addNewFigure()" style="display: <?php echo count($rules) < $max_figure_numbers ? 'block':'none' ?>"
-                    id="add-figure-btn" class="draw-btn add-btn">検知設定を追加
-                </button>
-                <div class="balloon_danger">
-                    <p>画像内をクリックしエリアを選択してください。</p>
+                <div class="add-figure-area">
+                    <button type="button" onclick="addNewFigure()" style="display: <?php echo count($rules) < $max_figure_numbers ? 'block':'none' ?>"
+                        id="add-figure-btn" class="draw-btn add-btn">検知設定を追加
+                    </button>
+                    <div class="balloon_danger">
+                        <p>画像内をクリックしエリアを選択してください。</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="ai-guide-area" style="">
+                        <input onchange="changeHeatMap(this)" class="tgl tgl-flat" id="ai_guide" type="checkbox">
+                        <label class="tgl-btn" for="ai_guide"></label>
+                        <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
+                        <button style="margin-left: 10px;" onclick="resetHeatMap({{$camera_id}})" type='button' class="reset-heatmap-button">再取得</button>
+                    </div>
+                    <div style="color: #999;">※カメラの位置や画角を変更した場合は、<br/>AI検知精度の再取得を行う必要がありますので、<br/>「再取得」ボタンを押してください。
+                    </div>
                 </div>
             </div>
-            <div>
-                <div class="ai-guide-area" style="">
-                    <input onchange="changeHeatMap(this)" class="tgl tgl-flat" id="ai_guide" type="checkbox">
-                    <label class="tgl-btn" for="ai_guide"></label>
-                    <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
-                    <button style="margin-left: 10px;" onclick="resetHeatMap({{$camera_id}})" type='button' class="reset-heatmap-button">再取得</button>
-                </div>
-                <div style="color: #999;">※カメラの位置や画角を変更した場合は、<br/>AI検知精度の再取得を行う必要がありますので、<br/>「再取得」ボタンを押してください。
-                </div>
-            </div>
-        </div>
-        <button type="button" onclick="clearImage()" class="clear-btn history">選択を全てクリア</button>
+            <button type="button" onclick="clearImage()" class="clear-btn history">選択を全てクリア</button>
+        @endif
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
                 <div class="grid-area">
@@ -164,10 +138,10 @@
                         @endfor
                     @endfor
                 </div>
-                <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
+                <div id="image-container" class="camera-image" style="background: url('{{asset('storage/').'/'.$camera_image_path}}') no-repeat;"></div>
                 <p class="error-message area" style="display: none">エリアを選択してください。</p>
                 <div id="debug"></div>
-                @if(!$super_admin_flag)
+                @if(!$super_admin_flag && !isset($view_only))
                     <div class="btns" id="direction">
                         <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
                     </div>
@@ -424,6 +398,8 @@
     var mouse_pos = null;
     var heatmap_records = [];
     var max_figure_numbers = "<?php echo $max_figure_numbers;?>";
+    var view_only = "<?php echo isset($view_only) ? 1: 0;?>";
+    view_only = parseInt(view_only);
     max_figure_numbers = parseInt(max_figure_numbers);
     var stage = null;
     var layer = null;
@@ -454,7 +430,7 @@
             fill: figure_color,
             stroke: figure_color,
             strokeWidth: 1,
-            draggable:true,
+            draggable: view_only == 1 ? false : true,
             id: rule_index.toString() + '_' + point_index.toString()
         });
         circle.on('mouseenter', function () {
@@ -822,6 +798,7 @@
             setTimeout(() => {
                 $('.video-area').hide();
                 $('.loader').show();
+                $('.grid').css('opacity', 0.5);
             }, 100);
             setTimeout(() => {
                 for (var i = 0; i < 72; i++){
@@ -840,8 +817,8 @@
                             })
                         }
                         if (count > 0) score = score / count;
-                        console.log('score', score);
-                        $('.grid_' + i + '_' + j).css('opacity', calcOpacity(score));
+                        // $('.grid_' + i + '_' + j).css('opacity', calcOpacity(score));
+                        $('.grid_' + i + '_' + j).css('background-color', calcOpacity(score));
                     }
                 }
                 $('.video-area').show();

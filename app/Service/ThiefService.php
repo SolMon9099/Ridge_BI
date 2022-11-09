@@ -6,6 +6,7 @@ use App\Models\ThiefDetectionRule;
 use App\Models\Camera;
 use App\Models\ThiefDetection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ThiefService
 {
@@ -24,8 +25,8 @@ class ThiefService
             $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
         if ($params != null) {
-            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-                $rules -> where(function($q) {
+            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+                $rules->where(function ($q) {
                     $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                     $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                     $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
@@ -57,6 +58,35 @@ class ThiefService
         return $rules;
     }
 
+    public static function getAllRules()
+    {
+        $rules = DB::table('thief_detection_rules')
+            ->select(
+                'thief_detection_rules.*',
+                'cameras.installation_position',
+                'cameras.location_id',
+                'cameras.camera_id as device_id',
+                'cameras.serial_no',
+                'cameras.contract_no',
+                'locations.name as location_name'
+            )->leftJoin('cameras', 'cameras.id', '=', 'thief_detection_rules.camera_id')
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $rules->where(function ($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
+
+        $rules->orderByRaw('-thief_detection_rules.deleted_at', 'DESC')->orderByDesc('thief_detection_rules.updated_at');
+
+        return $rules;
+    }
+
     public static function getAllCameras()
     {
         $camera_ids = ThiefDetectionRule::query()->distinct('camera_id')->pluck('camera_id');
@@ -65,14 +95,15 @@ class ThiefService
             $camera_query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
         $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $camera_query -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $camera_query->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
             });
         }
-        return $camera_query->get()->all();
+
+        return $camera_query->get();
     }
 
     public static function saveData($params)
@@ -85,10 +116,13 @@ class ThiefService
             $unchanged_ids = [];
             foreach ($rule_data as $rule) {
                 if (isset($rule->id) && $rule->id > 0) {
+                    $cur_rule = ThiefDetectionRule::find($rule->id);
+                    if ($cur_rule == null){
+                        return '編集中にルールが変更されたため登録出来ませんでした';
+                    }
                     if (!(isset($rule->is_changed) && $rule->is_changed == true)) {
                         $unchanged_ids[] = $rule->id;
                         if (isset($rule->is_name_color_changed) && $rule->is_name_color_changed == true) {
-                            $cur_rule = ThiefDetectionRule::find($rule->id);
                             $cur_rule->name = isset($rule->name) && $rule->name != '' ? $rule->name : null;
                             $cur_rule->color = $rule->color;
                             $cur_rule->save();
@@ -158,6 +192,9 @@ class ThiefService
             ->select(
                 'thief_detections.*',
                 'thief_detection_rules.color',
+                'thief_detection_rules.hanger',
+                'thief_detection_rules.points',
+                'thief_detection_rules.name as rule_name',
                 'cameras.installation_position',
                 'cameras.location_id',
                 'cameras.contract_no',
@@ -190,11 +227,17 @@ class ThiefService
         if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
             $query->whereIn('thief_detections.camera_id', $params['selected_cameras']);
         }
+        if (isset($params['selected_rule']) && $params['selected_rule'] > 0) {
+            $query->where('thief_detections.rule_id', $params['selected_rule']);
+        }
+        if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+            $query->where('thief_detections.camera_id', $params['selected_camera']);
+        }
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $query -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $query->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');

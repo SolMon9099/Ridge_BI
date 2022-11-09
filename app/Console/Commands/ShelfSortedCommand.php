@@ -23,7 +23,12 @@ class ShelfSortedCommand extends Command
     public function handle()
     {
         // ini_set('memory_limit', '4096M');
-        // $danger_file = Storage::disk('video')->get('hanger_2022-10-12_16-00-00.mp4');
+        // $files = Storage::disk('video')->files('test_movie');
+        // foreach ($files as $file_name) {
+        //     $file_content = Storage::disk('video')->get($file_name);
+        //     Storage::disk('s3')->put($file_name, $file_content);
+        // }
+        // Storage::disk('s3')->put('test_hanger/20220922/2022-09-22_15-00-00.mp4', $file);
         // $danger_file_1 = Storage::disk('video')->get('hanger_2022-10-12_17-00-00.mp4');
         // $danger_file_2 = Storage::disk('video')->get('hanger_2022-10-12_18-00-00.mp4');
         // $danger_file_3 = Storage::disk('video')->get('hanger_2022-10-12_19-00-00.mp4');

@@ -2,32 +2,26 @@
 
 @section('content')
 <?php
-    $starttime = (isset($request_params) && isset($request_params['starttime']))?date('Y-m-d', strtotime($request_params['starttime'])) :date('Y-m-d');
-    $endtime = (isset($request_params) && isset($request_params['endtime']))?date('Y-m-d', strtotime($request_params['endtime'])):date('Y-m-d');
-    $search_period = (strtotime($endtime) - strtotime($starttime))/86400;
-    $selected_rule = old('selected_rule', (isset($request_params) && isset($request_params['selected_rule']))?$request_params['selected_rule']:null);
-    $total_data = array();
+    $starttime = (isset($request_params) && isset($request_params['starttime'])) ? date('Y-m-d', strtotime($request_params['starttime'])) : date('Y-m-d');
+    $endtime = (isset($request_params) && isset($request_params['endtime'])) ? date('Y-m-d', strtotime($request_params['endtime'])) : date('Y-m-d');
+    $search_period = (strtotime($endtime) - strtotime($starttime)) / 86400;
+    $selected_rule = old('selected_rule', (isset($request_params) && isset($request_params['selected_rule'])) ? $request_params['selected_rule'] : null);
+    $total_data = [];
     $sum = 0;
-    $pit_detections = array_reverse($pit_detections);
-    foreach ($pit_detections as $item) {
-        if (!isset($total_data[date('Y-m-d H:i:s', strtotime($item->starttime))])) {
-            $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $item->nb_entry - $item->nb_exit;
-        } else {
-            $delta = 1;
-            while(isset($total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)])){
-                $delta += 1;
-            }
-            $total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)] = $item->nb_entry - $item->nb_exit;
+    foreach ($thief_detections as $item) {
+        if (!isset($total_data[date('Y-m-d H:i:00', strtotime($item->starttime))])) {
+            $total_data[date('Y-m-d H:i:00', strtotime($item->starttime))] = 0;
         }
+        ++$total_data[date('Y-m-d H:i:00', strtotime($item->starttime))];
     }
 ?>
-<form action="{{route('admin.pit.past_analysis')}}" method="get" name="form1" id="form1">
+<form action="{{route('admin.thief.past_analysis')}}" method="get" name="form1" id="form1">
 @csrf
     <input type="hidden" name="change_params" value="change"/>
     <div id="wrapper">
         <div class="breadcrumb">
         <ul>
-            <li><a href="{{route('admin.pit')}}">ピット入退場検知</a></li>
+            <li><a href="{{route('admin.thief')}}">大量盗難検知</a></li>
             <li>過去グラフ</li>
         </ul>
         </div>
@@ -68,119 +62,64 @@
             <div class="list">
                 <div class="inner active">
                     <div style="display: flex; position: relative;">
-                        <h3 class="title">ピット内人数推移</h3>
-                        <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['past_graph_pit']}})">ダッシュボートへ追加</button>
+                        {{-- <h3 class="title">ピット内人数推移</h3> --}}
+                        <button type="button" class="add-to-toppage <?php echo $from_top ? 'from_top' : ''; ?>" onclick="addDashboard({{config('const.top_block_type_codes')['past_graph_thief']}})">ダッシュボートへ追加</button>
                     </div>
-                    <div class="chart-area" style="position: relative;">
+                    <div class="chart-area" style="position: relative;margin-top:60px;">
                         <div class="period-select-buttons">
                             <?php
                                 $time_period = '3';
-                                if (isset($request_params['time_period']) && $request_params['time_period'] != '') $time_period = $request_params['time_period'];
+                                if (isset($request_params['time_period']) && $request_params['time_period'] != '') {
+                                    $time_period = $request_params['time_period'];
+                                }
 
                                 if ($search_period < 1) {
-                                    if (!in_array($time_period, ['3', '6', '12', '24'])){
+                                    if (!in_array($time_period, ['3', '6', '12', '24'])) {
                                         $time_period = '3';
                                     }
-                                } else if ($search_period < 7 ) {
-                                    if (!in_array($time_period, ['time', 'day',])){
+                                } elseif ($search_period < 7) {
+                                    if (!in_array($time_period, ['time', 'day'])) {
                                         $time_period = 'time';
                                     }
-                                } else if ($search_period <= 30 ) {
-                                    if (!in_array($time_period, ['time', 'day',])){
+                                } elseif ($search_period <= 30) {
+                                    if (!in_array($time_period, ['time', 'day'])) {
                                         $time_period = 'time';
                                     }
-                                } else if ($search_period <= 180 ) {
-                                    if (!in_array($time_period, ['day', 'week','month'])){
+                                } elseif ($search_period <= 180) {
+                                    if (!in_array($time_period, ['day', 'week', 'month'])) {
                                         $time_period = 'day';
                                     }
                                 } else {
-                                    if (!in_array($time_period, ['day', 'week','month'])){
+                                    if (!in_array($time_period, ['day', 'week', 'month'])) {
                                         $time_period = 'day';
                                     }
                                 }
                             ?>
                             <input id = 'time_period' type='hidden' name="time_period" value="{{$time_period}}"/>
                             @if ($search_period < 1)
-                                <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '3')">3時間</button>
-                                <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'6')">6時間</button>
-                                <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'12')">12時間</button>
-                                <button type="button" class="<?php echo $time_period == '24' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this,'24')">24時間</button>
+                                <button type="button" class="<?php echo $time_period == '3' ? 'period-button selected' : 'period-button'; ?>"  onclick="displayGraphData(this, '3')">3時間</button>
+                                <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this,'6')">6時間</button>
+                                <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this,'12')">12時間</button>
+                                <button type="button" class="<?php echo $time_period == '24' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this,'24')">24時間</button>
                             @elseif ($search_period < 7)
-                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'time')">時間別</button>
-                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
+                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'time')">時間別</button>
+                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'day')">日別</button>
                             @elseif ($search_period <= 30)
-                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'time')">時間別</button>
-                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
+                                <button type="button" class="<?php echo $time_period == 'time' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'time')">時間別</button>
+                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'day')">日別</button>
                             @elseif ($search_period <= 180)
-                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
-                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'week')">週別</button>
-                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'month')">月別</button>
+                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'day')">日別</button>
+                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'week')">週別</button>
+                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'month')">月別</button>
                             @else
-                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'day')">日別</button>
-                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'week')">週別</button>
-                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'?>" onclick="displayGraphData(this, 'month')">月別</button>
+                                <button type="button" class="<?php echo $time_period == 'day' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'day')">日別</button>
+                                <button type="button" class="<?php echo $time_period == 'week' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'week')">週別</button>
+                                <button type="button" class="<?php echo $time_period == 'month' ? 'period-button selected' : 'period-button'; ?>" onclick="displayGraphData(this, 'month')">月別</button>
                             @endif
                         </div>
                         <a class="prev" onclick="moveXRange(-1)">❮</a>
                         <a class="next" onclick="moveXRange(1)">❯</a>
                         <canvas id="myLineChart1"></canvas>
-                    </div>
-                    <div class="left-right">
-                        <div class="left-box">
-                            <h3 class="title">ピット内最大時間の超過検知</h3>
-                            <table class="table2 text-centre top50">
-                                <thead>
-                                    <tr>
-                                        <th>時間</th>
-                                        <th>検知条件</th>
-                                        {{-- <th>ピット内人数</th> --}}
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                @foreach ($pit_over_detections as $item)
-                                    <tr>
-                                        <td>{{$item->detect_time}}</td>
-                                        <td>{{$item->min_members.'人以上/'.$item->max_permission_time.'分超過'}}</td>
-                                        {{-- <td>{{isset($item->sum_in_pit) ? $item->sum_in_pit.'人' : ''}}</td> --}}
-                                        <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
-                                    </tr>
-                                @endforeach
-                            </table>
-                        </div>
-                        <div class="right-box">
-                            <h3 class="title">入退場履歴</h3>
-                            <table class="table2 text-centre top50">
-                                <thead>
-                                    <tr>
-                                        <th>日時</th>
-                                        <th>検知条件</th>
-                                        <th>人数変化</th>
-                                        <th>ピット内人数</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                        $sum_data = array();
-                                        foreach ($pit_detections as $pit_item) {
-                                            $sum += ($pit_item->nb_entry - $pit_item->nb_exit);
-                                            $sum_data[$pit_item->id] = $sum;
-                                        }
-                                    ?>
-                                    @foreach (array_reverse($pit_detections) as $pit_item)
-                                        <tr>
-                                            <td>{{date('Y-m-d H:i:s', strtotime($pit_item->starttime))}}</td>
-                                            <td>{{$pit_item->nb_entry > $pit_item->nb_exit ? '入場':'退場'}}</td>
-                                            <td>
-                                                <span class="<?php echo ($pit_item->nb_entry > $pit_item->nb_exit)?'f-red':'f-blue'?>">
-                                                    {{($pit_item->nb_entry - $pit_item->nb_exit)}}
-                                                </span>
-                                            </td>
-                                            <td>{{$sum_data[$pit_item->id]}}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -201,6 +140,8 @@
                             <th>設置エリア</th>
                             <th>設置フロア</th>
                             <th>設置場所</th>
+                            <th>ハンガー</th>
+                            <th>カラー</th>
                             <th>ルールの設定期間</th>
                             <th>カメラ画像確認</th>
                         </tr>
@@ -223,6 +164,8 @@
                             <td>{{$rule->location_name}}</td>
                             <td>{{$rule->floor_number}}</td>
                             <td>{{$rule->installation_position}}</td>
+                            <td><input disabled type="color" value = "{{$rule->hanger}}"></td>
+                            <td><input disabled type="color" value = "{{$rule->color}}"></td>
                             <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
                             <td>
                                 @if(Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg'))
@@ -235,7 +178,7 @@
                         @endforeach
                         @if(count($rules) == 0)
                         <tr>
-                            <td colspan="8">ピット入退場検知のルールがありません。ルールを設定してください</td>
+                            <td colspan="8">大量盗難検知のルールがありません。ルールを設定してください</td>
                         </tr>
                         @endif
                         </tbody>
@@ -315,8 +258,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
 <script>
     var ctx = document.getElementById("myLineChart1");
-    var search_period = "<?php echo $search_period;?>";
-    var selected_rule = "<?php echo $selected_rule;?>";
+    var search_period = "<?php echo $search_period; ?>";
+    var selected_rule = "<?php echo $selected_rule; ?>";
     var starttime = $('#starttime').val();
     starttime = formatDateTime(starttime);
     starttime.setHours(0);
@@ -334,7 +277,7 @@
     min_time.setSeconds(0);
     var max_time = new Date(min_time);
 
-    var grpah_init_type = "<?php echo $time_period;?>";
+    var grpah_init_type = "<?php echo $time_period; ?>";
     var period_unit = 'hour';
     var displayFormat = {'hour': 'H:mm'};
     var tooltip = "H:mm";
@@ -541,42 +484,36 @@
 
     function resortData(data, time_period){
         var temp = {};
-        var sum = 0;
         switch(time_period){
             case 'day':
                 Object.keys(data).map(date_time => {
                     var date = formatDateLine(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
+                    if (temp[date] == undefined) temp[date] = 0;
                     temp[date] += data[date_time];
                 })
                 break;
             case 'week':
                 Object.keys(data).map(date_time => {
                     var date = formatYearWeekNum(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
+                    if (temp[date] == undefined) temp[date] = 0;
                     temp[date] += data[date_time];
                 })
                 break;
             case 'month':
                 Object.keys(data).map(date_time => {
                     var date = formatYearMonth(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
+                    if (temp[date] == undefined) temp[date] = 0;
                     temp[date] += data[date_time];
                 })
                 break;
             default:
-                Object.keys(data).map(date_time => {
-                    sum += data[date_time];
-                    temp[date_time] = sum;
-                })
+                return data
+                break;
         }
         return temp;
     }
     var myLineChart = null;
-    var total_data = <?php echo json_encode($total_data);?>;
+    var total_data = <?php echo json_encode($total_data); ?>;
     function displayGraphData(e = null, time_period = '3', start_init_flag = true){
         var time_labels = [];
         var y_data = [];
@@ -615,11 +552,7 @@
         while(cur_time.getTime() <= max_time.getTime()){
             time_labels.push(new Date(cur_time));
             point_radius.push(0);
-            if (y_data.length > 0){
-                y_data.push(y_data[y_data.length - 1]);
-            } else {
-                y_data.push(null);
-            }
+            y_data.push(null);
 
             if (time_period == 'day' || time_period == 'week' || time_period == 'month'){
                 var date_key = formatDateLine(cur_time);
@@ -636,11 +569,7 @@
                             if (new Date(time).getTime() != cur_time.getTime()) {
                                 time_labels.push(new Date(time));
                                 point_radius.push(0);
-                                if (y_data.length > 0){
-                                    y_data.push(y_data[y_data.length - 1]);
-                                } else {
-                                    y_data.push(null);
-                                }
+                                y_data.push(null);
                             }
                         } else {
                             time_labels.push(new Date(time));
@@ -680,14 +609,15 @@
             data: {
                 labels:time_labels,
                 datasets: [{
-                    label: '人',
-                    steppedLine:'before',
+                    label: '回',
                     data: y_data,
                     borderColor: "#42b688",
-                    backgroundColor: "rgba(66,182,136, 0.3)",
+                    // backgroundColor: "rgba(66,182,136, 0.3)",
                     pointBackgroundColor:'red',
                     radius:point_radius,
-                    fill:true
+                    lineTension:0,
+                    fill:false,
+                    spanGaps: true
                 }],
                 mousemove: function(){
                     return;
@@ -707,11 +637,11 @@
                     yAxes: [{
                         ticks: {
                             suggestedMax: Math.max(...y_data) + 1,
-                            suggestedMin: Math.min(...y_data) - 1,
+                            suggestedMin: 0,
                             stepSize: parseInt((Math.max(...y_data) + 2)/5) + 1,
                             fontSize: 20,
                             callback: function(value, index, values){
-                                return  value +  '人'
+                                return  value +  '回'
                             }
                         }
                     }],
@@ -740,7 +670,7 @@
             time_period:grpah_init_type,
             selected_rule:selected_rule
         }
-        saveSearchOptions('admin.pit.past_analysis', search_params);
+        saveSearchOptions('admin.thief.past_analysis', search_params);
     }
     function addDashboard(block_type){
         var options = {
@@ -758,11 +688,11 @@
                 url : '/admin/CheckDetectData',
                 method: 'post',
                 data: {
-                    type:'pit',
-                    selected_rule:"<?php echo $selected_rule;?>",
+                    type:'thief',
+                    selected_rule:"<?php echo $selected_rule; ?>",
                     endtime:formatDateLine(new Date($('#endtime').val())),
                     _token:$('meta[name="csrf-token"]').attr('content'),
-                    last_record_id : "<?php echo $last_number;?>"
+                    last_record_id : "<?php echo $last_number; ?>"
                 },
                 error : function(){
                     console.log('failed');

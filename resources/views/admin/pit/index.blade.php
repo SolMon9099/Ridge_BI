@@ -122,7 +122,7 @@
                         <th>設置場所</th>
                         <th>ピット内人数</th>
                         <th>ピット内最大時間</th>
-                        {{-- <th>検知履歴</th> --}}
+                        <th>カメラの稼働状況</th>
                         <th>削除</th>
                     </tr>
                     </thead>
@@ -137,9 +137,13 @@
                             <td>{{$pit->installation_position}}</td>
                             <td>{{$pit->min_members > 0 ? (string)($pit->min_members) : ''}}</td>
                             <td>{{$pit->max_permission_time > 0 ? (string)($pit->max_permission_time).'分' : ''}}</td>
-                            {{-- <td>
-                                <button type="button" class="history">履歴表示</button>
-                            </td> --}}
+                            <td>
+                                @if(Storage::disk('recent_camera_image')->exists($pit->device_id.'.jpeg'))
+                                    稼働中
+                                @else
+                                    停止中
+                                @endif
+                            </td>
                             <td>
                                 @if (!$super_admin_flag)
                                     <button type="button" class="delete_pits history" delete_index="{{ $pit->id }}">削除</button>
@@ -203,7 +207,13 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
-                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
+                            <td>
+                                @if(Storage::disk('recent_camera_image')->exists($camera->camera_id.'.jpeg'))
+                                    <img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/>
+                                @else
+                                    カメラ停止中
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
                         @if(count($cameras) == 0)

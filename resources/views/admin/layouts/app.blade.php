@@ -8,6 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
+    <link rel="icon" href="{{ asset('assets/admin/img/title_favicon.ico?2') }}">
 
     <!-- Styles -->
     <link href="{{ asset('assets/admin/css/basic.css') }}?{{ Carbon::now()->format('Ymdhis') }}" rel="stylesheet">

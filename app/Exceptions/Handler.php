@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class Handler extends ExceptionHandler
 {
@@ -52,7 +53,14 @@ class Handler extends ExceptionHandler
             // if ($status_code == 404 || $status_code == 502 || $status_code == 500) {
             if($status_code == 404){
                 Log::info("----- 404エラー発生------");
-                return redirect()->route('admin.error', ['error_code'=>$status_code]);
+                $url = URL::current();
+                $split_urls = explode('/edit/', $url);
+                if (count($split_urls) > 1){
+                    $request->session()->flash('error', 'ログインしている別の方が変更したデータです。');
+                    return redirect($split_urls[0]);
+                } else {
+                    return redirect()->route('admin.error', ['error_code'=>$status_code]);
+                }
             }
 
             // if ($status_code == 502 || $status_code == 500) {

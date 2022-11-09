@@ -26,7 +26,7 @@
     </div>
     @endif --}}
     @include('admin.layouts.flash-message')
-    <div class="scroll">
+    <div class="scroll" style="position: relative;">
         <h3>検知設定</h3>
         <div class="setting-head">
             <div id="rule_items">
@@ -125,7 +125,7 @@
                 </div>
             </div>
         </div>
-
+        <button type="button" onclick="clearImage()" class="edit clear-btn history">選択を全てクリア</button>
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
@@ -133,7 +133,6 @@
                 <div class="description">点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
                 @if(!$super_admin_flag)
                     <div class="btns" id="direction">
-                        <button type="button" onclick="clearImage()" class="edit clear-btn history">選択を全てクリア</button>
                         <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
                     </div>
                 @endif
@@ -195,8 +194,10 @@
     }
     .clear-btn{
         margin:0;
-        margin-right:15px;
-        padding: 15px 75px;
+        padding: 10px 30px;
+        position: absolute;
+        right:0;
+        top: 0px!important;
     }
     .cancel-btn{
         margin:0;
@@ -320,7 +321,9 @@
             display: flex;
         }
         .clear-btn{
-            padding:15px 60px;
+            position: relative;
+            top:0;
+            margin-top: 10px;
         }
         .save-btn{
             padding:15px 60px;

@@ -20,57 +20,64 @@
     {{-- @include('admin.layouts.flash-message') --}}
     <div class="scroll" style="position: relative;">
         <h2>検知設定</h2>
-        <div class="guide">
-            <p>動画内をクリックしピットの入り口を囲ってください。</p>
-            <p>　※4点をクリックすると4角形が自動生成されます。</p>
-            <p>　※赤枠は入場を検知し青枠は退場を検知します。</p>
-        </div>
-        <div class="setting-head">
-            <input type="hidden" name="change_flag" id="change_flag" value=""/>
-            <div style="margin-right:20px;">
-                <label>ルール名：</label>
-                <input name="name" class='name_input' type="text" value="{{old('name', isset($name)?$name:'')}}">
-                @error('name')
-                    <p class="error-message name">{{ $message }}</p>
-                @enderror
+        @if(isset($view_only))
+            <label style="margin-right: 20px"><span class="title-span">ルール名</span>：{{isset($name)?$name:''}}</label>
+            <label style="margin-right: 20px"><span class="title-span">ピット内人数</span>：{{isset($min_members)?$min_members.'人以上':''}}</label>
+            <label style="margin-right: 20px"><span class="title-span">アラート対象滞在時間</span>：{{isset($max_permission_time)?$max_permission_time.'分を超えた時':''}}</label>
+        @else
+            <div class="guide">
+                <p>動画内をクリックしピットの入り口を囲ってください。</p>
+                <p>　※4点をクリックすると4角形が自動生成されます。</p>
+                <p>　※赤枠は入場を検知し青枠は退場を検知します。</p>
             </div>
-            <div style="margin-right:30px;">
-                <label>ピット内人数：</label>
-                <input name="min_members" type="number" inputmode="numeric" pattern="\d*" max='10' min='0' class='members_input'
-                    value="{{old('min_members', isset($min_members)?$min_members:'')}}">
-                    <span style="font-size: 14px;">人以上</span>
-                @error('min_members')
-                    <p class="error-message min_members">{{ $message }}</p>
-                @enderror
+            <div class="setting-head">
+                <input type="hidden" name="change_flag" id="change_flag" value=""/>
+                <div style="margin-right:20px;">
+                    <label>ルール名：</label>
+                    <input name="name" class='name_input' type="text" value="{{old('name', isset($name)?$name:'')}}">
+                    @error('name')
+                        <p class="error-message name">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div style="margin-right:30px;">
+                    <label>ピット内人数：</label>
+                    <input name="min_members" type="number" inputmode="numeric" pattern="\d*" max='10' min='0' class='members_input'
+                        value="{{old('min_members', isset($min_members)?$min_members:'')}}">
+                        <span style="font-size: 14px;">人以上</span>
+                    @error('min_members')
+                        <p class="error-message min_members">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label>アラート対象滞在時間：</label>
+                    <select name = 'max_permission_time' class="select-box" style="width:85px;margin-right:0px;">
+                        <option value=''></option>
+                        @foreach(config('const.pit_time_options') as $time)
+                            @if (old('max_permission_time', isset($max_permission_time)?$max_permission_time:'') == $time)
+                                <option selected value={{$time}}>{{$time}}分</option>
+                            @else
+                                <option value={{$time}}>{{$time}}分</option>
+                            @endif
+                        @endforeach
+                    </select>
+                    <span style="font-size: 14px;">を超えた時</span>
+                    @error('max_permission_time')
+                        <p class="error-message max_permission_time">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="ai-guide-area" style="">
+                    <input onchange="changeHeatMap(this)" class="tgl tgl-flat" id="ai_guide" type="checkbox">
+                    <label class="tgl-btn" for="ai_guide"></label>
+                    <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
+                </div>
+                <div class="reset-heatmap-area">
+                    <button onclick="resetHeatMap({{$camera_id}})" type='button' class="reset-heatmap-button">再取得</button>
+                </div>
+                <button type="button" class="clear-btn history" onclick="clearImage()">選択を全てクリア</button>
             </div>
-            <div>
-                <label>アラート対象滞在時間：</label>
-                <select name = 'max_permission_time' class="select-box" style="width:85px;margin-right:0px;">
-                    <option value=''></option>
-                    @foreach(config('const.pit_time_options') as $time)
-                        @if (old('max_permission_time', isset($max_permission_time)?$max_permission_time:'') == $time)
-                            <option selected value={{$time}}>{{$time}}分</option>
-                        @else
-                            <option value={{$time}}>{{$time}}分</option>
-                        @endif
-                    @endforeach
-                </select>
-                <span style="font-size: 14px;">を超えた時</span>
-                @error('max_permission_time')
-                    <p class="error-message max_permission_time">{{ $message }}</p>
-                @enderror
-            </div>
-            <div class="ai-guide-area" style="">
-                <input onchange="changeHeatMap(this)" class="tgl tgl-flat" id="ai_guide" type="checkbox">
-                <label class="tgl-btn" for="ai_guide"></label>
-                <label style="margin-left:5px;padding-top:3px;">AI検知精度ガイド</label>
-            </div>
-            <div class="reset-heatmap-area">
-                <button onclick="resetHeatMap({{$camera_id}})" type='button' class="reset-heatmap-button">再取得</button>
-            </div>
-            <button type="button" class="clear-btn history" onclick="clearImage()">選択を全てクリア</button>
-        </div>
-        <div class="notice-area">※カメラの位置や画角を変更した場合は、AI検知精度の再取得を行う必要がありますので、「再取得」ボタンを押してください。</div>
+            <div class="notice-area">※カメラの位置や画角を変更した場合は、AI検知精度の再取得を行う必要がありますので、「再取得」ボタンを押してください。</div>
+        @endif
+
         <div class="n-area2">
             <div class="video-area" style="width:100%;">
                 <div class="grid-area">
@@ -80,10 +87,10 @@
                         @endfor
                     @endfor
                 </div>
-            <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
+            <div id="image-container" class="camera-image" style="background: url('{{asset('storage/').'/'.$camera_image_path}}') no-repeat;"></div>
             <p class="error-message area" style="display: none">エリアを選択してください。</p>
             <div id="debug"></div>
-            @if(!$super_admin_flag)
+            @if(!$super_admin_flag && !isset($view_only))
             <div class="btns" id="direction">
                 <button type="button" class="ok save-btn" onclick="saveRule()">決定</button>
             </div>
@@ -109,6 +116,7 @@
                 <li>②検知設定として
                     <small>「ピット内人数」　「アラート対象滞在時間」を指定してください。</small>
                     <small>※何人以上の滞在が何分続いたという検知を行います。</small>
+                    <small>※赤枠・青枠のエリア調整は<br/>「赤枠→青枠」の順に調整してください。</small>
                 </li>
                 <li>③選択が完了したら「決定」ボタンを押下してください。
                     <small>※「選択を全てクリア」した際は全ての選択がクリアされます。</small>
@@ -246,6 +254,8 @@
     var stage = null;
     var layer = null;
     var radius = "<?php echo config('const.camera_mark_radius');?>";
+    var view_only = "<?php echo isset($view_only) ? 1: 0;?>";
+    view_only = parseInt(view_only);
     radius = parseInt(radius);
     var red_points = <?php echo json_encode($red_points);?>;
     var blue_points = <?php echo json_encode($blue_points);?>;
@@ -409,7 +419,7 @@
             fill: color != null ? color: 'red',
             stroke: color != null ? color: 'red',
             strokeWidth: 1,
-            draggable:true,
+            draggable:view_only == 1 ? false : true,
             id:color != null ? color + '_' + point_index : point_index
         });
         circle.on('mouseenter', function () {
@@ -559,7 +569,7 @@
                 fill: 'red',
                 stroke: 'red',
                 strokeWidth: 1,
-                draggable:true,
+                draggable:view_only == 1 ? false : true,
                 id:point_numbers
             });
             circle.on('mouseenter', function () {
@@ -654,6 +664,7 @@
             setTimeout(() => {
                 $('.video-area').hide();
                 $('.loader').show();
+                $('.grid').css('opacity', 0.5);
             }, 100);
             setTimeout(() => {
                 for (var i = 0; i < 72; i++){
@@ -672,7 +683,8 @@
                             })
                         }
                         if (count > 0) score = score / count;
-                        $('.grid_' + i + '_' + j).css('opacity', calcOpacity(score));
+                        // $('.grid_' + i + '_' + j).css('opacity', calcOpacity(score));
+                        $('.grid_' + i + '_' + j).css('background-color', calcOpacity(score));
                     }
                 }
                 $('.video-area').show();

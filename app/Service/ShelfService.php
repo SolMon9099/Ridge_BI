@@ -6,6 +6,7 @@ use App\Models\ShelfDetectionRule;
 use App\Models\Camera;
 use App\Models\ShelfDetection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ShelfService
 {
@@ -24,8 +25,8 @@ class ShelfService
             $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
         if ($params != null) {
-            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-                $rules -> where(function($q) {
+            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+                $rules->where(function ($q) {
                     $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                     $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                     $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
@@ -57,6 +58,35 @@ class ShelfService
         return $rules;
     }
 
+    public static function getAllRules()
+    {
+        $rules = DB::table('shelf_detection_rules')
+            ->select(
+                'shelf_detection_rules.*',
+                'cameras.installation_position',
+                'cameras.location_id',
+                'cameras.camera_id as device_id',
+                'cameras.serial_no',
+                'cameras.contract_no',
+                'locations.name as location_name'
+            )->leftJoin('cameras', 'cameras.id', '=', 'shelf_detection_rules.camera_id')
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $rules->where(function ($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
+
+        $rules->orderByRaw('-shelf_detection_rules.deleted_at', 'DESC')->orderByDesc('shelf_detection_rules.updated_at');
+
+        return $rules;
+    }
+
     public static function getAllCameras()
     {
         $camera_ids = ShelfDetectionRule::query()->distinct('camera_id')->pluck('camera_id');
@@ -65,14 +95,15 @@ class ShelfService
             $camera_query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
         $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $camera_query -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $camera_query->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
             });
         }
-        return $camera_query->get()->all();
+
+        return $camera_query->get();
     }
 
     public static function saveData($params)
@@ -86,6 +117,9 @@ class ShelfService
         foreach ($rule_data as $rule_item) {
             if (isset($rule_item->id) && $rule_item->id > 0) {
                 $cur_rule = ShelfDetectionRule::find($rule_item->id);
+                if ($cur_rule == null){
+                    return '編集中にルールが変更されたため登録出来ませんでした';
+                }
                 if (!(isset($rule_item->is_changed) && $rule_item->is_changed == true)) {
                     $unchanged_ids[] = $rule_item->id;
                     // if (isset($rule_item->is_name_color_changed) && $rule_item->is_name_color_changed == true) {
@@ -161,6 +195,8 @@ class ShelfService
             ->select(
                 'shelf_detections.*',
                 'shelf_detection_rules.color',
+                'shelf_detection_rules.points',
+                'shelf_detection_rules.name as rule_name',
                 'cameras.installation_position',
                 'cameras.location_id',
                 'cameras.contract_no',
@@ -193,11 +229,17 @@ class ShelfService
         if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
             $query->whereIn('shelf_detections.camera_id', $params['selected_cameras']);
         }
+        if (isset($params['selected_rule']) && $params['selected_rule'] > 0) {
+            $query->where('shelf_detections.rule_id', $params['selected_rule']);
+        }
+        if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+            $query->where('shelf_detections.camera_id', $params['selected_camera']);
+        }
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $query -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $query->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');

@@ -72,7 +72,9 @@
                             <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '6')">6時間</button>
                             <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '12')">12時間</button>
                         </div>
-                        <canvas id="myLineChart1" onclick="location.href='{{route('admin.danger.past_analysis')}}'"></canvas>
+                        <canvas id="myLineChart1"
+                            onclick="location.href='{{route('admin.danger.past_analysis').'?time_period=time&change_params=change&starttime='.date('Y-m-d').'&endtime='.date('Y-m-d').'&selected_rule='.$selected_rule->id}}'">
+                        </canvas>
                     </div>
                 </div>
             </div>
@@ -129,21 +131,16 @@
                                 </dl>
                             </li>
                             <li>
-                                <h2 class="icon-condition">検知条件</h2>
+                                <h2 style="cursor: pointer" class="icon-content" onclick="location.href='{{route('admin.danger.edit', ['danger' => $item->rule_id])}}'">ルール</h2>
                                 <dl>
-                                    <dt><p>{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action_cond_statement')[$item->detection_action_id] : ''}}</p></dt>
-                                    <dd>1人</dd>
+                                    <dd style="padding-top: 3px;">{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action')[$item->detection_action_id] : ''}}</dd>
+                                    <dd><input type="color" readonly value="{{$item->color}}"/></dd>
                                 </dl>
                             </li>
                             <li>
-                                <h2 class="icon-content">検知内容</h2>
-                                <p>{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action_statement')[$item->detection_action_id] : ''}}</p>
-                            </li>
-                            <li>
-                                <h2 class="icon-rule">ルール</h2>
+                                <h2 style="cursor: pointer" class="icon-rule" onclick="location.href='{{route('admin.danger.edit', ['danger' => $item->rule_id])}}'">ルール名</h2>
                                 <dl>
-                                    <dt>{{$item->detection_action_id}}</dt>
-                                    <dd>{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action')[$item->detection_action_id] : ''}}</dd>
+                                    <dd>{{isset($item->rule_name) ? $item->rule_name : ''}}</dd>
                                 </dl>
                             </li>
                             <li><a class="move-href" href="{{route("admin.danger.list")}}">検知リスト</a></li>
@@ -193,7 +190,13 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
-                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
+                            <td>
+                                @if(Storage::disk('recent_camera_image')->exists($camera->camera_id.'.jpeg'))
+                                    <img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/>
+                                @else
+                                    カメラ停止中
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
                         @if(count($cameras) == 0)

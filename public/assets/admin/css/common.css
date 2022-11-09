@@ -4657,6 +4657,7 @@ ul.date-list li input[type=tel], ul.date-list li input[type=date] {
   border-bottom: 1px solid #999;
   font-family: "Renner*" !important;
   background: none;
+  -webkit-text-fill-color:#FFF;
 }
 ul.date-list li input[type=text] {
   font-size: 16px;
@@ -5207,6 +5208,17 @@ ul.kenchi-list li {
 }
 ul.kenchi-list li:nth-child(3n){
 	margin-right: 0;
+}
+@media only screen and (max-width:1600px) {
+    ul.kenchi-list li {
+        width: 48%;
+    }
+    ul.kenchi-list li:nth-child(3n){
+        margin-right: 2%;
+    }
+    ul.kenchi-list li:nth-child(2n){
+        margin-right: 0;
+    }
 }
 @media only screen and (max-width:768px) {
   ul.kenchi-list {
@@ -5824,6 +5836,7 @@ button.add-btn {
   border: 1px solid #CCC;
   border-radius: 5px;
   text-align: center;
+  -webkit-text-fill-color: black;
 }
 .camera-id {
   text-align: center;
@@ -5973,4 +5986,26 @@ ul.time + .error-message + p{
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+.disabled-tr{
+    background: lightgray!important;
+}
+.disabled-tr > td{
+    background: lightgray!important;
+}
+.user-menu h2{
+	font-size: 14px;
+	opacity: 1 !important;
+}
+.user-menu{
+	overflow-y: scroll;
+    height: 300px;
+	top:70px !important;
+}
+.rule-detail-link{
+    cursor: pointer;
+    color:rgba(0, 98, 222, 1);
+}
+.title-span{
+    color:#CC0000;
 }

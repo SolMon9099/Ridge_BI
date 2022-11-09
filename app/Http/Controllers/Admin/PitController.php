@@ -14,7 +14,7 @@ use App\Models\SearchOption;
 use App\Service\CameraService;
 use App\Service\TopService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class PitController extends AdminController
 {
@@ -33,11 +33,11 @@ class PitController extends AdminController
                 ->whereNull('drawing.deleted_at')->get()->first();
             if ($map_data != null) {
                 $camera->floor_number = $map_data->floor_number;
-                if (!in_array($map_data->floor_number, $floor_numbers)){
+                if (!in_array($map_data->floor_number, $floor_numbers)) {
                     $floor_numbers[] = $map_data->floor_number;
                 }
             }
-            if ($camera->installation_position != null && $camera->installation_position != '' && !in_array($camera->installation_position, $installation_positions)){
+            if ($camera->installation_position != null && $camera->installation_position != '' && !in_array($camera->installation_position, $installation_positions)) {
                 $installation_positions[] = $camera->installation_position;
             }
             $safie_service = new SafieApiService($camera->contract_no);
@@ -45,7 +45,6 @@ class PitController extends AdminController
             if (!isset($camera_imgs[$camera->camera_id])) {
                 $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
                 $camera_imgs[$camera->camera_id] = $camera_image_data;
-                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
             }
         }
 
@@ -113,16 +112,46 @@ class PitController extends AdminController
         $camera_data = CameraService::getCameraInfoById($request['selected_camera']);
         $safie_service = new SafieApiService($camera_data->contract_no);
         $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
+        $camera_image_path = null;
         if ($camera_image_data != null) {
-            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            // $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            $camera_image_path = 'recent_camera_image/'.$camera_data->camera_id.'.jpeg';
         }
 
         return view('admin.pit.create_rule')->with([
             'camera_id' => $request['selected_camera'],
             'rules' => $pit_rules,
-            'camera_image_data' => $camera_image_data,
+            'camera_image_path' => $camera_image_path,
             'device_id' => $camera_data->camera_id,
             'access_token' => $safie_service->access_token,
+        ]);
+    }
+
+    public function rule_view(Request $request)
+    {
+        $rule = PitService::getPitInfoById($request['id'], false)->first();
+        $last_detection = DB::table('pit_detections')->where('rule_id', $request['id'])->orderByDesc('starttime')->get()->first();
+        $rules = [$rule];
+        $camera_data = CameraService::getCameraInfoById($rule->camera_id);
+        $camera_image_path = null;
+        if ($last_detection == null) {
+            $safie_service = new SafieApiService($camera_data->contract_no);
+            $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
+            if ($camera_image_data != null) {
+                // $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+                $camera_image_path = 'recent_camera_image/'.$camera_data->camera_id.'.jpeg';
+            }
+        } else {
+            $camera_image_path = 'thumb/'.$last_detection->thumb_img_path;
+        }
+
+        return view('admin.pit.edit')->with([
+            'pit' => $rule,
+            'rules' => $rules,
+            'camera_id' => $rule->camera_id,
+            'camera_image_path' => $camera_image_path,
+            'device_id' => $camera_data->camera_id,
+            'view_only' => true,
         ]);
     }
 
@@ -130,9 +159,11 @@ class PitController extends AdminController
     {
         $camera_data = CameraService::getCameraInfoById($pit->camera_id);
         $safie_service = new SafieApiService($camera_data->contract_no);
+        $camera_image_path = null;
         $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
         if ($camera_image_data != null) {
-            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            // $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            $camera_image_path = 'recent_camera_image/'.$camera_data->camera_id.'.jpeg';
         }
 
         $rules = PitService::getPitInfoById($pit->id);
@@ -141,9 +172,8 @@ class PitController extends AdminController
             'pit' => $pit,
             'rules' => $rules,
             'camera_id' => $pit->camera_id,
-            'camera_image_data' => $camera_image_data,
+            'camera_image_path' => $camera_image_path,
             'device_id' => $camera_data->camera_id,
-            'access_token' => $safie_service->access_token,
         ]);
     }
 
@@ -156,15 +186,18 @@ class PitController extends AdminController
         if (isset($request['operation_type']) && $request['operation_type'] == 'register') {
             $operation_type = '追加';
         }
-        if (PitService::saveData($request)) {
+        $register_res = PitService::saveData($request);
+        if ($register_res === true) {
             $request->session()->flash('success', 'ルールを'.$operation_type.'しました。');
-
-            return redirect()->route('admin.pit');
         } else {
-            $request->session()->flash('error', 'ルール'.$operation_type.'に失敗しました。');
-
-            return redirect()->route('admin.pit');
+            if ($register_res === false) {
+                $request->session()->flash('error', 'ルール'.$operation_type.'に失敗しました。');
+            } else {
+                $request->session()->flash('error', $register_res);
+            }
         }
+
+        return redirect()->route('admin.pit');
     }
 
     public function delete(Request $request, PitDetectionRule $pit)
@@ -312,7 +345,6 @@ class PitController extends AdminController
             if (!isset($camera_imgs[$camera->camera_id])) {
                 $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
                 $camera_imgs[$camera->camera_id] = $camera_image_data;
-                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
             }
         }
 
@@ -372,7 +404,7 @@ class PitController extends AdminController
             } else {
                 $rule->floor_number = '';
             }
-            if ($request['selected_rule'] == $rule->id){
+            if ($request['selected_rule'] == $rule->id) {
                 $selected_rule_object = $rule;
             }
         }

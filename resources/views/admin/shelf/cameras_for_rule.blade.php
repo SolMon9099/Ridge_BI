@@ -27,25 +27,45 @@
                     <th>設置エリア</th>
                     <th>設置フロア</th>
                     <th>設置場所</th>
-                    <th>備考</th>
-                    <th>稼働状況</th>
+                    <th>ルール登録数</th>
                 </tr>
                 </thead>
                 <tbody>
                 @foreach($cameras as $camera)
-                <tr>
+                @if($from_add_button == true)
+                    <tr class="{{count($camera->rules) == config('const.shelf_max_rect_numbers')? 'disabled-tr' : ''}}">
+                @else
+                    <tr class="{{count($camera->rules) > 0 ? 'disabled-tr' : ''}}">
+                @endif
                     <td>
-                        <div class="radio">
-                            <input id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
-                            <label for="radio-{{$camera->id}}" class="radio-label"></label>
-                        </div>
+                        @if($from_add_button == true)
+                            @if(count($camera->rules) < config('const.shelf_max_rect_numbers'))
+                            <div class="radio">
+                                <input onclick="enableSubmitButton({{$camera->id}})" id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
+                                <label for="radio-{{$camera->id}}" class="radio-label"></label>
+                            </div>
+                            @endif
+                        @else
+                            @if(count($camera->rules) == 0)
+                            <div class="radio">
+                                <input onclick="enableSubmitButton({{$camera->id}})" id="radio-{{$camera->id}}" name="selected_camera" type="radio" value="{{$camera->id}}">
+                                <label for="radio-{{$camera->id}}" class="radio-label"></label>
+                            </div>
+                            @else
+                                @if(count($camera->rules) < config('const.shelf_max_rect_numbers'))
+                                <div class="radio">
+                                    <button type="button" class="edit" onclick="location.href='{{route('admin.shelf.edit', ['shelf' => $camera->rules[0]->id])}}'">追加登録</button>
+                                    <input class='text-camera-id' style="display: none" id="radio-{{$camera->id}}" name="selected_camera" value="">
+                                </div>
+                                @endif
+                            @endif
+                        @endif
                     </td>
                     <td>{{$camera->serial_no}}</td>
                     <td>{{isset($locations[$camera->location_id])?$locations[$camera->location_id]:''}}</td>
                     <td>{{$camera->floor_number}}</td>
                     <td>{{$camera->installation_position}}</td>
-                    <td>{{$camera->remarks}}</td>
-                    <td>{{config('const.camera_status')[$camera->is_enabled]}}</td>
+                    <td>{{count($camera->rules)}}/{{config('const.shelf_max_rect_numbers')}}</td>
                 </tr>
                 @endforeach
                 </tbody>
@@ -55,11 +75,21 @@
             @enderror
             </div>
             {{ $cameras->appends([])->links('vendor.pagination.admin-pagination') }}
-			<div class="btns">
+			<div class="btns" style="display: none">
                 <button type="submit" class="ok">決定</button>
 			</div>
         </form>
     </div>
-  </div>
+</div>
+<script>
+    function enableSubmitButton(camera_id){
+        $('.btns').show();
+        $('.text-camera-id').val(camera_id);
+    }
+    function createRule(camera_id){
+        $('input[name="selected_camera"]').val(camera_id);
+        $('#form1').submit();
+    }
+</script>
 
 @endsection

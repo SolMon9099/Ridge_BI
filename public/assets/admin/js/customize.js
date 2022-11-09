@@ -399,14 +399,23 @@ function formatDateTimeStr (val) {
 };
 
 function calcOpacity(score){
-    if (score === null) return 1;
+    // if (score === null) return 1;
 
-    if (score <= 1 && score > 0.8) return 0;
-    if (score <= 0.8 && score > 0.6) return 0.2;
-    if (score <= 0.6 && score > 0.4) return 0.4;
-    if (score <= 0.4 && score > 0.2) return 0.6;
-    if (score <= 0.2 && score >= 0) return 0.8;
-    return 1;
+    // if (score <= 1 && score > 0.8) return 0;
+    // if (score <= 0.8 && score > 0.6) return 0.2;
+    // if (score <= 0.6 && score > 0.4) return 0.4;
+    // if (score <= 0.4 && score > 0.2) return 0.6;
+    // if (score <= 0.2 && score >= 0) return 0.8;
+    // return 1;
+
+    if (score === null) return '#808080';
+
+    if (score <= 1 && score > 0.8) return '#FF0000';
+    if (score <= 0.8 && score > 0.6) return '#FFFF00';
+    if (score <= 0.6 && score > 0.4) return '#008000';
+    if (score <= 0.4 && score > 0.2) return '#00FFFF';
+    if (score <= 0.2 && score >= 0) return '#0000FF';
+    return '#808080';
 }
 
 function resetHeatMapAjax(camera_id){

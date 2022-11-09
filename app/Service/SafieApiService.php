@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use KubAT\PhpSimple\HtmlDomParser;
 use App\Models\Token;
 use App\Models\MediaRequestHistory;
+use Illuminate\Support\Facades\Storage;
 
 class SafieApiService
 {
@@ -245,14 +246,27 @@ class SafieApiService
             Log::debug('--- Curl エラー ---');
             echo curl_error($curl);
             curl_close($curl);
+            if ($timestamp == null) {
+                Storage::disk('recent_camera_image')->delete($device_id.'.jpeg');
+            }
+
             return null;
         }
+
         if ($httpcode == 200) {
             $response = curl_multi_getcontent($curl);
+            if ($timestamp == null) {
+                Storage::disk('recent_camera_image')->put($device_id.'.jpeg', $response);
+            }
             curl_close($curl);
+
             return $response;
         } else {
             curl_close($curl);
+            if ($timestamp == null) {
+                Storage::disk('recent_camera_image')->delete($device_id.'.jpeg');
+            }
+
             return null;
         }
     }
@@ -277,10 +291,12 @@ class SafieApiService
             Log::debug('--- Curl エラー ---');
             echo curl_error($curl);
             curl_close($curl);
+
             return null;
         }
         $response = curl_multi_getcontent($curl);
         curl_close($curl);
+
         return $response;
     }
 
@@ -519,6 +535,7 @@ class SafieApiService
         }
         Log::info('【Finish Delete Api】url:'.$url);
         curl_close($curl);
+
         return $httpcode;
     }
 

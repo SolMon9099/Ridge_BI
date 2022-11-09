@@ -93,6 +93,7 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
         Route::group(['prefix' => 'pit'], function () {
             Route::get('/', 'PitController@index')->name('admin.pit');
             Route::get('/edit/{pit}', 'PitController@edit')->name('admin.pit.edit');
+            Route::get('/rule_view', 'PitController@rule_view')->name('admin.pit.rule_view');
             Route::get('/cameras_for_rule', 'PitController@cameras_for_rule')->name('admin.pit.cameras_for_rule');
             Route::get('/create_rule', 'PitController@create_rule')->name('admin.pit.create_rule');
             Route::get('/list', 'PitController@list')->name('admin.pit.list');
@@ -107,6 +108,7 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
         Route::group(['prefix' => 'danger'], function () {
             Route::get('/', 'DangerController@index')->name('admin.danger');
             Route::get('/edit/{danger}', 'DangerController@edit')->name('admin.danger.edit');
+            Route::get('/rule_view', 'DangerController@rule_view')->name('admin.danger.rule_view');
             Route::get('/cameras_for_rule', 'DangerController@cameras_for_rule')->name('admin.danger.cameras_for_rule');
             Route::get('/create_rule', 'DangerController@create_rule')->name('admin.danger.create_rule');
             Route::get('/list', 'DangerController@list')->name('admin.danger.list');
@@ -125,7 +127,7 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
             Route::post('/store', 'ShelfController@store')->name('admin.shelf.store');
             Route::get('/list', 'ShelfController@list')->name('admin.shelf.list');
             Route::get('/detail', 'ShelfController@detail')->name('admin.shelf.detail');
-            Route::get('/past_analysis', 'ShelfController@detail')->name('admin.shelf.past_analysis');
+            Route::get('/past_analysis', 'ShelfController@past_analysis')->name('admin.shelf.past_analysis');
             Route::get('/save_sorted_imgage/{detect}', 'ShelfController@save_sorted_imgage')->name('admin.shelf.save_sorted_imgage');
             Route::delete('/delete/{shelf}', 'ShelfController@delete')->name('admin.shelf.delete');
         });
@@ -138,7 +140,7 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
             Route::post('/store', 'ThiefController@store')->name('admin.thief.store');
             Route::get('/list', 'ThiefController@list')->name('admin.thief.list');
             Route::get('/detail', 'ThiefController@detail')->name('admin.thief.detail');
-            Route::get('/past_analysis', 'ThiefController@detail')->name('admin.thief.past_analysis');
+            Route::get('/past_analysis', 'ThiefController@past_analysis')->name('admin.thief.past_analysis');
             Route::delete('/delete/{thief}', 'ThiefController@delete')->name('admin.thief.delete');
         });
 

@@ -26,8 +26,8 @@ class DangerService
             $danger_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
         if ($params != null) {
-            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-                $danger_rules -> where(function($q) {
+            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+                $danger_rules->where(function ($q) {
                     $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                     $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                     $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
@@ -75,8 +75,8 @@ class DangerService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $danger_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $danger_rules -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $danger_rules->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
@@ -97,10 +97,13 @@ class DangerService
             $unchanged_ids = [];
             foreach ($rule_data as $rule_item) {
                 if (isset($rule_item->id) && $rule_item->id > 0) {
+                    $cur_danger = DangerAreaDetectionRule::find($rule_item->id);
+                    if ($cur_danger == null) {
+                        return '編集中にルールが変更されたため登録出来ませんでした';
+                    }
                     if (!(isset($rule_item->is_changed) && $rule_item->is_changed == true)) {
                         $unchanged_ids[] = $rule_item->id;
                         if (isset($rule_item->is_name_color_changed) && $rule_item->is_name_color_changed == true) {
-                            $cur_danger = DangerAreaDetectionRule::find($rule_item->id);
                             $cur_danger->name = isset($rule_item->name) && $rule_item->name != '' ? $rule_item->name : null;
                             $cur_danger->color = $rule_item->color;
                             $cur_danger->save();
@@ -141,9 +144,13 @@ class DangerService
         }
     }
 
-    public static function getDangerInfoById($id)
+    public static function getDangerInfoById($id, $only_enalbe = true)
     {
-        return DangerAreaDetectionRule::query()->where('id', $id)->get();
+        if ($only_enalbe) {
+            return DangerAreaDetectionRule::query()->where('id', $id)->get();
+        } else {
+            return DB::table('danger_area_detection_rules')->where('id', $id)->get();
+        }
     }
 
     public static function getRulesByCameraID($camera_id)
@@ -221,8 +228,8 @@ class DangerService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $query -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $query->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
@@ -241,8 +248,8 @@ class DangerService
             $camera_query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
         $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $camera_query -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $camera_query->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');

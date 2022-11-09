@@ -89,6 +89,12 @@ class PitService
 
     public static function saveData($params)
     {
+        if (isset($params['id']) && $params['id'] > 0){
+            $cur_rule = self::getPitInfoById($params['id'])->first();
+            if ($cur_rule == null){
+                return '編集中にルールが変更されたため登録出来ませんでした';
+            }
+        }
         $change_flag = $params['change_flag'];
         $red_points_data = $params['red_points_data'];
         $blue_points_data = $params['blue_points_data'];
@@ -148,9 +154,13 @@ class PitService
         }
     }
 
-    public static function getPitInfoById($id)
+    public static function getPitInfoById($id, $only_enalbe = true)
     {
-        return PitDetectionRule::query()->where('id', $id)->get();
+        if ($only_enalbe) {
+            return PitDetectionRule::query()->where('id', $id)->get();
+        } else {
+            return DB::table('pit_detection_rules')->where('id', $id)->get();
+        }
     }
 
     public static function getRulesByCameraID($camera_id)

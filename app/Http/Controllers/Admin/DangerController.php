@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Service\DangerService;
 use App\Service\LocationService;
 use App\Service\SafieApiService;
-use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
 use App\Models\CameraMappingDetail;
 use App\Models\SearchOption;
@@ -15,7 +14,7 @@ use App\Service\CameraService;
 use App\Service\TopService;
 // use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class DangerController extends AdminController
 {
@@ -33,11 +32,11 @@ class DangerController extends AdminController
                 ->whereNull('drawing.deleted_at')->get()->first();
             if ($map_data != null) {
                 $camera->floor_number = $map_data->floor_number;
-                if (!in_array($map_data->floor_number, $floor_numbers)){
+                if (!in_array($map_data->floor_number, $floor_numbers)) {
                     $floor_numbers[] = $map_data->floor_number;
                 }
             }
-            if ($camera->installation_position != null && $camera->installation_position != '' && !in_array($camera->installation_position, $installation_positions)){
+            if ($camera->installation_position != null && $camera->installation_position != '' && !in_array($camera->installation_position, $installation_positions)) {
                 $installation_positions[] = $camera->installation_position;
             }
             $safie_service = new SafieApiService($camera->contract_no);
@@ -45,7 +44,6 @@ class DangerController extends AdminController
             if (!isset($camera_imgs[$camera->camera_id])) {
                 $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
                 $camera_imgs[$camera->camera_id] = $camera_image_data;
-                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
             }
         }
         $dangers = DangerService::doSearch($request)->paginate($this->per_page);
@@ -127,17 +125,47 @@ class DangerController extends AdminController
         $danger_rules = DangerService::getRulesByCameraID($request['selected_camera']);
         $camera_data = CameraService::getCameraInfoById($request['selected_camera']);
         $safie_service = new SafieApiService($camera_data->contract_no);
+        $camera_image_path = null;
         $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
         if ($camera_image_data != null) {
-            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            // $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            $camera_image_path = 'recent_camera_image/'.$camera_data->camera_id.'.jpeg';
         }
 
         return view('admin.danger.create_rule')->with([
             'camera_id' => $request['selected_camera'],
             'rules' => $danger_rules,
-            'camera_image_data' => $camera_image_data,
+            'camera_image_path' => $camera_image_path,
             'device_id' => $camera_data->camera_id,
             'access_token' => $safie_service->access_token,
+        ]);
+    }
+
+    public function rule_view(Request $request)
+    {
+        $rule = DangerService::getDangerInfoById($request['id'], false)->first();
+        $last_detection = DB::table('danger_area_detections')->where('rule_id', $request['id'])->orderByDesc('starttime')->get()->first();
+        $rules = [$rule];
+        $camera_data = CameraService::getCameraInfoById($rule->camera_id);
+        $camera_image_path = null;
+        if ($last_detection == null) {
+            $safie_service = new SafieApiService($camera_data->contract_no);
+            $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
+            if ($camera_image_data != null) {
+                // $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+                $camera_image_path = 'recent_camera_image/'.$camera_data->camera_id.'.jpeg';
+            }
+        } else {
+            $camera_image_path = 'thumb/'.$last_detection->thumb_img_path;
+        }
+
+        return view('admin.danger.edit')->with([
+            'danger' => $rule,
+            'rules' => $rules,
+            'camera_id' => $rule->camera_id,
+            'camera_image_path' => $camera_image_path,
+            'device_id' => $camera_data->camera_id,
+            'view_only' => true,
         ]);
     }
 
@@ -145,9 +173,11 @@ class DangerController extends AdminController
     {
         $camera_data = CameraService::getCameraInfoById($danger->camera_id);
         $safie_service = new SafieApiService($camera_data->contract_no);
+        $camera_image_path = null;
         $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
         if ($camera_image_data != null) {
-            $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            // $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
+            $camera_image_path = 'recent_camera_image/'.$camera_data->camera_id.'.jpeg';
         }
 
         $rules = DangerService::getRulesByCameraID($danger->camera_id);
@@ -156,9 +186,8 @@ class DangerController extends AdminController
             'danger' => $danger,
             'rules' => $rules,
             'camera_id' => $danger->camera_id,
-            'camera_image_data' => $camera_image_data,
+            'camera_image_path' => $camera_image_path,
             'device_id' => $camera_data->camera_id,
-            'access_token' => $safie_service->access_token,
         ]);
     }
 
@@ -171,15 +200,18 @@ class DangerController extends AdminController
         if (isset($request['operation_type']) && $request['operation_type'] == 'register') {
             $operation_type = '追加';
         }
-        if (DangerService::saveData($request)) {
+        $register_res = DangerService::saveData($request);
+        if ($register_res === true) {
             $request->session()->flash('success', 'ルールを'.$operation_type.'しました。');
-
-            return redirect()->route('admin.danger');
         } else {
-            $request->session()->flash('error', 'ルール'.$operation_type.'に失敗しました。');
-
-            return redirect()->route('admin.danger');
+            if ($register_res === false) {
+                $request->session()->flash('error', 'ルール'.$operation_type.'に失敗しました。');
+            } else {
+                $request->session()->flash('error', $register_res);
+            }
         }
+
+        return redirect()->route('admin.danger');
     }
 
     public function delete(Request $request, DangerAreaDetectionRule $danger)
@@ -323,7 +355,6 @@ class DangerController extends AdminController
             if (!isset($camera_imgs[$camera->camera_id])) {
                 $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
                 $camera_imgs[$camera->camera_id] = $camera_image_data;
-                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
             }
         }
 
@@ -425,7 +456,6 @@ class DangerController extends AdminController
             if (!isset($camera_imgs[$camera->camera_id])) {
                 $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
                 $camera_imgs[$camera->camera_id] = $camera_image_data;
-                Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
             }
         }
         $selected_rule_object = null;
@@ -440,7 +470,7 @@ class DangerController extends AdminController
             } else {
                 $rule->floor_number = '';
             }
-            if ($rule->id == $search_params['selected_rule']){
+            if ($rule->id == $search_params['selected_rule']) {
                 $selected_rule_object = $rule;
             }
         }

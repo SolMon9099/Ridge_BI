@@ -18,7 +18,7 @@
             <h2 class="title">ルール一覧・編集</h2>
             @if(!$super_admin_flag)
             <div class="new-btn">
-                <a href="{{route('admin.thief.cameras_for_rule')}}">
+                <a href="{{route('admin.thief.cameras_for_rule').'?add_button=true'}}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255,255,255, 1);transform: ;msFilter:;">
                     <path d="M3 16c0 1.103.897 2 2 2h3.586L12 21.414 15.414 18H19c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2v12zM5 4h14v12h-4.414L12 18.586 9.414 16H5V4z"></path>
                     <path d="M11 14h2v-3h3V9h-3V6h-2v3H8v2h3z"></path>
@@ -75,7 +75,6 @@
                                     @endforeach
                                     </select>
                                 </div>
-                                {{-- <input type="text" name="floor_number" value="{{ old('floor_number', (isset($input) && $input->has('floor_number'))?$input->floor_number:'')}}"/> --}}
                             </li>
                         </ul>
                         <ul class="date-list">
@@ -93,9 +92,6 @@
                                     @endforeach
                                     </select>
                                 </div>
-                                {{-- <div>
-                                    <input type="text" name="installation_position" value="{{ old('installation_position', (isset($input) && $input->has('installation_position'))?$input->installation_position:'')}}"/>
-                                </div> --}}
                             </li>
                         </ul>
                         <button type="submit" class="apply">絞り込む</button>
@@ -122,11 +118,13 @@
                         <th>設置場所</th>
                         <th>ハンガーの色</th>
                         <th>カラー</th>
-                        {{-- <th>検知履歴</th> --}}
+                        <th>ルール登録数</th>
+                        <th>カメラの稼働状況</th>
                         <th>削除</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <?php $max_rule_numbers = config('const.thief_max_rect_numbers'); ?>
                     @foreach($thiefs as $thief)
                         <tr>
                             <td><button type="button" class="edit" onclick="location.href='{{route('admin.thief.edit', ['thief' => $thief->id])}}'">編集</button></td>
@@ -137,9 +135,14 @@
                             <td>{{$thief->installation_position}}</td>
                             <td><input disabled type="color" value = "{{substr($thief->hanger, 0, 7)}}"/></td>
                             <td><input disabled type="color" value = "{{$thief->color}}"/></td>
-                            {{-- <td>
-                                <button type="button" class="history">履歴表示</button>
-                            </td> --}}
+                            <td>{{count($thief->rules).'/'.$max_rule_numbers}}</td>
+                            <td>
+                                @if(Storage::disk('recent_camera_image')->exists($thief->device_id.'.jpeg'))
+                                    稼働中
+                                @else
+                                    停止中
+                                @endif
+                            </td>
                             <td>
                                 @if (!$super_admin_flag)
                                     <button type="button" class="delete_thief_rules history" delete_index="{{ $thief->id }}">削除</button>
@@ -203,7 +206,13 @@
                         <td>{{$camera->location_name}}</td>
                         <td>{{$camera->floor_number}}</td>
                         <td>{{$camera->installation_position}}</td>
-                        <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
+                        <td>
+                            @if(Storage::disk('recent_camera_image')->exists($camera->camera_id.'.jpeg'))
+                                <img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/>
+                            @else
+                                カメラ停止中
+                            @endif
+                        </td>
                     </tr>
                     @endforeach
                     @if(count($cameras) == 0)

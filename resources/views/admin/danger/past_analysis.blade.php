@@ -34,11 +34,14 @@
                     <h4>検出期間</h4>
                     </li>
                     <li style="width:113px;">
-                        <input id='starttime' type="date" name='starttime' onchange="$('#form1').submit()" value="{{ old('starttime', $starttime)}}">
+                        <input id='starttime' type="date" name='starttime' onchange="$('#form1').submit()"
+                            max="{{strtotime(old('endtime', $endtime)) > strtotime(date('Y-m-d')) ? date('Y-m-d') : old('endtime', $endtime)}}"
+                            value="{{ old('starttime', $starttime)}}">
                     </li>
                     <li>～</li>
                     <li>
-                        <input id='endtime' type="date" name='endtime' onchange="$('#form1').submit()" value="{{ old('endtime', $endtime)}}">
+                        <input id='endtime' type="date" name='endtime' onchange="$('#form1').submit()"
+                            max="{{date('Y-m-d')}}" min="{{ old('starttime', $starttime)}}" value="{{ old('endtime', $endtime)}}"/>
                     </li>
                 </ul>
                 <ul class="date-list">
@@ -170,7 +173,13 @@
                             </td>
                             <td><input disabled type="color" value = "{{$rule->color}}"></td>
                             <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
-                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$rule->device_id.'.jpeg'}}"/></td>
+                            <td>
+                                @if(Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg'))
+                                    <img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$rule->device_id.'.jpeg'}}"/>
+                                @else
+                                    カメラ停止中
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
                         @if(count($rules) == 0)
@@ -225,7 +234,13 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
-                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
+                            <td>
+                                @if(Storage::disk('recent_camera_image')->exists($camera->camera_id.'.jpeg'))
+                                    <img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/>
+                                @else
+                                    カメラ停止中
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
                         @if(count($cameras) == 0)
@@ -471,23 +486,41 @@
         switch(grpah_init_type){
             case 3:
                 if (increament == 1){
-                    min_time.setHours(min_time.getHours() + 3 >= 24 ? 0 : min_time.getHours() + 3);
+                    if (min_time.getHours() + 3 >= 24){
+                        return;
+                    }
+                    min_time.setHours(min_time.getHours() + 3);
                 } else {
-                    min_time.setHours(min_time.getHours() - 3 < 0 ? 21 : min_time.getHours() - 3);
+                    if (min_time.getHours() - 3 < 0){
+                        return;
+                    }
+                    min_time.setHours(min_time.getHours() - 3);
                 }
                 break;
             case 6:
                 if (increament == 1){
-                    min_time.setHours(min_time.getHours() + 6 >= 24 ? 0 : min_time.getHours() + 6);
+                    if (min_time.getHours() + 6 >= 24){
+                        return;
+                    }
+                    min_time.setHours(min_time.getHours() + 6);
                 } else {
-                    min_time.setHours(min_time.getHours() - 6 < 0 ? 18 : min_time.getHours() - 6);
+                    if (min_time.getHours() - 6 < 0){
+                        return;
+                    }
+                    min_time.setHours(min_time.getHours() - 6);
                 }
                 break;
             case 12:
                 if (increament == 1){
-                    min_time.setHours(min_time.getHours() + 12 >= 24 ? 0 : min_time.getHours() + 12);
+                    if (min_time.getHours() + 12 >= 24){
+                        return;
+                    }
+                    min_time.setHours(min_time.getHours() + 12);
                 } else {
-                    min_time.setHours(min_time.getHours() - 12 < 0 ? 12 : min_time.getHours() - 12);
+                    if (min_time.getHours() - 12 < 0){
+                        return;
+                    }
+                    min_time.setHours(min_time.getHours() - 12);
                 }
                 break;
             case 24:
@@ -496,13 +529,14 @@
                 if (increament == 1){
                     min_time.setDate(min_time.getDate() + 1);
                     if (min_time.getTime() >= endtime.getTime()) {
-                        min_time = new Date(starttime);
+                        min_time.setDate(min_time.getDate() - 1);
+                        return;
                     }
                 } else {
                     min_time.setDate(min_time.getDate() - 1);
                     if (min_time.getTime() < starttime.getTime()) {
-                        min_time = new Date(endtime);
-                        min_time.setDate(min_time.getDate() -1);
+                        min_time.setDate(min_time.getDate() + 1);
+                        return;
                     }
                 }
                 break;
@@ -511,13 +545,14 @@
                 if (increament == 1){
                     min_time.setDate(min_time.getDate() + 7);
                     if (min_time.getTime() >= endtime.getTime()) {
-                        min_time = new Date(starttime);
+                        min_time.setDate(min_time.getDate() - 7);
+                        return;
                     }
                 } else {
                     min_time.setDate(min_time.getDate() - 7);
                     if (min_time.getTime() < starttime.getTime()) {
-                        min_time = new Date(endtime);
-                        min_time.setDate(min_time.getDate() - 7);
+                        min_time.setDate(min_time.getDate() + 7);
+                        return;
                     }
                 }
                 break;
@@ -525,13 +560,14 @@
                 if (increament == 1){
                     min_time.setDate(min_time.getDate() + 28);
                     if (min_time.getTime() >= endtime.getTime()) {
-                        min_time = new Date(starttime);
+                        min_time.setDate(min_time.getDate() - 28);
+                        return;
                     }
                 } else {
                     min_time.setDate(min_time.getDate() - 28);
                     if (min_time.getTime() < starttime.getTime()) {
-                        min_time = new Date(endtime);
-                        min_time.setDate(min_time.getDate() - 28);
+                        min_time.setDate(min_time.getDate() + 28);
+                        return;
                     }
                 }
                 break;
@@ -540,13 +576,14 @@
                 if (increament == 1){
                     min_time.setMonth(min_time.getMonth() + 6);
                     if (min_time.getTime() >= endtime.getTime()) {
-                        min_time = new Date(starttime);
+                        min_time.setMonth(min_time.getMonth() - 6);
+                        return;
                     }
                 } else {
                     min_time.setMonth(min_time.getMonth() - 6);
                     if (min_time.getTime() < starttime.getTime()) {
-                        min_time = new Date(endtime);
-                        min_time.setMonth(min_time.getMonth() - 6);
+                        min_time.setMonth(min_time.getMonth() + 6);
+                        return;
                     }
                 }
                 break;
@@ -807,6 +844,7 @@
                 method: 'post',
                 data: {
                     type:'danger',
+                    selected_rule:selected_rule,
                     endtime:formatDateLine(new Date($('#endtime').val())),
                     _token:$('meta[name="csrf-token"]').attr('content'),
                     last_record_id : "<?php echo $last_number;?>"

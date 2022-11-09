@@ -25,14 +25,19 @@
                     <div class="sort">
                         <ul class="date-list">
                             <li><h4>検出期間</h4></li>
-                            <li>
+                            <?php
+                                $starttime = (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week'));
+                                $endtime = (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d');
+                            ?>
+                            <li style="width:113px;">
                                 <input type="date" id="starttime" name='starttime' onchange="$('#form1').submit()"
-                                    value="{{ old('starttime', (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')))}}">
+                                    max="{{strtotime(old('endtime', $endtime)) > strtotime(date('Y-m-d')) ? date('Y-m-d') : old('endtime', $endtime)}}"
+                                    value="{{ old('starttime', $starttime)}}">
                             </li>
                             <li>～</li>
                             <li>
-                                <input type="date" id="endtime" name='endtime' onchange="$('#form1').submit()"
-                                    value="{{ old('endtime', (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'))}}">
+                                <input type="date" id="endtime" name='endtime' onchange="$('#form1').submit()" max="{{date('Y-m-d')}}" min="{{ old('starttime', $starttime)}}"
+                                    value="{{ old('endtime', $endtime)}}">
                             </li>
                         </ul>
                         <ul class="date-list">
@@ -45,7 +50,9 @@
                 </div>
             </div>
         </form>
-        <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_pit']}})">ダッシュボートへ追加</button>
+        @if(count($pit_detections) > 0)
+            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_pit']}})">ダッシュボートへ追加</button>
+        @endif
         @if(!(count($pit_detections) > 0))
             <div class="no-data">検知データがありません。</div>
         @endif
@@ -101,28 +108,17 @@
                         </li>
                         <li>
                             <h2 class="icon-content" style="cursor: pointer" onclick="location.href='{{route('admin.pit.edit', ['pit' => $item->rule_id])}}'">ルール</h2>
-                            {{-- <dl>
-                                <dt>
-                                    <p>{{$item->nb_entry > $item->nb_exit ? 'ピット入場 ' :  'ピット退場 '}}</p>
-                                </dt>
-                                <dd>{{$item->nb_entry > $item->nb_exit ? ($item->nb_entry - $item->nb_exit).'人' : ($item->nb_exit - $item->nb_entry).'人'}}</dd>
-                            </dl>
                             <dl>
-                                <dt>
-                                    <p>ピット内人数</p>
-                                </dt>
-                                <dd>{{$item->sum_in_pit.'人'}}</dd>
-                            </dl> --}}
-                            <dl>
+                                <dt><p>検知条件</p></dt>
                                 <dd>{{$item->min_members.'人以上/'.$item->max_permission_time.'分超過'}}</dd>
                             </dl>
-                        </li>
-                        <li>
-                            <h2 class="icon-rule" style="cursor: pointer" onclick="location.href='{{route('admin.pit.edit', ['pit' => $item->rule_id])}}'">ルール名</h2>
                             <dl>
+                                <dt><p>ルール名</p></dt>
                                 <dd>{{isset($item->rule_name) ? $item->rule_name : ''}}</dd>
                             </dl>
+                            <dl class="rule-detail-link" onclick="location.href='{{route('admin.pit.rule_view').'?id='.$item->rule_id}}'">ルール詳細>></dl>
                         </li>
+
                     </ul>
                 </div>
             </li>
@@ -181,7 +177,13 @@
                         <td>{{$rule->floor_number}}</td>
                         <td>{{$rule->installation_position}}</td>
                         <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
-                        <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$rule->device_id.'.jpeg'}}"/></td>
+                        <td>
+                            @if(Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg'))
+                                <img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$rule->device_id.'.jpeg'}}"/>
+                            @else
+                                カメラ停止中
+                            @endif
+                        </td>
                     </tr>
                     @endforeach
                     @if(count($rules) == 0)

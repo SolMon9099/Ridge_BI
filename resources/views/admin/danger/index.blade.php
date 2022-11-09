@@ -123,6 +123,7 @@
                         <th>ルール登録数</th>
                         <th>アクション</th>
                         <th>カラー</th>
+                        <th>カメラの稼働状況</th>
                         <th>削除</th>
                     </tr>
                     </thead>
@@ -143,6 +144,13 @@
                                 @endforeach
                             </td>
                             <td><input disabled type="color" value = "{{$danger->color}}"/></td>
+                            <td>
+                                @if(Storage::disk('recent_camera_image')->exists($danger->device_id.'.jpeg'))
+                                    稼働中
+                                @else
+                                    停止中
+                                @endif
+                            </td>
                             <td>
                                 @if (!$super_admin_flag)
                                     <button type="button" class="delete_danger_rules history" delete_index="{{ $danger->id }}">削除</button>
@@ -206,7 +214,13 @@
                         <td>{{$camera->location_name}}</td>
                         <td>{{$camera->floor_number}}</td>
                         <td>{{$camera->installation_position}}</td>
-                        <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
+                        <td>
+                            @if(Storage::disk('recent_camera_image')->exists($camera->camera_id.'.jpeg'))
+                                <img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/>
+                            @else
+                                カメラ停止中
+                            @endif
+                        </td>
                     </tr>
                     @endforeach
                     @if(count($cameras) == 0)

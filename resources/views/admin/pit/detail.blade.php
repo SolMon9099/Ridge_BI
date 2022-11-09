@@ -69,7 +69,9 @@
                                 <button type="button" class="<?php echo $time_period == '6' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '6')">6時間</button>
                                 <button type="button" class="<?php echo $time_period == '12' ? 'period-button selected' : 'period-button'?>"  onclick="displayGraphData(this, '12')">12時間</button>
                             </div>
-                            <canvas id="myLineChart1" onclick="location.href='{{route('admin.pit.past_analysis')}}'"></canvas>
+                            <canvas id="myLineChart1"
+                                onclick="location.href='{{route('admin.pit.past_analysis').'?time_period=time&change_params=change&starttime='.date('Y-m-d').'&endtime='.date('Y-m-d').'&selected_rule='.$selected_rule->id}}'">
+                            </canvas>
                         </div>
 
                         <div class="left-right">
@@ -193,7 +195,13 @@
                             <td>{{$camera->location_name}}</td>
                             <td>{{$camera->floor_number}}</td>
                             <td>{{$camera->installation_position}}</td>
-                            <td><img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/></td>
+                            <td>
+                                @if(Storage::disk('recent_camera_image')->exists($camera->camera_id.'.jpeg'))
+                                    <img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$camera->camera_id.'.jpeg'}}"/>
+                                @else
+                                    カメラ停止中
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
                         @if(count($cameras) == 0)
@@ -304,7 +312,7 @@
                         ticks: {
                             suggestedMax: Math.max(...y_data) + 1,
                             suggestedMin: 0,
-                            stepSize: 1,
+                            stepSize: parseInt((Math.max(...y_data) + 2)/5) + 1,
                             fontSize: 25,
                             callback: function(value, index, values){
                                 return  value +  '人'

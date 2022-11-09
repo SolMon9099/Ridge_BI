@@ -15,8 +15,10 @@
                             @if(isset($devices) && isset($devices['list']) && count($devices['list']) > 0)
                             @foreach ($devices['list'] as $camera_item)
                                 @if ($camera_item['device_id'] == old('camera_id', isset($camera->camera_id)?$camera->camera_id:''))
+                                    {{-- <option value="{{$camera_item['device_id']}}" selected>{{$camera_item['serial'].'('.$camera_item['setting']['name'].')'}}</option> --}}
                                     <option value="{{$camera_item['device_id']}}" selected>{{$camera_item['serial']}}</option>
                                 @else
+                                    {{-- <option value="{{$camera_item['device_id']}}">{{$camera_item['serial'].'('.$camera_item['setting']['name'].')'}}</option> --}}
                                     <option value="{{$camera_item['device_id']}}">{{$camera_item['serial']}}</option>
                                 @endif
                             @endforeach

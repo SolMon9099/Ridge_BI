@@ -68,12 +68,6 @@
             color: #999;
             margin-bottom: 8px;
         }
-        .disabled-tr{
-            background: lightgray!important;
-        }
-        .disabled-tr > td{
-            background: lightgray!important;
-        }
     </style>
     <script>
         function enableSubmitButton(){

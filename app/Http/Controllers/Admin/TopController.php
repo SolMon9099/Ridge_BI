@@ -10,6 +10,9 @@ use App\Service\DangerService;
 use App\Service\PitService;
 use App\Service\SafieApiService;
 use App\Service\TopService;
+use App\Service\ShelfService;
+use App\Service\ThiefService;
+use Illuminate\Support\Facades\Storage;
 
 class TopController extends AdminController
 {
@@ -33,6 +36,11 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
                             $temp[] = $camera;
                         }
                         $danger_cameras = $temp;
@@ -72,6 +80,11 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
                             $temp[] = $camera;
                         }
                         $danger_cameras = $temp;
@@ -113,7 +126,14 @@ class TopController extends AdminController
                     break;
                 case config('const.top_block_type_codes')['detect_list_danger']:
                     if (!isset($danger_rules)) {
-                        $danger_rules = DangerService::getAllRules()->get()->all();
+                        $danger_rules = DangerService::getAllRules()->get()->toArray();
+                        foreach($danger_rules as &$rule){
+                            if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
+                                $rule->is_on = true;
+                            } else {
+                                $rule->is_on = false;
+                            }
+                        }
                     }
                     $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
                     $request['endtime'] = date('Y-m-d');
@@ -125,7 +145,7 @@ class TopController extends AdminController
                         if (isset($options['endtime']) && $options['endtime'] != '') {
                             $request['endtime'] = $options['endtime'];
                         }
-                        if (isset($options['selected_rules'])){
+                        if (isset($options['selected_rules'])) {
                             $request['selected_rules'] = $options['selected_rules'];
                         }
                     }
@@ -150,6 +170,11 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
                             $temp[] = $camera;
                         }
                         $danger_cameras = $temp;
@@ -201,9 +226,16 @@ class TopController extends AdminController
                     break;
                 case config('const.top_block_type_codes')['past_graph_danger']:
                     if (!isset($danger_rules)) {
-                        $danger_rules = DangerService::getAllRules()->get()->all();
+                        $danger_rules = DangerService::getAllRules()->get()->toArray();
+                        foreach($danger_rules as &$rule){
+                            if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
+                                $rule->is_on = true;
+                            } else {
+                                $rule->is_on = false;
+                            }
+                        }
                     }
-                    if (count($danger_rules) > 0){
+                    if (count($danger_rules) > 0) {
                         $request['selected_rule'] = $danger_rules[0]->id;
                     }
                     if (!isset($danger_cameras)) {
@@ -219,6 +251,11 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
                             $temp[] = $camera;
                         }
                         $danger_cameras = $temp;
@@ -252,20 +289,20 @@ class TopController extends AdminController
                         if (isset($options['endtime']) && $options['endtime'] != '') {
                             $request['endtime'] = $options['endtime'];
                         }
-                        if (isset($options['selected_rule']) && $options['selected_rule'] > 0){
+                        if (isset($options['selected_rule']) && $options['selected_rule'] > 0) {
                             $request['selected_rule'] = $options['selected_rule'];
                         }
                     }
                     $past_danger_detections = DangerService::searchDetections($request)->get()->toArray();
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
-                    $item->selected_rule = $request['selected_rule'];
+                    $item->selected_rule = isset($request['selected_rule']) ? $request['selected_rule'] : null;
                     $item->rules = $danger_rules;
 
                     $all_data = [];
-                    foreach ($past_danger_detections as $danger_detection_item) {
+                    foreach (array_reverse($past_danger_detections) as $danger_detection_item) {
                         if ($danger_detection_item['detection_action_id'] > 0) {
-                            $all_data[date('Y-m-d H:i', strtotime($danger_detection_item['starttime']))][$danger_detection_item['detection_action_id']][] = $danger_detection_item;
+                            $all_data[date('Y-m-d H:i:00', strtotime($danger_detection_item['starttime']))][$danger_detection_item['detection_action_id']][] = $danger_detection_item;
                         }
                     }
                     $item->danger_past_graph_data = $all_data;
@@ -284,6 +321,11 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
                             $temp[] = $camera;
                         }
                         $pit_cameras = $temp;
@@ -324,6 +366,11 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
                             $temp[] = $camera;
                         }
                         $pit_cameras = $temp;
@@ -366,7 +413,14 @@ class TopController extends AdminController
                     break;
                 case config('const.top_block_type_codes')['detect_list_pit']:
                     if (!isset($pit_rules)) {
-                        $pit_rules = PitService::getAllRules()->get()->all();
+                        $pit_rules = PitService::getAllRules()->get()->toArray();
+                        foreach($pit_rules as &$rule){
+                            if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
+                                $rule->is_on = true;
+                            } else {
+                                $rule->is_on = false;
+                            }
+                        }
                     }
                     $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
                     $request['endtime'] = date('Y-m-d');
@@ -378,7 +432,7 @@ class TopController extends AdminController
                         if (isset($options['endtime']) && $options['endtime'] != '') {
                             $request['endtime'] = $options['endtime'];
                         }
-                        if (isset($options['selected_rules'])){
+                        if (isset($options['selected_rules'])) {
                             $request['selected_rules'] = $options['selected_rules'];
                         }
                     }
@@ -405,6 +459,11 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
                             $temp[] = $camera;
                         }
                         $pit_cameras = $temp;
@@ -447,9 +506,16 @@ class TopController extends AdminController
                     break;
                 case config('const.top_block_type_codes')['past_graph_pit']:
                     if (!isset($pit_rules)) {
-                        $pit_rules = PitService::getAllRules()->get()->all();
+                        $pit_rules = PitService::getAllRules()->get()->toArray();
+                        foreach($pit_rules as &$rule){
+                            if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
+                                $rule->is_on = true;
+                            } else {
+                                $rule->is_on = false;
+                            }
+                        }
                     }
-                    if (count($pit_rules) > 0){
+                    if (count($pit_rules) > 0) {
                         $request['selected_rule'] = $pit_rules[0]->id;
                     }
 
@@ -474,7 +540,7 @@ class TopController extends AdminController
 
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
-                    $item->selected_rule = $request['selected_rule'];
+                    $item->selected_rule = isset($request['selected_rule']) ? $request['selected_rule'] : null;
                     $item->rules = $pit_rules;
 
                     $total_data = [];
@@ -490,6 +556,581 @@ class TopController extends AdminController
                         }
                     }
                     $item->pit_past_graph_data = $total_data;
+                    break;
+                case config('const.top_block_type_codes')['live_video_shelf']:
+                    if (!isset($shelf_cameras)) {
+                        $shelf_cameras = ShelfService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($shelf_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
+                            $temp[] = $camera;
+                        }
+                        $shelf_cameras = $temp;
+                    }
+                    $item->cameras = $shelf_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+                    $item->rules = null;
+                    if ($item->selected_camera != null) {
+                        $item->rules = ShelfService::getRulesByCameraID($item->selected_camera['id'])->toArray();
+                    }
+                    break;
+                case config('const.top_block_type_codes')['recent_detect_shelf']:
+                    if (!isset($shelf_cameras)) {
+                        $shelf_cameras = ShelfService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($shelf_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
+                            $temp[] = $camera;
+                        }
+                        $shelf_cameras = $temp;
+                    }
+                    $item->cameras = $shelf_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+
+                    $request['starttime'] = date('Y-m-d');
+                    $request['endtime'] = date('Y-m-d');
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['starttime']) && $options['starttime'] != '') {
+                            $request['starttime'] = $options['starttime'];
+                        }
+                        if (isset($options['endtime']) && $options['endtime'] != '') {
+                            $request['endtime'] = $options['endtime'];
+                        }
+                    }
+                    $unlimit_shelf_detections = ShelfService::searchDetections($request)->get()->toArray();
+
+                    $item->starttime = $request['starttime'];
+                    $item->endtime = $request['endtime'];
+                    $item->shelf_detections = $unlimit_shelf_detections;
+                    $item->shelf_detection = count($unlimit_shelf_detections) > 0 ? $unlimit_shelf_detections[0] : null;
+                    break;
+                case config('const.top_block_type_codes')['detect_list_shelf']:
+                    if (!isset($shelf_rules)) {
+                        $shelf_rules = ShelfService::getAllRules()->get()->toArray();
+                        foreach($shelf_rules as &$rule){
+                            if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
+                                $rule->is_on = true;
+                            } else {
+                                $rule->is_on = false;
+                            }
+                        }
+                    }
+                    $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
+                    $request['endtime'] = date('Y-m-d');
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['starttime']) && $options['starttime'] != '') {
+                            $request['starttime'] = $options['starttime'];
+                        }
+                        if (isset($options['endtime']) && $options['endtime'] != '') {
+                            $request['endtime'] = $options['endtime'];
+                        }
+                        if (isset($options['selected_rules'])) {
+                            $request['selected_rules'] = $options['selected_rules'];
+                        }
+                    }
+                    $list_shelf_detections = ShelfService::searchDetections($request)->get()->toArray();
+                    $item->starttime = $request['starttime'];
+                    $item->endtime = $request['endtime'];
+                    $item->selected_rules = isset($request['selected_rules']) ? $request['selected_rules'] : [];
+                    $item->shelf_detections = $list_shelf_detections;
+                    $item->rules = $shelf_rules;
+                    break;
+                case config('const.top_block_type_codes')['live_graph_shelf']:
+                    if (!isset($shelf_cameras)) {
+                        $shelf_cameras = ShelfService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($shelf_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
+                            $temp[] = $camera;
+                        }
+                        $shelf_cameras = $temp;
+                    }
+                    $item->cameras = $shelf_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                        if (isset($options['time_period']) && $options['time_period']) {
+                            $item->time_period = $options['time_period'];
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+
+                    $request['starttime'] = date('Y-m-d');
+                    $request['endtime'] = date('Y-m-d');
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['starttime']) && $options['starttime'] != '') {
+                            $request['starttime'] = $options['starttime'];
+                        }
+                        if (isset($options['endtime']) && $options['endtime'] != '') {
+                            $request['endtime'] = $options['endtime'];
+                        }
+                    }
+                    $live_shelf_detections = ShelfService::searchDetections($request)->get()->toArray();
+
+                    $item->starttime = $request['starttime'];
+                    $item->endtime = $request['endtime'];
+
+                    $all_data = [];
+                    foreach (array_reverse($live_shelf_detections) as $shelf_detection_item) {
+                        if (!isset($all_data[date('Y-m-d H:i:00', strtotime($shelf_detection_item['starttime']))])) {
+                            $all_data[date('Y-m-d H:i:00', strtotime($shelf_detection_item['starttime']))] = 0;
+                        }
+                        ++$all_data[date('Y-m-d H:i:00', strtotime($shelf_detection_item['starttime']))];
+                    }
+                    $item->shelf_live_graph_data = $all_data;
+
+                    break;
+                case config('const.top_block_type_codes')['past_graph_shelf']:
+                    if (!isset($shelf_rules)) {
+                        $shelf_rules = ShelfService::getAllRules()->get()->toArray();
+                        foreach($shelf_rules as &$rule){
+                            if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
+                                $rule->is_on = true;
+                            } else {
+                                $rule->is_on = false;
+                            }
+                        }
+                    }
+                    if (count($shelf_rules) > 0) {
+                        $request['selected_rule'] = $shelf_rules[0]->id;
+                    }
+                    if (!isset($shelf_cameras)) {
+                        $shelf_cameras = ShelfService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($shelf_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
+                            $temp[] = $camera;
+                        }
+                        $shelf_cameras = $temp;
+                    }
+                    $item->cameras = $shelf_cameras;
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                        if (isset($options['time_period']) && $options['time_period']) {
+                            $item->time_period = $options['time_period'];
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+
+                    $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
+                    $request['endtime'] = date('Y-m-d');
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['starttime']) && $options['starttime'] != '') {
+                            $request['starttime'] = $options['starttime'];
+                        }
+                        if (isset($options['endtime']) && $options['endtime'] != '') {
+                            $request['endtime'] = $options['endtime'];
+                        }
+                        if (isset($options['selected_rule']) && $options['selected_rule'] > 0) {
+                            $request['selected_rule'] = $options['selected_rule'];
+                        }
+                    }
+                    $past_shelf_detections = ShelfService::searchDetections($request)->get()->toArray();
+                    $item->starttime = $request['starttime'];
+                    $item->endtime = $request['endtime'];
+                    $item->selected_rule = isset($request['selected_rule']) ? $request['selected_rule'] : null;
+                    $item->rules = $shelf_rules;
+
+                    $all_data = [];
+                    foreach (array_reverse($past_shelf_detections) as $shelf_detection_item) {
+                        if (!isset($all_data[date('Y-m-d H:i:00', strtotime($shelf_detection_item['starttime']))])) {
+                            $all_data[date('Y-m-d H:i:00', strtotime($shelf_detection_item['starttime']))] = 0;
+                        }
+                        ++$all_data[date('Y-m-d H:i:00', strtotime($shelf_detection_item['starttime']))];
+                    }
+                    $item->shelf_past_graph_data = $all_data;
+                    break;
+
+                case config('const.top_block_type_codes')['live_video_thief']:
+                    if (!isset($thief_cameras)) {
+                        $thief_cameras = ThiefService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($thief_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
+                            $temp[] = $camera;
+                        }
+                        $thief_cameras = $temp;
+                    }
+                    $item->cameras = $thief_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+                    $item->rules = null;
+                    if ($item->selected_camera != null) {
+                        $item->rules = ThiefService::getRulesByCameraID($item->selected_camera['id'])->toArray();
+                    }
+                    break;
+                case config('const.top_block_type_codes')['recent_detect_thief']:
+                    if (!isset($thief_cameras)) {
+                        $thief_cameras = ThiefService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($thief_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
+                            $temp[] = $camera;
+                        }
+                        $thief_cameras = $temp;
+                    }
+                    $item->cameras = $thief_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+
+                    $request['starttime'] = date('Y-m-d');
+                    $request['endtime'] = date('Y-m-d');
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['starttime']) && $options['starttime'] != '') {
+                            $request['starttime'] = $options['starttime'];
+                        }
+                        if (isset($options['endtime']) && $options['endtime'] != '') {
+                            $request['endtime'] = $options['endtime'];
+                        }
+                    }
+                    $unlimit_thief_detections = ThiefService::searchDetections($request)->get()->toArray();
+
+                    $item->starttime = $request['starttime'];
+                    $item->endtime = $request['endtime'];
+                    $item->thief_detections = $unlimit_thief_detections;
+                    $item->thief_detection = count($unlimit_thief_detections) > 0 ? $unlimit_thief_detections[0] : null;
+                    break;
+                case config('const.top_block_type_codes')['detect_list_thief']:
+                    if (!isset($thief_rules)) {
+                        $thief_rules = ThiefService::getAllRules()->get()->toArray();
+                        foreach($thief_rules as &$rule){
+                            if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
+                                $rule->is_on = true;
+                            } else {
+                                $rule->is_on = false;
+                            }
+                        }
+                    }
+                    $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
+                    $request['endtime'] = date('Y-m-d');
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['starttime']) && $options['starttime'] != '') {
+                            $request['starttime'] = $options['starttime'];
+                        }
+                        if (isset($options['endtime']) && $options['endtime'] != '') {
+                            $request['endtime'] = $options['endtime'];
+                        }
+                        if (isset($options['selected_rules'])) {
+                            $request['selected_rules'] = $options['selected_rules'];
+                        }
+                    }
+                    $list_thief_detections = ThiefService::searchDetections($request)->get()->toArray();
+                    $item->starttime = $request['starttime'];
+                    $item->endtime = $request['endtime'];
+                    $item->selected_rules = isset($request['selected_rules']) ? $request['selected_rules'] : [];
+                    $item->thief_detections = $list_thief_detections;
+                    $item->rules = $thief_rules;
+                    break;
+                case config('const.top_block_type_codes')['live_graph_thief']:
+                    if (!isset($thief_cameras)) {
+                        $thief_cameras = ThiefService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($thief_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
+                            $temp[] = $camera;
+                        }
+                        $thief_cameras = $temp;
+                    }
+                    $item->cameras = $thief_cameras;
+
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                        if (isset($options['time_period']) && $options['time_period']) {
+                            $item->time_period = $options['time_period'];
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+
+                    $request['starttime'] = date('Y-m-d');
+                    $request['endtime'] = date('Y-m-d');
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['starttime']) && $options['starttime'] != '') {
+                            $request['starttime'] = $options['starttime'];
+                        }
+                        if (isset($options['endtime']) && $options['endtime'] != '') {
+                            $request['endtime'] = $options['endtime'];
+                        }
+                    }
+                    $live_thief_detections = ThiefService::searchDetections($request)->get()->toArray();
+
+                    $item->starttime = $request['starttime'];
+                    $item->endtime = $request['endtime'];
+
+                    $all_data = [];
+                    foreach (array_reverse($live_thief_detections) as $thief_detection_item) {
+                        if (!isset($all_data[date('Y-m-d H:i:00', strtotime($thief_detection_item['starttime']))])) {
+                            $all_data[date('Y-m-d H:i:00', strtotime($thief_detection_item['starttime']))] = 0;
+                        }
+                        ++$all_data[date('Y-m-d H:i:00', strtotime($thief_detection_item['starttime']))];
+                    }
+                    $item->thief_live_graph_data = $all_data;
+
+                    break;
+                case config('const.top_block_type_codes')['past_graph_thief']:
+                    if (!isset($thief_rules)) {
+                        $thief_rules = ThiefService::getAllRules()->get()->toArray();
+                        foreach($thief_rules as &$rule){
+                            if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
+                                $rule->is_on = true;
+                            } else {
+                                $rule->is_on = false;
+                            }
+                        }
+                    }
+                    if (count($thief_rules) > 0) {
+                        $request['selected_rule'] = $thief_rules[0]->id;
+                    }
+                    if (!isset($thief_cameras)) {
+                        $thief_cameras = ThiefService::getAllCameras()->toArray();
+                        $access_tokens = [];
+                        $temp = [];
+                        foreach ($thief_cameras as $camera) {
+                            if ($camera['contract_no'] == null) {
+                                continue;
+                            }
+                            if (!in_array($camera['contract_no'], array_keys($access_tokens))) {
+                                $safie_service = new SafieApiService($camera['contract_no']);
+                                $access_tokens[$camera['contract_no']] = $safie_service->access_token;
+                            }
+                            $camera['access_token'] = $access_tokens[$camera['contract_no']];
+                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                                $camera['is_on'] = true;
+                            } else {
+                                $camera['is_on'] = false;
+                            }
+                            $temp[] = $camera;
+                        }
+                        $thief_cameras = $temp;
+                    }
+                    $item->cameras = $thief_cameras;
+                    $item->selected_camera = null;
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['selected_camera']) && $options['selected_camera'] > 0) {
+                            $request['selected_camera'] = $options['selected_camera'];
+                            foreach ($item->cameras as $camera_item) {
+                                if ($camera_item['id'] == $options['selected_camera']) {
+                                    $item->selected_camera = $camera_item;
+                                }
+                            }
+                        }
+                        if (isset($options['time_period']) && $options['time_period']) {
+                            $item->time_period = $options['time_period'];
+                        }
+                    } else {
+                        $item->selected_camera = count($item->cameras) > 0 ? $item->cameras[0] : null;
+                    }
+
+                    $request['starttime'] = date('Y-m-d', strtotime('-1 week'));
+                    $request['endtime'] = date('Y-m-d');
+                    if ($item->options != null) {
+                        $options = (array) json_decode($item->options);
+                        if (isset($options['starttime']) && $options['starttime'] != '') {
+                            $request['starttime'] = $options['starttime'];
+                        }
+                        if (isset($options['endtime']) && $options['endtime'] != '') {
+                            $request['endtime'] = $options['endtime'];
+                        }
+                        if (isset($options['selected_rule']) && $options['selected_rule'] > 0) {
+                            $request['selected_rule'] = $options['selected_rule'];
+                        }
+                    }
+                    $past_thief_detections = ThiefService::searchDetections($request)->get()->toArray();
+                    $item->starttime = $request['starttime'];
+                    $item->endtime = $request['endtime'];
+                    $item->selected_rule = isset($request['selected_rule']) ? $request['selected_rule'] : null;
+                    $item->rules = $thief_rules;
+
+                    $all_data = [];
+                    foreach (array_reverse($past_thief_detections) as $thief_detection_item) {
+                        if (!isset($all_data[date('Y-m-d H:i:00', strtotime($thief_detection_item['starttime']))])) {
+                            $all_data[date('Y-m-d H:i:00', strtotime($thief_detection_item['starttime']))] = 0;
+                        }
+                        ++$all_data[date('Y-m-d H:i:00', strtotime($thief_detection_item['starttime']))];
+                    }
+                    $item->thief_past_graph_data = $all_data;
                     break;
             }
         }
@@ -608,8 +1249,8 @@ class TopController extends AdminController
                     if (isset($request['camera_id']) && $request['camera_id'] > 0) {
                         $params = ['selected_camera' => (int) $request['camera_id']];
                     }
-                    if (isset($request['rule_id']) && $request['rule_id'] > 0) {
-                        $params = ['rule_id' => (int) $request['rule_id']];
+                    if (isset($request['selected_rule']) && $request['selected_rule'] > 0) {
+                        $params = ['selected_rule' => (int) $request['selected_rule']];
                     }
                     $last_record = PitService::searchDetections($params)->get()->first();
                     if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d'))) {
@@ -621,14 +1262,39 @@ class TopController extends AdminController
                     if (isset($request['camera_id']) && $request['camera_id'] > 0) {
                         $params = ['selected_camera' => (int) $request['camera_id']];
                     }
+                    if (isset($request['selected_rule']) && $request['selected_rule'] > 0) {
+                        $params = ['selected_rule' => (int) $request['selected_rule']];
+                    }
                     $last_record = DangerService::searchDetections($params)->get()->first();
                     if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d'))) {
                         return 1;
                     }
                     break;
                 case 'shelf':
+                    $params = null;
+                    if (isset($request['camera_id']) && $request['camera_id'] > 0) {
+                        $params = ['selected_camera' => (int) $request['camera_id']];
+                    }
+                    if (isset($request['selected_rule']) && $request['selected_rule'] > 0) {
+                        $params = ['selected_rule' => (int) $request['selected_rule']];
+                    }
+                    $last_record = ShelfService::searchDetections($params)->get()->first();
+                    if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d'))) {
+                        return 1;
+                    }
                     break;
                 case 'thief':
+                    $params = null;
+                    if (isset($request['camera_id']) && $request['camera_id'] > 0) {
+                        $params = ['selected_camera' => (int) $request['camera_id']];
+                    }
+                    if (isset($request['selected_rule']) && $request['selected_rule'] > 0) {
+                        $params = ['selected_rule' => (int) $request['selected_rule']];
+                    }
+                    $last_record = ThiefService::searchDetections($params)->get()->first();
+                    if ($last_record != null && $last_record_id < $last_record->id && strtotime($last_record->starttime) > strtotime(date('Y-m-d'))) {
+                        return 1;
+                    }
                     break;
             }
         }

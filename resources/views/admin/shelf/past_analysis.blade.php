@@ -8,26 +8,20 @@
     $selected_rule = old('selected_rule', (isset($request_params) && isset($request_params['selected_rule']))?$request_params['selected_rule']:null);
     $total_data = array();
     $sum = 0;
-    $pit_detections = array_reverse($pit_detections);
-    foreach ($pit_detections as $item) {
-        if (!isset($total_data[date('Y-m-d H:i:s', strtotime($item->starttime))])) {
-            $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $item->nb_entry - $item->nb_exit;
-        } else {
-            $delta = 1;
-            while(isset($total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)])){
-                $delta += 1;
-            }
-            $total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)] = $item->nb_entry - $item->nb_exit;
+    foreach ($shelf_detections as $item) {
+        if (!isset($total_data[date('Y-m-d H:i:00', strtotime($item->starttime))])) {
+            $total_data[date('Y-m-d H:i:00', strtotime($item->starttime))] = 0;
         }
+        $total_data[date('Y-m-d H:i:00', strtotime($item->starttime))]++;
     }
 ?>
-<form action="{{route('admin.pit.past_analysis')}}" method="get" name="form1" id="form1">
+<form action="{{route('admin.shelf.past_analysis')}}" method="get" name="form1" id="form1">
 @csrf
     <input type="hidden" name="change_params" value="change"/>
     <div id="wrapper">
         <div class="breadcrumb">
         <ul>
-            <li><a href="{{route('admin.pit')}}">ピット入退場検知</a></li>
+            <li><a href="{{route('admin.shelf')}}">棚乱れ検知</a></li>
             <li>過去グラフ</li>
         </ul>
         </div>
@@ -68,10 +62,10 @@
             <div class="list">
                 <div class="inner active">
                     <div style="display: flex; position: relative;">
-                        <h3 class="title">ピット内人数推移</h3>
-                        <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['past_graph_pit']}})">ダッシュボートへ追加</button>
+                        {{-- <h3 class="title">ピット内人数推移</h3> --}}
+                        <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['past_graph_shelf']}})">ダッシュボートへ追加</button>
                     </div>
-                    <div class="chart-area" style="position: relative;">
+                    <div class="chart-area" style="position: relative;margin-top:60px;">
                         <div class="period-select-buttons">
                             <?php
                                 $time_period = '3';
@@ -125,63 +119,6 @@
                         <a class="next" onclick="moveXRange(1)">❯</a>
                         <canvas id="myLineChart1"></canvas>
                     </div>
-                    <div class="left-right">
-                        <div class="left-box">
-                            <h3 class="title">ピット内最大時間の超過検知</h3>
-                            <table class="table2 text-centre top50">
-                                <thead>
-                                    <tr>
-                                        <th>時間</th>
-                                        <th>検知条件</th>
-                                        {{-- <th>ピット内人数</th> --}}
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                @foreach ($pit_over_detections as $item)
-                                    <tr>
-                                        <td>{{$item->detect_time}}</td>
-                                        <td>{{$item->min_members.'人以上/'.$item->max_permission_time.'分超過'}}</td>
-                                        {{-- <td>{{isset($item->sum_in_pit) ? $item->sum_in_pit.'人' : ''}}</td> --}}
-                                        <td><a class="move-href" href="{{route("admin.pit.list")}}">検知リスト</a></td>
-                                    </tr>
-                                @endforeach
-                            </table>
-                        </div>
-                        <div class="right-box">
-                            <h3 class="title">入退場履歴</h3>
-                            <table class="table2 text-centre top50">
-                                <thead>
-                                    <tr>
-                                        <th>日時</th>
-                                        <th>検知条件</th>
-                                        <th>人数変化</th>
-                                        <th>ピット内人数</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                        $sum_data = array();
-                                        foreach ($pit_detections as $pit_item) {
-                                            $sum += ($pit_item->nb_entry - $pit_item->nb_exit);
-                                            $sum_data[$pit_item->id] = $sum;
-                                        }
-                                    ?>
-                                    @foreach (array_reverse($pit_detections) as $pit_item)
-                                        <tr>
-                                            <td>{{date('Y-m-d H:i:s', strtotime($pit_item->starttime))}}</td>
-                                            <td>{{$pit_item->nb_entry > $pit_item->nb_exit ? '入場':'退場'}}</td>
-                                            <td>
-                                                <span class="<?php echo ($pit_item->nb_entry > $pit_item->nb_exit)?'f-red':'f-blue'?>">
-                                                    {{($pit_item->nb_entry - $pit_item->nb_exit)}}
-                                                </span>
-                                            </td>
-                                            <td>{{$sum_data[$pit_item->id]}}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -201,6 +138,8 @@
                             <th>設置エリア</th>
                             <th>設置フロア</th>
                             <th>設置場所</th>
+                            <th>カラー</th>
+                            <th>定時撮影時刻</th>
                             <th>ルールの設定期間</th>
                             <th>カメラ画像確認</th>
                         </tr>
@@ -223,6 +162,8 @@
                             <td>{{$rule->location_name}}</td>
                             <td>{{$rule->floor_number}}</td>
                             <td>{{$rule->installation_position}}</td>
+                            <td><input disabled type="color" value = "{{$rule->color}}"></td>
+                            <td>{{$rule->hour.':'.($rule->mins<10?'0'.$rule->mins:$rule->mins)}}</td>
                             <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
                             <td>
                                 @if(Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg'))
@@ -235,7 +176,7 @@
                         @endforeach
                         @if(count($rules) == 0)
                         <tr>
-                            <td colspan="8">ピット入退場検知のルールがありません。ルールを設定してください</td>
+                            <td colspan="8">棚乱れ検知のルールがありません。ルールを設定してください</td>
                         </tr>
                         @endif
                         </tbody>
@@ -541,37 +482,31 @@
 
     function resortData(data, time_period){
         var temp = {};
-        var sum = 0;
         switch(time_period){
             case 'day':
                 Object.keys(data).map(date_time => {
                     var date = formatDateLine(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
+                    if (temp[date] == undefined) temp[date] = 0;
                     temp[date] += data[date_time];
                 })
                 break;
             case 'week':
                 Object.keys(data).map(date_time => {
                     var date = formatYearWeekNum(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
+                    if (temp[date] == undefined) temp[date] = 0;
                     temp[date] += data[date_time];
                 })
                 break;
             case 'month':
                 Object.keys(data).map(date_time => {
                     var date = formatYearMonth(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
+                    if (temp[date] == undefined) temp[date] = 0;
                     temp[date] += data[date_time];
                 })
                 break;
             default:
-                Object.keys(data).map(date_time => {
-                    sum += data[date_time];
-                    temp[date_time] = sum;
-                })
+                return data
+                break;
         }
         return temp;
     }
@@ -615,11 +550,7 @@
         while(cur_time.getTime() <= max_time.getTime()){
             time_labels.push(new Date(cur_time));
             point_radius.push(0);
-            if (y_data.length > 0){
-                y_data.push(y_data[y_data.length - 1]);
-            } else {
-                y_data.push(null);
-            }
+            y_data.push(null);
 
             if (time_period == 'day' || time_period == 'week' || time_period == 'month'){
                 var date_key = formatDateLine(cur_time);
@@ -636,11 +567,7 @@
                             if (new Date(time).getTime() != cur_time.getTime()) {
                                 time_labels.push(new Date(time));
                                 point_radius.push(0);
-                                if (y_data.length > 0){
-                                    y_data.push(y_data[y_data.length - 1]);
-                                } else {
-                                    y_data.push(null);
-                                }
+                                y_data.push(null);
                             }
                         } else {
                             time_labels.push(new Date(time));
@@ -680,14 +607,15 @@
             data: {
                 labels:time_labels,
                 datasets: [{
-                    label: '人',
-                    steppedLine:'before',
+                    label: '回',
                     data: y_data,
                     borderColor: "#42b688",
-                    backgroundColor: "rgba(66,182,136, 0.3)",
+                    // backgroundColor: "rgba(66,182,136, 0.3)",
                     pointBackgroundColor:'red',
                     radius:point_radius,
-                    fill:true
+                    lineTension:0,
+                    fill:false,
+                    spanGaps: true
                 }],
                 mousemove: function(){
                     return;
@@ -707,11 +635,11 @@
                     yAxes: [{
                         ticks: {
                             suggestedMax: Math.max(...y_data) + 1,
-                            suggestedMin: Math.min(...y_data) - 1,
+                            suggestedMin: 0,
                             stepSize: parseInt((Math.max(...y_data) + 2)/5) + 1,
                             fontSize: 20,
                             callback: function(value, index, values){
-                                return  value +  '人'
+                                return  value +  '回'
                             }
                         }
                     }],
@@ -740,7 +668,7 @@
             time_period:grpah_init_type,
             selected_rule:selected_rule
         }
-        saveSearchOptions('admin.pit.past_analysis', search_params);
+        saveSearchOptions('admin.shelf.past_analysis', search_params);
     }
     function addDashboard(block_type){
         var options = {
@@ -758,7 +686,7 @@
                 url : '/admin/CheckDetectData',
                 method: 'post',
                 data: {
-                    type:'pit',
+                    type:'shelf',
                     selected_rule:"<?php echo $selected_rule;?>",
                     endtime:formatDateLine(new Date($('#endtime').val())),
                     _token:$('meta[name="csrf-token"]').attr('content'),

@@ -55,7 +55,7 @@
                                         @else
                                             @if(count($camera->rules) < config('const.danger_max_figure_numbers'))
                                             <div class="radio">
-                                                <button type="button" class="edit" onclick="createRule({{$camera->id}})">追加登録</button>
+                                                <button type="button" class="edit" onclick="location.href='{{route('admin.danger.edit', ['danger' => $camera->rules[0]->id])}}'">追加登録</button>
                                                 <input class='text-camera-id' style="display: none" id="radio-{{$camera->id}}" name="selected_camera" value="">
                                             </div>
                                             @endif
@@ -67,7 +67,7 @@
                                 <td>{{isset($locations[$camera->location_id])?$locations[$camera->location_id]:''}}</td>
                                 <td>{{$camera->floor_number}}</td>
                                 <td>{{$camera->installation_position}}</td>
-                                <td>{{count($camera->rules)}}/3</td>
+                                <td>{{count($camera->rules)}}/{{config('const.danger_max_figure_numbers')}}</td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -88,12 +88,6 @@
         .notice-area{
             color: #999;
             margin-bottom: 8px;
-        }
-        .disabled-tr{
-            background: lightgray!important;
-        }
-        .disabled-tr > td{
-            background: lightgray!important;
         }
     </style>
     <script>

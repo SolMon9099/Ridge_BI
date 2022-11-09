@@ -14,7 +14,6 @@ use App\Models\Heatmap;
 use App\Models\LocationDrawing;
 use App\Service\SafieApiService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class CameraController extends AdminController
 {
@@ -25,13 +24,13 @@ class CameraController extends AdminController
 
         $floor_numbers = [];
         $all_cameras = CameraService::doSearch()->get()->all();
-        foreach($all_cameras as $camera){
+        foreach ($all_cameras as $camera) {
             $map_data = CameraMappingDetail::select()
                 ->where('camera_id', $camera->id)
                 ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
                 ->get()->first();
             if ($map_data != null) {
-                if (!in_array($map_data->floor_number, $floor_numbers)){
+                if (!in_array($map_data->floor_number, $floor_numbers)) {
                     $floor_numbers[] = $map_data->floor_number;
                 }
             }
@@ -57,10 +56,7 @@ class CameraController extends AdminController
                 $safie_service = new SafieApiService($camera->contract_no);
             }
             $camera_image_data = $safie_service->getDeviceImage($camera->camera_id);
-            // if ($camera_image_data != null) {
-            //     $camera_image_data = 'data:image/png;base64,'.base64_encode($camera_image_data);
-            // }
-            Storage::disk('recent_camera_image')->put($camera->camera_id.'.jpeg', $camera_image_data);
+
             $camera->img = $camera_image_data != null ? true : null;
         }
 

@@ -25,8 +25,8 @@ class PitService
             $pit_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no)->whereNull('cameras.deleted_at');
         }
         if ($params != null) {
-            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-                $pit_rules -> where(function($q) {
+            if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+                $pit_rules->where(function ($q) {
                     $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                     $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                     $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
@@ -70,12 +70,15 @@ class PitService
                 'cameras.contract_no',
                 'locations.name as location_name'
             )->leftJoin('cameras', 'cameras.id', '=', 'pit_detection_rules.camera_id')
-            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id')
+            ->whereIn('pit_detection_rules.id', function ($q) {
+                $q->select('rule_id')->from('pit_detections');
+            });
         if (Auth::guard('admin')->user()->contract_no != null) {
             $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $rules -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $rules->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
@@ -89,9 +92,9 @@ class PitService
 
     public static function saveData($params)
     {
-        if (isset($params['id']) && $params['id'] > 0){
+        if (isset($params['id']) && $params['id'] > 0) {
             $cur_rule = self::getPitInfoById($params['id'])->first();
-            if ($cur_rule == null){
+            if ($cur_rule == null) {
                 return '編集中にルールが変更されたため登録出来ませんでした';
             }
         }
@@ -246,8 +249,8 @@ class PitService
         if (Auth::guard('admin')->user()->contract_no != null) {
             $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $query -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $query->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
@@ -266,8 +269,8 @@ class PitService
             $camera_query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
         $camera_query->leftJoin('locations', 'locations.id', 'cameras.location_id');
-        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')){
-            $camera_query -> where(function($q) {
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $camera_query->where(function ($q) {
                 $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');

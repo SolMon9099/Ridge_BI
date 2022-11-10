@@ -70,7 +70,10 @@ class ThiefService
                 'cameras.contract_no',
                 'locations.name as location_name'
             )->leftJoin('cameras', 'cameras.id', '=', 'thief_detection_rules.camera_id')
-            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id')
+            ->whereIn('thief_detection_rules.id', function ($q) {
+                $q->select('rule_id')->from('thief_detections');
+            });
         if (Auth::guard('admin')->user()->contract_no != null) {
             $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
@@ -117,7 +120,7 @@ class ThiefService
             foreach ($rule_data as $rule) {
                 if (isset($rule->id) && $rule->id > 0) {
                     $cur_rule = ThiefDetectionRule::find($rule->id);
-                    if ($cur_rule == null){
+                    if ($cur_rule == null) {
                         return '編集中にルールが変更されたため登録出来ませんでした';
                     }
                     if (!(isset($rule->is_changed) && $rule->is_changed == true)) {

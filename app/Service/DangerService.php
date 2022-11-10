@@ -71,7 +71,10 @@ class DangerService
                 'cameras.contract_no',
                 'locations.name as location_name'
             )->leftJoin('cameras', 'cameras.id', '=', 'danger_area_detection_rules.camera_id')
-            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id')
+            ->whereIn('danger_area_detection_rules.id', function ($q) {
+                $q->select('rule_id')->from('danger_area_detections');
+            });
         if (Auth::guard('admin')->user()->contract_no != null) {
             $danger_rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }

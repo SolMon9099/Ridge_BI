@@ -230,6 +230,8 @@ class ShelfController extends AdminController
             } else {
                 $rule->floor_number = '';
             }
+            $last_detection = DB::table('shelf_detections')->where('rule_id', $rule->id)->orderByDesc('starttime')->get()->first();
+            $rule->img_path = $last_detection != null ? $last_detection->thumb_img_path : null;
         }
 
         return view('admin.shelf.list')->with([
@@ -379,6 +381,8 @@ class ShelfController extends AdminController
             if ($request['selected_rule'] == $rule->id) {
                 $selected_rule_object = $rule;
             }
+            $last_detection = DB::table('shelf_detections')->where('rule_id', $rule->id)->orderByDesc('starttime')->get()->first();
+            $rule->img_path = $last_detection != null ? $last_detection->thumb_img_path : null;
         }
         $search_params = [];
         if ($selected_rule_object != null) {

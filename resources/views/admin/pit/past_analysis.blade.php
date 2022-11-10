@@ -203,6 +203,7 @@
                             <th>設置場所</th>
                             <th>ルールの設定期間</th>
                             <th>カメラ画像確認</th>
+                            <th>詳細</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -224,13 +225,8 @@
                             <td>{{$rule->floor_number}}</td>
                             <td>{{$rule->installation_position}}</td>
                             <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
-                            <td>
-                                @if(Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg'))
-                                    <img width="100px" src="{{asset('storage/recent_camera_image/').'/'.$rule->device_id.'.jpeg'}}"/>
-                                @else
-                                    カメラ停止中
-                                @endif
-                            </td>
+                            <td><img width="100px" src="{{asset('storage/thumb').'/'.$rule->img_path}}"/></td>
+                            <td><a class="rule-detail-link" onclick="location.href='{{route('admin.pit.rule_view').'?id='.$rule->id}}'">ルール詳細>></a></td>
                         </tr>
                         @endforeach
                         @if(count($rules) == 0)

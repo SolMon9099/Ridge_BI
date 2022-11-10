@@ -70,7 +70,10 @@ class ShelfService
                 'cameras.contract_no',
                 'locations.name as location_name'
             )->leftJoin('cameras', 'cameras.id', '=', 'shelf_detection_rules.camera_id')
-            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id')
+            ->whereIn('shelf_detection_rules.id', function ($q) {
+                $q->select('rule_id')->from('shelf_detections');
+            });
         if (Auth::guard('admin')->user()->contract_no != null) {
             $rules->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
         }
@@ -117,7 +120,7 @@ class ShelfService
         foreach ($rule_data as $rule_item) {
             if (isset($rule_item->id) && $rule_item->id > 0) {
                 $cur_rule = ShelfDetectionRule::find($rule_item->id);
-                if ($cur_rule == null){
+                if ($cur_rule == null) {
                     return '編集中にルールが変更されたため登録出来ませんでした';
                 }
                 if (!(isset($rule_item->is_changed) && $rule_item->is_changed == true)) {

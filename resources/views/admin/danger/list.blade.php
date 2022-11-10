@@ -149,6 +149,7 @@
                     <th>カラー</th>
                     <th>ルールの設定期間</th>
                     <th>カメラ画像確認</th>
+                    <th>詳細</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -184,13 +185,8 @@
                         </td>
                         <td><input disabled type="color" value = "{{$rule->color}}"></td>
                         <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
-                        <td>
-                            @if($rule->img != null)
-                                <img width="100px" src="{{$rule->img}}"/>
-                            @else
-                                カメラ停止中
-                            @endif
-                        </td>
+                        <td><img width="100px" src="{{asset('storage/thumb').'/'.$rule->img_path}}"/></td>
+                        <td><a class="rule-detail-link" onclick="location.href='{{route('admin.danger.rule_view').'?id='.$rule->id}}'">ルール詳細>></a></td>
                     </tr>
                     @endforeach
                     @if(count($rules) == 0)

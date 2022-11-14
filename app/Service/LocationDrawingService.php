@@ -55,7 +55,7 @@ class LocationDrawingService
 
             return $cur_Drawing->save();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -64,7 +64,7 @@ class LocationDrawingService
         if (is_object($cur_Drawing)) {
             return $cur_Drawing->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 

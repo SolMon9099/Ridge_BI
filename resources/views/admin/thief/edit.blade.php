@@ -17,8 +17,7 @@
         </div>
         <div class="flow">
             <ul>
-                <li><span>Step.1</span>カメラを選択</li>
-                <li class="active"><span>Step.2</span>エリアを選択</li>
+                <li class="active">エリア選択・検知設定</li>
             </ul>
         </div>
         <form action="{{route('admin.thief.store')}}" method="post" name="form1" id="form_thief_rule">

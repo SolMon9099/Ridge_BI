@@ -12,6 +12,8 @@ use App\Service\ThiefService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Heatmap;
+use App\Models\DangerAreaDetection;
+use App\Models\PitDetection;
 
 class DetectionController extends Controller
 {
@@ -27,27 +29,27 @@ class DetectionController extends Controller
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 400);
         }
         if (!isset($request['analyze_result'])) {
             Log::info('解析ルールがありません。-------------');
 
-            return ['error' => '解析ルールがありません。'];
+            return response()->json(['error' => '解析ルールがありません。'], 400);
         }
         if (!(isset($request['analyze_result']['rect_id']) && $request['analyze_result']['rect_id'] > 0)) {
             Log::info('解析ルールIDがありません。-------------');
 
-            return ['error' => '解析ルールIDがありません。'];
+            return response()->json(['error' => '解析ルールIDがありません。'], 400);
         }
         if (!(isset($request['analyze_result']['detect_start_date']) && $request['analyze_result']['detect_start_date'] != '')) {
             Log::info('検知開始日時がありません。-------------');
 
-            return ['error' => '検知開始日時がありません。'];
+            return response()->json(['error' => '検知開始日時がありません。'], 400);
         }
         if (!(isset($request['analyze_result']['action_id']) && $request['analyze_result']['action_id'] > 0)) {
             Log::info('アクションデータがありません。-------------');
 
-            return ['error' => 'アクションデータがありません。'];
+            return response()->json(['error' => 'アクションデータがありません。'], 400);
         }
         $rule_id = $request['analyze_result']['rect_id'];
         Log::info('rule id = '.$rule_id);
@@ -55,10 +57,10 @@ class DetectionController extends Controller
         $danger_service = new DangerService();
         $camera_data = $danger_service->getCameraByRuleID($rule_id);
         if ($camera_data == null) {
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 500);
         }
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 500);
         }
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
@@ -98,7 +100,7 @@ class DetectionController extends Controller
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
             Log::info('危険エリア侵入検知解析結果送受信API（AI→BI）終了');
 
-            return ['success' => '送信成功'];
+            return response()->json(['success' => '送信成功'], 200);
         } else {
             if ($request_id != null) {
                 $http_code = str_replace('http_code_', '', $request_id);
@@ -121,9 +123,18 @@ class DetectionController extends Controller
                 //     Storage::disk('temp')->put('media_request_503\\'.$camera_data->camera_id.'_danger_area_'.$record_start_time.'.json', json_encode($temp_save_data));
                 // }
             }
+            $detection_model = new DangerAreaDetection();
+            $detection_model->detection_action_id = $detection_action_id;
+            $detection_model->camera_id = $camera_data->id;
+            $detection_model->rule_id = $rule_id;
+            $detection_model->video_file_path = '';
+            $detection_model->starttime = $start_datetime;
+            $detection_model->endtime = $record_end_time_object->format('Y-m-d H:i:s');
+            $detection_model->thumb_img_path = '';
+            $detection_model->save();
             Log::info('危険エリア侵入検知解析結果送受信API（AI→BI）終了');
 
-            return ['error' => '送信失敗'];
+            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 500);
         }
     }
 
@@ -135,32 +146,32 @@ class DetectionController extends Controller
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 400);
         }
         if (!isset($request['analyze_result'])) {
             Log::info('解析ルールがありません。-------------');
 
-            return ['error' => '解析ルールがありません。'];
+            return response()->json(['error' => '解析ルールがありません。'], 400);
         }
         if (!(isset($request['analyze_result']['rect_id']) && $request['analyze_result']['rect_id'] > 0)) {
             Log::info('解析ルールIDがありません。-------------');
 
-            return ['error' => '解析ルールIDがありません。'];
+            return response()->json(['error' => '解析ルールIDがありません。'], 400);
         }
         if (!(isset($request['analyze_result']['detect_start_date']) && $request['analyze_result']['detect_start_date'] != '')) {
             Log::info('検知開始日時がありません。-------------');
 
-            return ['error' => '検知開始日時がありません。'];
+            return response()->json(['error' => '検知開始日時がありません。'], 400);
         }
         $rule_id = $request['analyze_result']['rect_id'];
         Log::info('rule id = '.$rule_id);
         $shelf_service = new ShelfService();
         $camera_data = $shelf_service->getCameraByRuleID($rule_id);
         if ($camera_data == null) {
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 500);
         }
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 500);
         }
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
@@ -199,7 +210,7 @@ class DetectionController extends Controller
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
             Log::info('棚乱れ検知ルール通知解析結果送受信API（AI→BI）終了');
 
-            return ['success' => '送信成功'];
+            return response()->json(['success' => '送信成功'], 200);
         } else {
             if ($request_id != null) {
                 $http_code = str_replace('http_code_', '', $request_id);
@@ -223,7 +234,7 @@ class DetectionController extends Controller
             }
             Log::info('棚乱れ検知ルール通知解析結果送受信API（AI→BI）終了');
 
-            return ['error' => '送信失敗'];
+            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 500);
         }
     }
 
@@ -235,32 +246,32 @@ class DetectionController extends Controller
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 400);
         }
         if (!isset($request['analyze_result'])) {
             Log::info('解析ルールがありません。-------------');
 
-            return ['error' => '解析ルールがありません。'];
+            return response()->json(['error' => '解析ルールがありません。'], 400);
         }
         if (!(isset($request['analyze_result']['rect_id']) && $request['analyze_result']['rect_id'] > 0)) {
             Log::info('解析ルールIDがありません。-------------');
 
-            return ['error' => '解析ルールIDがありません。'];
+            return response()->json(['error' => '解析ルールIDがありません。'], 400);
         }
         if (!(isset($request['analyze_result']['detect_start_date']) && $request['analyze_result']['detect_start_date'] != '')) {
             Log::info('検知開始日時がありません。-------------');
 
-            return ['error' => '検知開始日時がありません。'];
+            return response()->json(['error' => '検知開始日時がありません。'], 400);
         }
         $rule_id = $request['analyze_result']['rect_id'];
         Log::info('rule id = '.$rule_id);
         $pit_service = new PitService();
         $camera_data = $pit_service->getCameraByRuleID($rule_id);
         if ($camera_data == null) {
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 500);
         }
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 500);
         }
         $nb_entry = 0;
         $nb_exit = 0;
@@ -309,7 +320,7 @@ class DetectionController extends Controller
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
             Log::info('ピット入退場解析結果送受信API（AI→BI）終了');
 
-            return ['success' => '送信成功'];
+            return response()->json(['success' => '送信成功'], 200);
         } else {
             if ($request_id != null) {
                 $http_code = str_replace('http_code_', '', $request_id);
@@ -333,10 +344,20 @@ class DetectionController extends Controller
                 //     Storage::disk('temp')->put('media_request_503\\'.$camera_data->camera_id.'_pit_'.$record_start_time.'.json', json_encode($temp_save_data));
                 // }
             }
+            $detection_model = new PitDetection();
+            $detection_model->nb_exit = $nb_exit;
+            $detection_model->nb_entry = $nb_entry;
+            $detection_model->camera_id = $camera_data->id;
+            $detection_model->rule_id = $rule_id;
+            $detection_model->video_file_path = '';
+            $detection_model->starttime = $start_datetime;
+            $detection_model->endtime = $record_end_time_object->format('Y-m-d H:i:s');
+            $detection_model->thumb_img_path = '';
+            $detection_model->save();
 
             Log::info('ピット入退場解析結果送受信API（AI→BI）終了');
 
-            return ['error' => '送信失敗'];
+            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 500);
         }
     }
 
@@ -348,22 +369,22 @@ class DetectionController extends Controller
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 400);
         }
         if (!isset($request['analyze_result'])) {
             Log::info('解析ルールがありません。-------------');
 
-            return ['error' => '解析ルールがありません。'];
+            return response()->json(['error' => '解析ルールがありません。'], 400);
         }
         if (!(isset($request['analyze_result']['rect_id']) && $request['analyze_result']['rect_id'] > 0)) {
             Log::info('解析ルールIDがありません。-------------');
 
-            return ['error' => '解析ルールIDがありません。'];
+            return response()->json(['error' => '解析ルールIDがありません。'], 400);
         }
         if (!(isset($request['analyze_result']['detect_start_date']) && $request['analyze_result']['detect_start_date'] != '')) {
             Log::info('検知開始日時がありません。-------------');
 
-            return ['error' => '検知開始日時がありません。'];
+            return response()->json(['error' => '検知開始日時がありません。'], 400);
         }
 
         $rule_id = $request['analyze_result']['rect_id'];
@@ -371,10 +392,10 @@ class DetectionController extends Controller
         $thief_service = new ThiefService();
         $camera_data = $thief_service->getCameraByRuleID($rule_id);
         if ($camera_data == null) {
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 500);
         }
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 500);
         }
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
@@ -413,7 +434,7 @@ class DetectionController extends Controller
             Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode($temp_save_data));
             Log::info('大量盗難解析結果送受信API（AI→BI）終了');
 
-            return ['success' => '送信成功'];
+            return response()->json(['success' => '送信成功'], 200);
         } else {
             if ($request_id != null) {
                 $http_code = str_replace('http_code_', '', $request_id);
@@ -437,7 +458,7 @@ class DetectionController extends Controller
             }
             Log::info('大量盗難解析結果送受信API（AI→BI）終了');
 
-            return ['error' => '送信失敗'];
+            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 500);
         }
     }
 
@@ -449,7 +470,7 @@ class DetectionController extends Controller
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
-            return ['error' => 'デバイスがありません。'];
+            return response()->json(['error' => 'デバイスがありません。'], 400);
         }
         // if (!isset($request['analyze_result'])) {
         //     Log::info('計算結果がありません。-------------');
@@ -459,7 +480,7 @@ class DetectionController extends Controller
         if (!(isset($request['heatmap']) && $request['heatmap'] != '' && is_array($request['heatmap']))) {
             Log::info('ヒートマップデータがありません。-------------');
 
-            return ['error' => 'ヒートマップデータがありません。'];
+            return response()->json(['error' => 'ヒートマップデータがありません。'], 400);
         }
         $quaility_score = 0.82;
         if (isset($request['quality_score']) && $request['quality_score'] > 0) {
@@ -492,6 +513,6 @@ class DetectionController extends Controller
 
         Log::info('ヒートマップ計算結果送受信API（AI→BI）終了');
 
-        return ['success' => '送信成功'];
+        return response()->json(['success' => '送信成功'], 200);
     }
 }

@@ -78,14 +78,25 @@
                     $detection_content .= 'ピット内人数 '.$item->sum_in_pit.'人　';
                     $detection_content .= $item->min_members.'人以上/'.$item->max_permission_time.'分超過';
                 }
+                $video_enabled = false;
+                if (isset($item->thumb_img_path) && $item->thumb_img_path != '' && isset($item->video_file_path) && $item->video_file_path != ''){
+                    $video_enabled = true;
+                }
             ?>
             <li>
                 <div class="movie" video-path = '{{$video_path}}'>
-                    <a data-target="movie0000" onclick="videoPlay('{{$video_path}}', '{{$item->red_points}}', '{{$item->blue_points}}', '{{$detection_content}}')" class="modal-open setting2 play">
+                    @if($video_enabled)
+                        <a data-target="movie0000" onclick="videoPlay('{{$video_path}}', '{{$item->red_points}}', '{{$item->blue_points}}', '{{$detection_content}}')" class="modal-open setting2 play">
+                            <img src="{{$thumb_path}}"/>
+                        </a>
+                    @else
                         <img src="{{$thumb_path}}"/>
-                    </a>
+                    @endif
                     <div class="cap">
                         <time>{{date('Y/m/d H:i', strtotime($item->detect_time))}}</time>
+                        @if($video_enabled == false)
+                            <br/><time>検知時点の映像は、Safieのマイページにてご確認ください</time>
+                        @endif
                     </div>
                 </div>
                 <div class="text">
@@ -116,7 +127,7 @@
                                 <dt><p>ルール名</p></dt>
                                 <dd>{{isset($item->rule_name) ? $item->rule_name : ''}}</dd>
                             </dl>
-                            <dl class="rule-detail-link" onclick="location.href='{{route('admin.pit.rule_view').'?id='.$item->rule_id}}'">ルール詳細>></dl>
+                            <a class="rule-detail-link" href="{{route('admin.pit.rule_view').'?id='.$item->rule_id}}" target="_blank">ルール詳細>></a>
                         </li>
 
                     </ul>
@@ -137,63 +148,74 @@
         <div class="listing">
             <h3>検索対象となる、ルールを選択してください</h3>
             <div class="scroll active sp-pl0">
-            <table class="table2 text-centre">
-                <thead>
-                <tr>
-                    <th class="w10"></th>
-                    <th>ルール名</th>
-                    <th>カメラNo</th>
-                    <th>設置エリア</th>
-                    <th>設置フロア</th>
-                    <th>設置場所</th>
-                    <th>ルールの設定期間</th>
-                    <th>カメラ画像確認</th>
-                    <th>詳細</th>
-                </tr>
-                </thead>
-                <tbody>
-                    <?php
-                        $selected_rule_ids = old('rule_ids', (isset($request) && $request->has('rule_ids'))?$request->rule_ids:'');
-                        if ($selected_rule_ids != ''){
-                            $selected_rule_ids = json_decode($selected_rule_ids);
-                        } else {
-                            $selected_rule_ids = [];
-                        }
-                    ?>
-                    @foreach ($rules as $rule)
-                    <tr>
-                        <td class="stick-t">
-                            <div class="checkbtn-wrap">
-                                @if (in_array($rule->id, $selected_rule_ids))
-                                    <input value = '{{$rule->id}}' class='rule_checkbox' type="checkbox" id="{{'rule-'.$rule->id}}" checked>
-                                @else
-                                    <input value = '{{$rule->id}}' class='rule_checkbox' type="checkbox" id="{{'rule-'.$rule->id}}">
-                                @endif
-                                <label for="{{'rule-'.$rule->id}}" class="custom-style"></label>
-                            </div>
-                        </td>
-                        <td>{{$rule->name}}</td>
-                        <td>{{$rule->serial_no}}</td>
-                        <td>{{$rule->location_name}}</td>
-                        <td>{{$rule->floor_number}}</td>
-                        <td>{{$rule->installation_position}}</td>
-                        <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
-                        <td><img width="100px" src="{{asset('storage/thumb').'/'.$rule->img_path}}"/></td>
-                        <td><a class="rule-detail-link" onclick="location.href='{{route('admin.pit.rule_view').'?id='.$rule->id}}'">ルール詳細>></a></td>
-                    </tr>
-                    @endforeach
-                    @if(count($rules) == 0)
-                    <tr>
-                        <td colspan="8">登録されたピット入退場検知ルールがありません。ルールを設定してください</td>
-                    </tr>
+                <div class="modal-search-area">
+                    @if(isset($rule_cameras) && count($rule_cameras) > 0)
+                    <label>カメラNo</label>
+                    <select onchange="changeCamera(this)">
+                        <option value=''></option>
+                        @foreach ($rule_cameras as $id => $camera)
+                            <option value={{$id}}>{{$camera['serial_no']}}</option>
+                        @endforeach
+                    </select>
                     @endif
-                </tbody>
-            </table>
-            <div class="modal-set">
-                @if(count($rules) > 0)
-                <button onclick="selectRule()" class="modal-close">設 定</button>
-                @endif
-            </div>
+                </div>
+                <table class="table2 text-centre">
+                    <thead>
+                    <tr>
+                        <th class="w10"></th>
+                        <th>ルール名</th>
+                        <th>カメラNo</th>
+                        <th>設置エリア</th>
+                        <th>設置フロア</th>
+                        <th>設置場所</th>
+                        <th>ルールの設定期間</th>
+                        <th>カメラ画像確認</th>
+                        <th>詳細</th>
+                    </tr>
+                    </thead>
+                    <tbody class="rules-tbody">
+                        <?php
+                            $selected_rule_ids = old('rule_ids', (isset($request) && $request->has('rule_ids'))?$request->rule_ids:'');
+                            if ($selected_rule_ids != ''){
+                                $selected_rule_ids = json_decode($selected_rule_ids);
+                            } else {
+                                $selected_rule_ids = [];
+                            }
+                        ?>
+                        @foreach ($rules as $rule)
+                        <tr>
+                            <td class="stick-t">
+                                <div class="checkbtn-wrap">
+                                    @if (in_array($rule->id, $selected_rule_ids))
+                                        <input value = '{{$rule->id}}' class='rule_checkbox' type="checkbox" id="{{'rule-'.$rule->id}}" checked>
+                                    @else
+                                        <input value = '{{$rule->id}}' class='rule_checkbox' type="checkbox" id="{{'rule-'.$rule->id}}">
+                                    @endif
+                                    <label for="{{'rule-'.$rule->id}}" class="custom-style"></label>
+                                </div>
+                            </td>
+                            <td>{{$rule->name}}</td>
+                            <td>{{$rule->serial_no}}</td>
+                            <td>{{$rule->location_name}}</td>
+                            <td>{{$rule->floor_number}}</td>
+                            <td>{{$rule->installation_position}}</td>
+                            <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
+                            <td><img width="100px" src="{{asset('storage/thumb').'/'.$rule->img_path}}"/></td>
+                            <td><a class="rule-detail-link" href="{{route('admin.pit.rule_view').'?id='.$rule->id}}" target="_blank">ルール詳細>></a></td>
+                        </tr>
+                        @endforeach
+                        @if(count($rules) == 0)
+                        <tr>
+                            <td colspan="8">登録されたピット入退場検知ルールがありません。ルールを設定してください</td>
+                        </tr>
+                        @endif
+                    </tbody>
+                </table>
+                <div class="modal-set">
+                    @if(count($rules) > 0)
+                    <button onclick="selectRule()" class="modal-close">設 定</button>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -298,6 +320,26 @@
             endtime:formatDateLine($('#endtime').val())
         };
         addToToppage(block_type, options);
+    }
+
+    function changeCamera(e){
+        $.ajax({
+            url : '/admin/AjaxGetRules',
+            method: 'post',
+            data: {
+                type:'pit',
+                page:'list',
+                _token:$('meta[name="csrf-token"]').attr('content'),
+                camera_id:e.value,
+            },
+            error : function(){
+                console.log('failed');
+            },
+            success: function(result){
+                console.log('success', result);
+                $('.rules-tbody').html(result);
+            }
+        })
     }
     $(document).ready(function() {
         setInterval(() => {

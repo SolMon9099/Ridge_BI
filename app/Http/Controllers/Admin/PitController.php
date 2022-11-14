@@ -71,7 +71,7 @@ class PitController extends AdminController
     public function cameras_for_rule(Request $request)
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
         $pit_rules = PitService::doSearch()->get()->all();
         $temp = [];
@@ -105,7 +105,7 @@ class PitController extends AdminController
     public function create_rule(PitRequest $request)
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
 
         $pit_rules = PitService::getRulesByCameraID($request['selected_camera']);
@@ -180,7 +180,7 @@ class PitController extends AdminController
     public function store(PitRequest $request)
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
         $operation_type = '変更';
         if (isset($request['operation_type']) && $request['operation_type'] == 'register') {
@@ -247,6 +247,7 @@ class PitController extends AdminController
             $item->floor_number = $floor_data[$item->camera_id];
         }
         $rules = PitService::getAllRules()->get()->all();
+        $rule_cameras = [];
         foreach ($rules as $rule) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $rule->camera_id)
@@ -259,12 +260,19 @@ class PitController extends AdminController
             }
             $last_detection = DB::table('pit_detections')->where('rule_id', $rule->id)->orderByDesc('starttime')->get()->first();
             $rule->img_path = $last_detection != null ? $last_detection->thumb_img_path : null;
+            if (!in_array($rule->camera_id, array_keys($rule_cameras))) {
+                $rule_cameras[$rule->camera_id] = [
+                    'serial_no' => $rule->serial_no,
+                    'device_id' => $rule->device_id,
+                ];
+            }
         }
 
         return view('admin.pit.list')->with([
             'pit_detections' => (array) $pit_detections,
             'request' => $request,
             'rules' => $rules,
+            'rule_cameras' => $rule_cameras,
             'from_top' => $from_top,
             'last_number' => $last_record != null ? $last_record->id : null,
         ]);
@@ -396,6 +404,7 @@ class PitController extends AdminController
             }
         }
         $selected_rule_object = null;
+        $rule_cameras = [];
         foreach ($rules as $rule) {
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $rule->camera_id)
@@ -411,6 +420,15 @@ class PitController extends AdminController
             }
             $last_detection = DB::table('pit_detections')->where('rule_id', $rule->id)->orderByDesc('starttime')->get()->first();
             $rule->img_path = $last_detection != null ? $last_detection->thumb_img_path : null;
+            if (!in_array($rule->camera_id, array_keys($rule_cameras))) {
+                $rule_cameras[$rule->camera_id] = [
+                    'serial_no' => $rule->serial_no,
+                    'device_id' => $rule->device_id,
+                ];
+            }
+        }
+        if ($request['selected_rule'] > 0 && $selected_rule_object == null){
+            $selected_rule_object = PitService::doSearch(['selected_rule' => $request['selected_rule']])->get()->first();
         }
         $search_params = [];
         if ($selected_rule_object != null) {
@@ -436,6 +454,7 @@ class PitController extends AdminController
             'pit_over_detections' => array_reverse($pit_over_detections),
             'request_params' => (array) $search_params,
             'rules' => $rules,
+            'rule_cameras' => $rule_cameras,
             'selected_rule_object' => $selected_rule_object,
             'from_top' => $from_top,
             'last_number' => count($pit_detections) > 0 ? $pit_detections[0]->id : null,

@@ -26,7 +26,7 @@ class AdminPermission
             if ($admin_flag) {
                 foreach (config('const.header_menus_routes') as $header_id => $header_route) {
                     if (strpos($header_route, $cur_route) !== false && !in_array($header_id, $headers)) {
-                        abort(403);
+                        return redirect()->route('admin.top');
                     }
                 }
             } else {
@@ -34,7 +34,7 @@ class AdminPermission
                     $allowed_pages = AuthorityGroup::query()->where('authority_id', $login_user->authority_id)->where('access_flag', 1)
                         ->where('contract_no', $login_user->contract_no)->get()->all();
                     if (count($allowed_pages) == 0) {
-                        abort(403);
+                        return redirect()->route('admin.top');
                     }
                     $check_flag = false;
                     foreach ($allowed_pages as $record) {
@@ -43,12 +43,12 @@ class AdminPermission
                         }
                     }
                     if ($check_flag != true) {
-                        abort(403);
+                        return redirect()->route('admin.top');
                     }
                 }
                 foreach (config('const.header_menus_routes') as $header_id => $header_route) {
                     if (strpos($header_route, $cur_route) !== false && !in_array($header_id, $headers)) {
-                        abort(403);
+                        return redirect()->route('admin.top');
                     }
                 }
             }

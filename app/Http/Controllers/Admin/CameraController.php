@@ -71,7 +71,7 @@ class CameraController extends AdminController
     public function create()
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
         $locations = LocationService::getAllLocationNames();
         $drawing_data = LocationDrawingService::getDrawingDataObject($locations);
@@ -131,7 +131,7 @@ class CameraController extends AdminController
     public function store_mapping(Request $request)
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
         $camera_mapping_info = json_decode($request['camera_mapping_info']);
         if (CameraService::storeMapping($camera_mapping_info)) {
@@ -184,7 +184,7 @@ class CameraController extends AdminController
     public function create_drawing()
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
         $locations = LocationService::getAllLocationNames();
 
@@ -196,7 +196,7 @@ class CameraController extends AdminController
     public function store(CameraRequest $request)
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
         if (CameraService::doCreate($request)) {
             $request->session()->flash('success', '登録しました。');
@@ -212,7 +212,7 @@ class CameraController extends AdminController
     public function update(CameraRequest $request, Camera $camera)
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
         if (CameraService::doUpdate($request, $camera)) {
             $request->session()->flash('success', '変更しました。');
@@ -241,7 +241,7 @@ class CameraController extends AdminController
     public function store_drawing(LocationDrawingRequest $request)
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
         if (LocationDrawingService::doCreate($request)) {
             $request->session()->flash('success', '登録しました。');
@@ -257,7 +257,7 @@ class CameraController extends AdminController
     public function update_drawing(LocationDrawingRequest $request, LocationDrawing $drawing)
     {
         if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            abort(403);
+            return redirect()->route('admin.top');
         }
         if (LocationDrawingService::doUpdate($request, $drawing)) {
             $request->session()->flash('success', '変更しました。');

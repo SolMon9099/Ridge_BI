@@ -4,8 +4,7 @@ namespace App\Service;
 
 use App\Models\NotificationMsg;
 use App\Models\NotificationGroup;
-use Auth;
-
+use Illuminate\Support\Facades\Auth;
 class NotificationMsgService
 {
     public static function doCreate($params)
@@ -28,7 +27,7 @@ class NotificationMsgService
             $cur_msg->updated_by = Auth::guard('admin')->user()->id;
             return $cur_msg->save();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -37,7 +36,7 @@ class NotificationMsgService
         if (is_object($cur_msg)) {
             return $cur_msg->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 

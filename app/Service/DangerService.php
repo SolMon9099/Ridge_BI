@@ -43,23 +43,26 @@ class DangerService
             if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
                 $danger_rules->where('danger_area_detection_rules.camera_id', $params['selected_camera']);
             }
-            if (isset($params) && $params->has('location') && $params->location > 0) {
-                $danger_rules->where('cameras.location_id', $params->location);
+            if (isset($params['selected_rule']) && $params['selected_rule'] > 0) {
+                $danger_rules->where('danger_area_detection_rules.id', $params['selected_rule']);
             }
-            if (isset($params) && $params->has('installation_position') && $params->installation_position != '') {
-                $danger_rules->where('cameras.installation_position', 'like', '%'.$params->installation_position.'%');
+            if (isset($params['location']) && $params['location'] > 0) {
+                $danger_rules->where('cameras.location_id', $params['location']);
             }
-            if (isset($params) && $params->has('floor_number') && $params->floor_number != '') {
+            if (isset($params['installation_position']) && $params['installation_position'] != '') {
+                $danger_rules->where('cameras.installation_position', 'like', '%'.$params['installation_position'].'%');
+            }
+            if (isset($params['floor_number']) && $params['floor_number'] != '') {
                 $danger_rules->leftJoin('camera_mapping_details as map', 'cameras.id', 'map.camera_id')->whereNull('map.deleted_at')
                     ->leftJoin('location_drawings as drawing', 'drawing.id', 'map.drawing_id')->whereNull('drawing.deleted_at')
-                    ->where('drawing.floor_number', 'LIKE', '%'.$params->floor_number.'%');
+                    ->where('drawing.floor_number', 'LIKE', '%'.$params['floor_number'].'%');
             }
         }
 
         return $danger_rules;
     }
 
-    public static function getAllRules()
+    public static function getAllRules($params = null)
     {
         $danger_rules = DB::table('danger_area_detection_rules')
             ->select(
@@ -84,6 +87,14 @@ class DangerService
                 $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
             });
+        }
+        if ($params != null) {
+            if (isset($params['camera_id']) && $params['camera_id'] > 0) {
+                $danger_rules->where('danger_area_detection_rules.camera_id', $params['camera_id']);
+            }
+            if (isset($params['action_id']) && $params['action_id'] > 0) {
+                $danger_rules->where('danger_area_detection_rules.action_id', 'Like', '%'.$params['action_id'].'%');
+            }
         }
 
         $danger_rules->orderByRaw('-danger_area_detection_rules.deleted_at', 'DESC')->orderByDesc('danger_area_detection_rules.updated_at');
@@ -114,7 +125,13 @@ class DangerService
                     }
                 }
             }
-            DangerAreaDetectionRule::query()->where('camera_id', $camera_id)->whereNotIn('id', $unchanged_ids)->delete();
+            $delete_query = DangerAreaDetectionRule::query()->where('camera_id', $camera_id)->whereNotIn('id', $unchanged_ids);
+            // $clone_delete_query = clone $delete_query;
+            // $delete_rules = $clone_delete_query->get()->all();
+            // if (count($delete_rules) > 0){
+            //     TopService::requestStoptoAI($delete_rules, 'danger', $camera_id);
+            // }
+            $delete_query->delete();
             foreach ($rule_data as $rule_item) {
                 if (isset($rule_item->id) && $rule_item->id > 0 && !(isset($rule_item->is_changed) && $rule_item->is_changed == true)) {
                     continue;
@@ -143,7 +160,7 @@ class DangerService
         if (is_object($cur_Danger)) {
             return $cur_Danger->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -164,7 +181,7 @@ class DangerService
     public static function getCameraByRuleID($rule_id)
     {
         $res = null;
-        $rule_data = self::getDangerInfoById($rule_id)->first();
+        $rule_data = self::getDangerInfoById($rule_id, false)->first();
         if (isset($rule_data)) {
             $camera_id = $rule_data->camera_id;
             $res = CameraService::getCameraInfoById($camera_id);

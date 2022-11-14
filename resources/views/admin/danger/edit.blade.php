@@ -26,7 +26,7 @@
         @if(!isset($view_only))
         <div class="flow">
             <ul>
-            <li class="active"><span>Step.2</span>エリア選択・検知設定</li>
+            <li class="active">エリア選択・検知設定</li>
             </ul>
         </div>
         @endif

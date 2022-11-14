@@ -102,14 +102,26 @@
                     } else {
                         $thumb_path = asset('assets/admin/img/samplepic.png');
                     }
+                    $video_enabled = false;
+                    if (isset($item->thumb_img_path) && $item->thumb_img_path != '' && isset($item->video_file_path) && $item->video_file_path != ''){
+                        $video_enabled = true;
+                    }
                 ?>
                 <li>
                     <div class="movie" video-path = '{{$video_path}}'>
-                        <a data-target="movie0000" onclick="videoPlay('{{$video_path}}')" class="modal-open setting2 play">
+                        @if($video_enabled)
+                            <a data-target="movie0000" onclick="videoPlay('{{$video_path}}')" class="modal-open setting2 play">
+                                <img src="{{$thumb_path}}"/>
+                            </a>
+                        @else
                             <img src="{{$thumb_path}}"/>
-                        </a>
+                        @endif
+
                         <div class="cap">
                             <time>{{date('Y/m/d H:i', strtotime($item->starttime))}}</time>
+                            @if($video_enabled == false)
+                            <br/><time>検知時点の映像は、Safieのマイページにてご確認ください</time>
+                            @endif
                         </div>
                     </div>
                     <div class="text">

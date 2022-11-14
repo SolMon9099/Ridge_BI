@@ -166,13 +166,17 @@ class ShelfService
         if (is_object($cur_rule)) {
             return $cur_rule->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
-    public static function getShelfRuleInfoById($id)
+    public static function getShelfRuleInfoById($id, $only_enalbe = true)
     {
-        return ShelfDetectionRule::query()->where('id', $id)->get();
+        if ($only_enalbe) {
+            return ShelfDetectionRule::query()->where('id', $id)->get();
+        } else {
+            return DB::table('shelf_detection_rules')->where('id', $id)->get();
+        }
     }
 
     public static function getRulesByCameraID($camera_id)

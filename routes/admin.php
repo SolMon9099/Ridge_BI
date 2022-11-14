@@ -34,6 +34,7 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
         Route::delete('/delete/{top}', 'TopController@delete')->name('admin.top.delete');
         Route::post('/save_search_option', 'TopController@save_search_option')->name('admin.top.save_search_option');
         Route::post('/CheckDetectData', 'TopController@CheckDetectData')->name('admin.top.CheckDetectData');
+        Route::post('/AjaxGetRules', 'TopController@AjaxGetRules')->name('admin.top.AjaxGetRules');
 
         Route::group(['prefix' => 'account'], function () {
             Route::get('/', 'AccountController@index')->name('admin.account');

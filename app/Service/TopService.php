@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\TopBlock;
 use App\Models\SearchOption;
-
+use Illuminate\Support\Facades\Log;
 class TopService
 {
     public static function search()
@@ -104,7 +104,7 @@ class TopService
 
             return $cur_Account->save();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -113,7 +113,7 @@ class TopService
         if (is_object($top)) {
             return $top->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -131,6 +131,74 @@ class TopService
             $search_option_record->options = json_encode($options);
             $search_option_record->page_name = $page_name;
             $search_option_record->save();
+        }
+    }
+
+    public static function requestStoptoAI($deleted_rules, $type = 'danger', $camera_id){
+        $url = config('const.ai_server').'stop-analysis';
+        $header = [
+            'Content-Type: application/json',
+        ];
+
+        $params['camera_info'] = [];
+        $camera_data = DB::table('cameras')->where('id', $camera_id)->get()->first();
+        if ($camera_data != null){
+
+        }
+        $params['camera_info']['camera_id'] = $camera_data->camera_id;
+        $params['camera_info']['rule_name'] = $type;
+        $params['priority'] = 1;
+        foreach($deleted_rules as $rule){
+            $params['camera_info']['rule_id'] = $rule->id;
+            Log::info('解析を止める用API（BI→AI）開始ーーーー');
+            Log::info($params);
+            self::sendPostApi($url, $header, $params, 'json');
+        }
+        Log::info('解析を止める用API（BI→AI）終了ーーーー');
+    }
+
+    public static function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
+    {
+        Log::info('【Start Post Api for AI】url:'.$url);
+
+        $curl = curl_init($url);
+        //POSTで送信
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_HEADER, true);
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+        if ($header) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+        }
+
+        if ($data) {
+            switch ($request_type) {
+                case 'query':
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+                    break;
+                case 'json':
+                    Log::info('post param data ='.json_encode($data));
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                    break;
+            }
+        }
+
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('httpcode = '.$httpcode);
+        curl_close($curl);
+        if ($httpcode == 200) {
+            $response_return = json_decode($response, true);
+
+            Log::info('【Finish Post Api】url:'.$url);
+
+            return $response_return;
+        } else {
+            return null;
         }
     }
 }

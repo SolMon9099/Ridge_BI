@@ -120,7 +120,7 @@ class CameraService
 
             return true;
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -136,13 +136,13 @@ class CameraService
 
             return true;
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
     public static function getCameraInfoById($id)
     {
-        return Camera::find($id);
+        return DB::table('cameras')->where('id', $id)->get()->first();
     }
 
     public static function getCameraByLocation($location_id)
@@ -208,7 +208,7 @@ class CameraService
 
             return true;
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 

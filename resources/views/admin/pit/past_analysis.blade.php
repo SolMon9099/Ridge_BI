@@ -191,7 +191,19 @@
     <div id="camera" class="modal-content">
         <div class="textarea">
             <div class="listing">
+                <h3>検索対象となる、ルールを選択してください</h3>
                 <div class="scroll active sp-pl0">
+                    <div class="modal-search-area">
+                        @if(isset($rule_cameras) && count($rule_cameras) > 0)
+                        <label>カメラNo</label>
+                        <select onchange="changeCamera(this)">
+                            <option value=''></option>
+                            @foreach ($rule_cameras as $id => $camera)
+                                <option value={{$id}}>{{$camera['serial_no']}}</option>
+                            @endforeach
+                        </select>
+                        @endif
+                    </div>
                     <table class="table2 text-centre">
                         <thead>
                         <tr>
@@ -206,7 +218,7 @@
                             <th>詳細</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="rules-tbody">
                         @foreach ($rules as $rule)
                         <tr>
                             <td class="stick-t">
@@ -226,7 +238,7 @@
                             <td>{{$rule->installation_position}}</td>
                             <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
                             <td><img width="100px" src="{{asset('storage/thumb').'/'.$rule->img_path}}"/></td>
-                            <td><a class="rule-detail-link" onclick="location.href='{{route('admin.pit.rule_view').'?id='.$rule->id}}'">ルール詳細>></a></td>
+                            <td><a class="rule-detail-link" href="{{route('admin.pit.rule_view').'?id='.$rule->id}}" target="_blank">ルール詳細>></a></td>
                         </tr>
                         @endforeach
                         @if(count($rules) == 0)
@@ -236,9 +248,10 @@
                         @endif
                         </tbody>
                     </table>
+                    <p class="error-message" style="display: none">ルールを選択してください。</p>
                     <div class="modal-set">
                         @if(count($rules) > 0)
-                        <button type="submit" class="modal-close">設 定</button>
+                        <button onclick="selectRule(this)" type="button">設 定</button>
                         @endif
                     </div>
                 </div>
@@ -310,6 +323,14 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
 <script>
+    function selectRule(){
+        if($('input[name=selected_rule]:checked').val() > 0){
+            $('#form1').submit();
+        } else {
+            $('.error-message').show();
+            return;
+        }
+    }
     var ctx = document.getElementById("myLineChart1");
     var search_period = "<?php echo $search_period;?>";
     var selected_rule = "<?php echo $selected_rule;?>";
@@ -746,6 +767,26 @@
             selected_rule:selected_rule
         };
         addToToppage(block_type, options);
+    }
+    function changeCamera(e){
+        $.ajax({
+            url : '/admin/AjaxGetRules',
+            method: 'post',
+            data: {
+                type:'pit',
+                page:'past',
+                _token:$('meta[name="csrf-token"]').attr('content'),
+                camera_id:e.value,
+                selected_rule_id:$('input[name=selected_rule]:checked').val()
+            },
+            error : function(){
+                console.log('failed');
+            },
+            success: function(result){
+                console.log('success', result);
+                $('.rules-tbody').html(result);
+            }
+        })
     }
     $(document).ready(function() {
         displayGraphData(null, grpah_init_type);

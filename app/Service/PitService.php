@@ -42,23 +42,26 @@ class PitService
             if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
                 $pit_rules->where('pit_detection_rules.camera_id', $params['selected_camera']);
             }
-            if (isset($params) && $params->has('location') && $params->location > 0) {
-                $pit_rules->where('cameras.location_id', $params->location);
+            if (isset($params['selected_rule']) && $params['selected_rule'] > 0) {
+                $pit_rules->where('pit_detection_rules.id', $params['selected_rule']);
             }
-            if (isset($params) && $params->has('installation_position') && $params->installation_position != '') {
-                $pit_rules->where('cameras.installation_position', 'like', '%'.$params->installation_position.'%');
+            if (isset($params['location']) && $params['location'] > 0) {
+                $pit_rules->where('cameras.location_id', $params['location']);
             }
-            if (isset($params) && $params->has('floor_number') && $params->floor_number != '') {
+            if (isset($params['installation_position']) && $params['installation_position'] != '') {
+                $pit_rules->where('cameras.installation_position', 'like', '%'.$params['installation_position'].'%');
+            }
+            if (isset($params['floor_number']) && $params['floor_number'] != '') {
                 $pit_rules->leftJoin('camera_mapping_details as map', 'cameras.id', 'map.camera_id')->whereNull('map.deleted_at')
                     ->leftJoin('location_drawings as drawing', 'drawing.id', 'map.drawing_id')->whereNull('drawing.deleted_at')
-                    ->where('drawing.floor_number', 'LIKE', '%'.$params->floor_number.'%');
+                    ->where('drawing.floor_number', 'LIKE', '%'.$params['floor_number'].'%');
             }
         }
 
         return $pit_rules;
     }
 
-    public static function getAllRules()
+    public static function getAllRules($params = null)
     {
         $rules = DB::table('pit_detection_rules')
             ->select(
@@ -84,6 +87,11 @@ class PitService
                 $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
             });
         }
+        if ($params != null) {
+            if (isset($params['camera_id']) && $params['camera_id'] > 0) {
+                $rules->where('pit_detection_rules.camera_id', $params['camera_id']);
+            }
+        }
 
         $rules->orderByRaw('-pit_detection_rules.deleted_at', 'DESC')->orderByDesc('pit_detection_rules.updated_at');
 
@@ -107,12 +115,24 @@ class PitService
         $min_members = isset($params['min_members']) && $params['min_members'] > 0 ? $params['min_members'] : null;
 
         if ($change_flag == 'updated') {
-            PitDetectionRule::query()->where('camera_id', $camera_id)->delete();
+            $delete_query = PitDetectionRule::query()->where('camera_id', $camera_id);
+            // $clone_delete_query = clone $delete_query;
+            // $delete_rules = $clone_delete_query->get()->all();
+            // if (count($delete_rules) > 0){
+            //     TopService::requestStoptoAI($delete_rules, 'pit', $camera_id);
+            // }
+            $delete_query->delete();
         } else {
             $cur_pit = self::getRulesByCameraID($camera_id)->first();
             if ($cur_pit != null) {
                 if ($cur_pit->max_permission_time != $max_permission_time || $cur_pit->min_members != $min_members) {
-                    PitDetectionRule::query()->where('camera_id', $camera_id)->delete();
+                    $delete_query = PitDetectionRule::query()->where('camera_id', $camera_id);
+                    // $clone_delete_query = clone $delete_query;
+                    // $delete_rules = $clone_delete_query->get()->all();
+                    // if (count($delete_rules) > 0){
+                    //     TopService::requestStoptoAI($delete_rules, 'pit', $camera_id);
+                    // }
+                    $delete_query->delete();
                 } else {
                     $cur_pit->red_points = $red_points_data;
                     $cur_pit->blue_points = $blue_points_data;
@@ -153,7 +173,7 @@ class PitService
         if (is_object($cur_pit)) {
             return $cur_pit->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -174,7 +194,7 @@ class PitService
     public static function getCameraByRuleID($rule_id)
     {
         $res = null;
-        $rule_data = self::getPitInfoById($rule_id)->first();
+        $rule_data = self::getPitInfoById($rule_id, false)->first();
         if (isset($rule_data)) {
             $camera_id = $rule_data->camera_id;
             $res = CameraService::getCameraInfoById($camera_id);

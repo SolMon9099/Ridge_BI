@@ -6009,3 +6009,12 @@ ul.time + .error-message + p{
 .title-span{
     color:#CC0000;
 }
+.modal-search-area{
+    text-align: center;
+}
+.modal-search-area select{
+    width:auto;
+    margin-right: 60px;
+    border: 1px solid lightgray;
+    background: white;
+}

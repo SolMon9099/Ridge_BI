@@ -94,7 +94,7 @@ class AccountService
 
             return $cur_Account->save();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -103,7 +103,7 @@ class AccountService
         if (is_object($cur_Account)) {
             return $cur_Account->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 

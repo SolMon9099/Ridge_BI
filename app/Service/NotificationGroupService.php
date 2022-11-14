@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Models\NotificationGroup;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class NotificationGroupService
 {
@@ -26,7 +26,7 @@ class NotificationGroupService
             $cur_Group->updated_by = Auth::guard('admin')->user()->id;
             return $cur_Group->save();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -35,7 +35,7 @@ class NotificationGroupService
         if (is_object($cur_Group)) {
             return $cur_Group->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 

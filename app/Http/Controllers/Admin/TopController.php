@@ -13,6 +13,8 @@ use App\Service\TopService;
 use App\Service\ShelfService;
 use App\Service\ThiefService;
 use Illuminate\Support\Facades\Storage;
+use App\Models\CameraMappingDetail;
+use Illuminate\Support\Facades\DB;
 
 class TopController extends AdminController
 {
@@ -127,7 +129,7 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['detect_list_danger']:
                     if (!isset($danger_rules)) {
                         $danger_rules = DangerService::getAllRules()->get()->toArray();
-                        foreach($danger_rules as &$rule){
+                        foreach ($danger_rules as &$rule) {
                             if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
                                 $rule->is_on = true;
                             } else {
@@ -227,7 +229,7 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['past_graph_danger']:
                     if (!isset($danger_rules)) {
                         $danger_rules = DangerService::getAllRules()->get()->toArray();
-                        foreach($danger_rules as &$rule){
+                        foreach ($danger_rules as &$rule) {
                             if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
                                 $rule->is_on = true;
                             } else {
@@ -366,7 +368,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -414,7 +416,7 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['detect_list_pit']:
                     if (!isset($pit_rules)) {
                         $pit_rules = PitService::getAllRules()->get()->toArray();
-                        foreach($pit_rules as &$rule){
+                        foreach ($pit_rules as &$rule) {
                             if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
                                 $rule->is_on = true;
                             } else {
@@ -459,7 +461,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -507,7 +509,7 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['past_graph_pit']:
                     if (!isset($pit_rules)) {
                         $pit_rules = PitService::getAllRules()->get()->toArray();
-                        foreach($pit_rules as &$rule){
+                        foreach ($pit_rules as &$rule) {
                             if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
                                 $rule->is_on = true;
                             } else {
@@ -571,7 +573,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -615,7 +617,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -662,7 +664,7 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['detect_list_shelf']:
                     if (!isset($shelf_rules)) {
                         $shelf_rules = ShelfService::getAllRules()->get()->toArray();
-                        foreach($shelf_rules as &$rule){
+                        foreach ($shelf_rules as &$rule) {
                             if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
                                 $rule->is_on = true;
                             } else {
@@ -705,7 +707,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -763,7 +765,7 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['past_graph_shelf']:
                     if (!isset($shelf_rules)) {
                         $shelf_rules = ShelfService::getAllRules()->get()->toArray();
-                        foreach($shelf_rules as &$rule){
+                        foreach ($shelf_rules as &$rule) {
                             if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
                                 $rule->is_on = true;
                             } else {
@@ -787,7 +789,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -859,7 +861,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -903,7 +905,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -950,7 +952,7 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['detect_list_thief']:
                     if (!isset($thief_rules)) {
                         $thief_rules = ThiefService::getAllRules()->get()->toArray();
-                        foreach($thief_rules as &$rule){
+                        foreach ($thief_rules as &$rule) {
                             if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
                                 $rule->is_on = true;
                             } else {
@@ -993,7 +995,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -1051,7 +1053,7 @@ class TopController extends AdminController
                 case config('const.top_block_type_codes')['past_graph_thief']:
                     if (!isset($thief_rules)) {
                         $thief_rules = ThiefService::getAllRules()->get()->toArray();
-                        foreach($thief_rules as &$rule){
+                        foreach ($thief_rules as &$rule) {
                             if (Storage::disk('recent_camera_image')->exists($rule->device_id.'.jpeg')) {
                                 $rule->is_on = true;
                             } else {
@@ -1075,7 +1077,7 @@ class TopController extends AdminController
                                 $access_tokens[$camera['contract_no']] = $safie_service->access_token;
                             }
                             $camera['access_token'] = $access_tokens[$camera['contract_no']];
-                            if(Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')){
+                            if (Storage::disk('recent_camera_image')->exists($camera['camera_id'].'.jpeg')) {
                                 $camera['is_on'] = true;
                             } else {
                                 $camera['is_on'] = false;
@@ -1229,6 +1231,117 @@ class TopController extends AdminController
         }
 
         return 'delete failed';
+    }
+
+    public function AjaxGetRules(Request $request)
+    {
+        $res = '';
+        $params = [];
+        $type = $request['type'];
+        switch ($type) {
+            case 'pit':
+                if (isset($request['camera_id']) && $request['camera_id'] > 0) {
+                    $params['camera_id'] = $request['camera_id'];
+                }
+                $data = PitService::getAllRules($params)->get()->all();
+                foreach ($data as $item) {
+                    $map_data = CameraMappingDetail::select('drawing.floor_number')
+                        ->where('camera_id', $item->camera_id)
+                        ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                        // ->whereNull('drawing.deleted_at')
+                        ->get()->first();
+                    if ($map_data != null) {
+                        $item->floor_number = $map_data->floor_number;
+                    } else {
+                        $item->floor_number = '';
+                    }
+                    $last_detection = DB::table('pit_detections')->where('rule_id', $item->id)->orderByDesc('starttime')->get()->first();
+                    $item->img_path = $last_detection != null ? $last_detection->thumb_img_path : null;
+                    $res .= '<tr>';
+                    if ($request['page'] == 'list') {
+                        $res .= '<td class="stick-t"><div class="checkbtn-wrap">';
+                        $res .= '<input value="'.$item->id.'" class="rule_checkbox" type="checkbox" id="rule-'.$item->id.'"/>';
+                        $res .= '<label for="rule-'.$item->id.'" class="custom-style"></label>';
+                        $res .= '</div></td>';
+                    } else {
+                        $res .= '<td class="stick-t"><div class="checkbtn-wrap">';
+                        $checked = '';
+                        if (isset($request['selected_rule_id']) && $request['selected_rule_id'] > 0 && $request['selected_rule_id'] == $item->id){
+                            $checked = 'checked';
+                        }
+                        $res .= '<input name="selected_rule" value="'.$item->id.'" type="radio" '.$checked.' id="rule-'.$item->id.'"/>';
+                        $res .= '<label for="rule-'.$item->id.'"></label>';
+                        $res .= '</div></td>';
+                    }
+
+                    $res .= '<td>'.$item->name.'</td>';
+                    $res .= '<td>'.$item->serial_no.'</td>';
+                    $res .= '<td>'.$item->location_name.'</td>';
+                    $res .= '<td>'.$item->floor_number.'</td>';
+                    $res .= '<td>'.$item->installation_position.'</td>';
+                    $res .= '<td>'.date('Y-m-d', strtotime($item->created_at)).'～'.($item->deleted_at != null ? date('Y-m-d', strtotime($item->deleted_at)) : '').'</td>';
+                    $res .= '<td><img width="100px" src="'.asset('storage/thumb').'/'.$item->img_path.'"/></td>';
+                    $res .= '<td><a class="rule-detail-link" onclick="location.href='."'".route('admin.pit.rule_view').'?id='.$item->id."'".'">ルール詳細>></a></td>';
+                    $res .= '</tr>';
+                }
+                break;
+            case 'danger':
+                if (isset($request['camera_id']) && $request['camera_id'] > 0) {
+                    $params['camera_id'] = $request['camera_id'];
+                }
+                if (isset($request['action_id']) && $request['action_id'] > 0) {
+                    $params['action_id'] = $request['action_id'];
+                }
+                $data = DangerService::getAllRules($params)->get()->all();
+                foreach ($data as $item) {
+                    $map_data = CameraMappingDetail::select('drawing.floor_number')
+                        ->where('camera_id', $item->camera_id)
+                        ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
+                        // ->whereNull('drawing.deleted_at')
+                        ->get()->first();
+                    if ($map_data != null) {
+                        $item->floor_number = $map_data->floor_number;
+                    } else {
+                        $item->floor_number = '';
+                    }
+                    $last_detection = DB::table('danger_area_detections')->where('rule_id', $item->id)->orderByDesc('starttime')->get()->first();
+                    $item->img_path = $last_detection != null ? $last_detection->thumb_img_path : null;
+                    $res .= '<tr>';
+                    if ($request['page'] == 'list') {
+                        $res .= '<td class="stick-t"><div class="checkbtn-wrap">';
+                        $res .= '<input value="'.$item->id.'" class="rule_checkbox" type="checkbox" id="rule-'.$item->id.'"/>';
+                        $res .= '<label for="rule-'.$item->id.'" class="custom-style"></label>';
+                        $res .= '</div></td>';
+                    } else {
+                        $res .= '<td class="stick-t"><div class="checkbtn-wrap">';
+                        $checked = '';
+                        if (isset($request['selected_rule_id']) && $request['selected_rule_id'] > 0 && $request['selected_rule_id'] == $item->id){
+                            $checked = 'checked';
+                        }
+                        $res .= '<input name="selected_rule" value="'.$item->id.'" type="radio" '.$checked.' id="rule-'.$item->id.'"/>';
+                        $res .= '<label for="rule-'.$item->id.'"></label>';
+                        $res .= '</div></td>';
+                    }
+                    $res .= '<td>'.$item->name.'</td>';
+                    $res .= '<td>'.$item->serial_no.'</td>';
+                    $res .= '<td>'.$item->location_name.'</td>';
+                    $res .= '<td>'.$item->floor_number.'</td>';
+                    $res .= '<td>'.$item->installation_position.'</td>';
+                    $res .= '<td>';
+                    foreach (json_decode($item->action_id) as $action_code) {
+                        $res .= '<div>'.config('const.action')[$action_code].'</div>';
+                    }
+                    $res .= '</td>';
+                    $res .= '<td><input disabled type="color" value = "'.$item->color.'"></td>';
+                    $res .= '<td>'.date('Y-m-d', strtotime($item->created_at)).'～'.($item->deleted_at != null ? date('Y-m-d', strtotime($item->deleted_at)) : '').'</td>';
+                    $res .= '<td><img width="100px" src="'.asset('storage/thumb').'/'.$item->img_path.'"/></td>';
+                    $res .= '<td><a class="rule-detail-link" onclick="location.href='."'".route('admin.danger.rule_view').'?id='.$item->id."'".'">ルール詳細>></a></td>';
+                    $res .= '</tr>';
+                }
+                break;
+        }
+
+        return $res;
     }
 
     public function CheckDetectData(Request $request)

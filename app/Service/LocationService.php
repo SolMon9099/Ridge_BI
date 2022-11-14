@@ -56,7 +56,7 @@ class LocationService
 
             return $cur_Location->save();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
@@ -65,7 +65,7 @@ class LocationService
         if (is_object($cur_Location)) {
             return $cur_Location->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 

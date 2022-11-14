@@ -163,13 +163,18 @@ class ThiefService
         if (is_object($cur_rule)) {
             return $cur_rule->delete();
         } else {
-            abort(403);
+            return redirect()->route('admin.top');
         }
     }
 
-    public static function getThiefRuleInfoById($id)
+    public static function getThiefRuleInfoById($id, $only_enalbe = true)
     {
-        return ThiefDetectionRule::query()->where('id', $id)->get();
+        if ($only_enalbe){
+            return ThiefDetectionRule::query()->where('id', $id)->get();
+        } else {
+            return DB::table('thief_detection_rules')->where('id', $id)->get();
+        }
+
     }
 
     public static function getRulesByCameraID($camera_id)

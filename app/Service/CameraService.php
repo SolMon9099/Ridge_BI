@@ -145,6 +145,18 @@ class CameraService
         return DB::table('cameras')->where('id', $id)->get()->first();
     }
 
+    public static function updateCameraById($id, $params)
+    {
+        if (!($id > 0)) {
+            return false;
+        }
+        if (isset($params) && isset($params['is_enabled'])) {
+            DB::table('cameras')->where('id', $id)->update(['is_enabled' => $params['is_enabled']]);
+        }
+
+        return true;
+    }
+
     public static function getCameraByLocation($location_id)
     {
         $camera_query = Camera::query()->where('location_id', $location_id);

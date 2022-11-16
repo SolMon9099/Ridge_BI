@@ -67,7 +67,7 @@
                             {{-- <input type="text" name="floor_number" value="{{ old('floor_number', (isset($input) && $input->has('floor_number'))?$input->floor_number:'')}}"/> --}}
                         </li>
                     </ul>
-                    <ul class="date-list">
+                    {{-- <ul class="date-list">
                         <li><h4>稼働状況 </h4></li>
                         <li>
                             <ul class="radio-list">
@@ -80,7 +80,7 @@
                                 @endforeach
                             </ul>
                         </li>
-                    </ul>
+                    </ul> --}}
                     <button type="submit" class="apply">絞り込む</button>
                 </div>
             </div>
@@ -107,6 +107,9 @@
                 ?>
                 <div class="pic">
                     <img src="{{$camera_img_path}}">
+                    @if($camera->is_enabled != 1)
+                        <div class="camera-open-button"><button onclick="reopenCamera('{{$camera->id}}', '{{$camera->serial_no}}')" class="from_top">検知再開</button></div>
+                    @endif
                     <div class="alert-camera-text">{{$alert_text}}</div>
                 </div>
                 <div class="text">
@@ -144,7 +147,13 @@
             ])->links('vendor.pagination.admin-pagination') }}
     </div>
 </div>
-
+<div id="dialog-confirm" title="test" style="display:none">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+        <span id="confirm_text">These items will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+</div>
+<link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
+<script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('assets/admin/js/helper.js?2') }}"></script>
 <style>
     @media only screen and (max-width:768px) {
         .camera-item{
@@ -167,6 +176,27 @@
         text-align: center;
         bottom: 20px;
     }
+    .camera-open-button{
+        position: absolute;
+        top:20px;
+        right:20px;
+    }
+    .camera-open-button button{
+        color:white;
+        border:none;
+        border-radius: 50px;
+        padding: 5px 10px;
+    }
 </style>
+<script>
+    function reopenCamera(id, serial_no){
+        helper_confirm("dialog-confirm", "検知再開", "カメラNo「" + serial_no + "」の検知を再開しました。<br />よろしいですか？", 520, "確認", "閉じる", function(){
+            updateCamera(id, {'is_enabled':1});
+            setTimeout(() => {
+                $('#form1').submit();
+            }, 500);
+        });
+    }
+</script>
 
 @endsection

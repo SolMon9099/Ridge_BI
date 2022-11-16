@@ -135,7 +135,7 @@
                             <td>{{$pit->location_name}}</td>
                             <td>{{$pit->floor_number}}</td>
                             <td>{{$pit->installation_position}}</td>
-                            <td>{{$pit->min_members > 0 ? (string)($pit->min_members) : ''}}</td>
+                            <td>{{$pit->min_members > 0 ? (string)($pit->min_members).'人以上' : ''}}</td>
                             <td>{{$pit->max_permission_time > 0 ? (string)($pit->max_permission_time).'分' : ''}}</td>
                             <td>
                                 @if(Storage::disk('recent_camera_image')->exists($pit->device_id.'.jpeg'))

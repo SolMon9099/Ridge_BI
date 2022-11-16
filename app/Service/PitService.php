@@ -113,6 +113,7 @@ class PitService
         $name = isset($params['name']) && $params['name'] != '' ? $params['name'] : null;
         $max_permission_time = isset($params['max_permission_time']) && $params['max_permission_time'] > 0 ? $params['max_permission_time'] : null;
         $min_members = isset($params['min_members']) && $params['min_members'] > 0 ? $params['min_members'] : null;
+        $init_persons = isset($params['init_persons']) && $params['init_persons'] > 0 ? $params['init_persons'] : null;
 
         if ($change_flag == 'updated') {
             $delete_query = PitDetectionRule::query()->where('camera_id', $camera_id);
@@ -125,7 +126,7 @@ class PitService
         } else {
             $cur_pit = self::getRulesByCameraID($camera_id)->first();
             if ($cur_pit != null) {
-                if ($cur_pit->max_permission_time != $max_permission_time || $cur_pit->min_members != $min_members) {
+                if ($cur_pit->max_permission_time != $max_permission_time || $cur_pit->min_members != $min_members || $cur_pit->init_persons != $init_persons) {
                     $delete_query = PitDetectionRule::query()->where('camera_id', $camera_id);
                     // $clone_delete_query = clone $delete_query;
                     // $delete_rules = $clone_delete_query->get()->all();
@@ -138,6 +139,7 @@ class PitService
                     $cur_pit->blue_points = $blue_points_data;
                     $cur_pit->max_permission_time = $max_permission_time;
                     $cur_pit->min_members = $min_members;
+                    $cur_pit->init_persons = $init_persons;
                     $cur_pit->name = $name;
                     $cur_pit->updated_by = Auth::guard('admin')->user()->id;
                     $res = $cur_pit->save();
@@ -157,6 +159,7 @@ class PitService
         $new_pit->blue_points = $blue_points_data;
         $new_pit->max_permission_time = $max_permission_time;
         $new_pit->min_members = $min_members;
+        $new_pit->init_persons = $init_persons;
         $new_pit->created_by = Auth::guard('admin')->user()->id;
         $new_pit->updated_by = Auth::guard('admin')->user()->id;
 
@@ -216,6 +219,7 @@ class PitService
                 'locations.name as location_name',
                 'pit_detection_rules.max_permission_time',
                 'pit_detection_rules.min_members',
+                'pit_detection_rules.init_persons',
                 'pit_detection_rules.red_points',
                 'pit_detection_rules.blue_points',
                 'pit_detection_rules.name as rule_name',
@@ -300,6 +304,41 @@ class PitService
         return $camera_query->get();
     }
 
+    public static function setSumInPit($data)
+    {
+        $sum_in_pit = [];
+        $sum_in_pit_by_camera = [];
+        foreach ($data as $item) {
+            if (!isset($sum_in_pit[$item->rule_id])) {
+                if (isset($sum_in_pit_by_camera[$item->device_id])) {
+                    $sum_in_pit[$item->rule_id] = $item->init_persons > 0 ? $item->init_persons : 0;
+                } else {
+                    $sum_in_pit_by_camera[$item->device_id] = self::getInitPersonsinPit($item);
+                    $sum_in_pit[$item->rule_id] = $sum_in_pit_by_camera[$item->device_id];
+                }
+            }
+            $sum_in_pit[$item->rule_id] += ($item->nb_entry - $item->nb_exit);
+            $item->sum_in_pit = $sum_in_pit[$item->rule_id];
+        }
+
+        return $data;
+    }
+
+    public static function getInitPersonsinPit($record)
+    {
+        $res = $record->init_persons > 0 ? $record->init_persons : 0;
+        $prev_records = PitDetection::query()
+            ->select('nb_entry', 'nb_exit')
+            ->where('rule_id', $record->rule_id)
+            ->where('starttime', '<', $record->starttime)
+            ->get()->all();
+        foreach ($prev_records as $item) {
+            $res += ($item->nb_entry - $item->nb_exit);
+        }
+
+        return $res;
+    }
+
     public static function extractOverData($data)
     {
         $temp = [];
@@ -308,11 +347,18 @@ class PitService
         $max_permission_time = [];
         $min_members = [];
         $over_start_time = [];
+        $sum_in_pit_by_camera = [];
+
         foreach ($data as $index => $item) {
             $nb_entry = $item->nb_entry;
             $nb_exit = $item->nb_exit;
             if (!isset($sum_in_pit[$item->rule_id])) {
-                $sum_in_pit[$item->rule_id] = 0;
+                if (isset($sum_in_pit_by_camera[$item->device_id])) {
+                    $sum_in_pit[$item->rule_id] = $item->init_persons > 0 ? $item->init_persons : 0;
+                } else {
+                    $sum_in_pit_by_camera[$item->device_id] = self::getInitPersonsinPit($item);
+                    $sum_in_pit[$item->rule_id] = $sum_in_pit_by_camera[$item->device_id];
+                }
             }
             if (!isset($max_permission_time[$item->rule_id])) {
                 $max_permission_time[$item->rule_id] = $item->max_permission_time;
@@ -324,6 +370,14 @@ class PitService
             $item->sum_in_pit = $sum_in_pit[$item->rule_id];
             if ($sum_in_pit[$item->rule_id] >= $min_members[$item->rule_id]) {
                 if (!isset($over_start_time[$item->rule_id]) || $over_start_time[$item->rule_id] == null) {
+                    if ($index == count($data) - 1) {
+                        $add_item = clone $item;
+                        $add_item->detect_time = date('Y-m-d H:i:s', strtotime($item->starttime) + $max_permission_time[$item->rule_id] * 60);
+                        if (!in_array([$item->id, $add_item->detect_time], $added_id_times)) {
+                            $temp[] = $add_item;
+                            $added_id_times[] = [$item->id, $add_item->detect_time];
+                        }
+                    }
                     $over_start_time[$item->rule_id] = $item->starttime;
                 }
                 $cond_flag = true;

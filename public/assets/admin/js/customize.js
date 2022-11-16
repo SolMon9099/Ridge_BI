@@ -437,3 +437,22 @@ function resetHeatMapAjax(camera_id){
             // helper_alert('alert-modal', '再計算リクエスト', 'AIサーバーにヒートマップ再計算を依頼しました。', 400, '閉じる');
         }});
 }
+function updateCamera(camera_id, params){
+    let token = $('meta[name="csrf-token"]').attr('content');
+
+    $.ajax({
+        url : '/admin/camera/update_camera',
+        method: 'post',
+        data: {
+            camera_id,
+            params,
+            _token:token,
+        },
+
+        error : function(){
+            console.log('failed');
+        },
+        success: function(result){
+            console.log(result);
+        }});
+}

@@ -360,6 +360,10 @@
         while(cur_time.getTime() <= max_time.getTime()){
             date_labels.push(new Date(cur_time));
             var y_add_flag = false;
+            var y_value = {};
+            Object.keys(actions).map(id => {
+                y_value[id] = 0;
+            })
             Object.keys(all_data).map((detect_time, index) => {
                 var detect_hour = detect_time.split(':')[0];
                 var detect_mins = detect_time.split(':')[1];
@@ -367,33 +371,40 @@
                 detect_time_object.setHours(parseInt(detect_hour));
                 detect_time_object.setMinutes(parseInt(detect_mins));
                 if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000 && detect_time_object.getTime() <= max_time.getTime()){
-                    if (index == 0){
-                        y_add_flag = true;
-                        if  (detect_time_object.getTime() != cur_time.getTime()){
-                            date_labels.push(detect_time_object);
-                            Object.keys(actions).map(id => {
-                                totals_by_action[id].push(0);
-                            })
-                        }
-                    } else {
-                        date_labels.push(detect_time_object);
-                    }
+                    // if (index == 0){
+                    //     y_add_flag = true;
+                    //     if  (detect_time_object.getTime() != cur_time.getTime()){
+                    //         date_labels.push(detect_time_object);
+                    //         Object.keys(actions).map(id => {
+                    //             totals_by_action[id].push(0);
+                    //         })
+                    //     }
+                    // } else {
+                    //     date_labels.push(detect_time_object);
+                    // }
                     Object.keys(actions).map(id => {
+                        // if (all_data[detect_time][id] != undefined){
+                        //     totals_by_action[id].push(all_data[detect_time][id].length);
+                        //     if (all_data[detect_time][id].length > max_y) max_y = all_data[detect_time][id].length;
+                        // } else {
+                        //     totals_by_action[id].push(0);
+                        // }
                         if (all_data[detect_time][id] != undefined){
-                            totals_by_action[id].push(all_data[detect_time][id].length);
-                            if (all_data[detect_time][id].length > max_y) max_y = all_data[detect_time][id].length;
-                        } else {
-                            totals_by_action[id].push(0);
+                            y_value[id] += all_data[detect_time][id].length;
                         }
                     })
                 }
             })
+            Object.keys(actions).map(id => {
+                if (max_y < y_value[id]) max_y = y_value[id];
+                totals_by_action[id].push(y_value[id]);
+            })
             cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
-            if (y_add_flag == false){
-                Object.keys(actions).map(id => {
-                    totals_by_action[id].push(0);
-                })
-            }
+            // if (y_add_flag == false){
+            //     Object.keys(actions).map(id => {
+            //         totals_by_action[id].push(0);
+            //     })
+            // }
         }
         var datasets = [];
         Object.keys(totals_by_action).map(action_id => {

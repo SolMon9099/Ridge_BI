@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use App\Service\SafieApiService;
 use Illuminate\Support\Facades\Log;
 use App\Models\Admin;
+use App\Models\MediaRequestHistory;
+use App\Models\S3VideoHistory;
 
 class SafieApiCommand extends Command
 {
@@ -20,6 +22,12 @@ class SafieApiCommand extends Command
 
     public function handle()
     {
+        MediaRequestHistory::query()
+            ->where('created_at', '<', date('Y-m-d', strtotime('-1 month')))
+            ->delete();
+        // S3VideoHistory::query()
+        //     ->where('created_at', '<', date('Y-m-d', strtotime('-3 month')))
+        //     ->delete();
         Log::info('Refresh Token****************');
         $contracts_data = Admin::query()->where('is_main_admin', 1)->get()->all();
         if (count($contracts_data) > 0) {

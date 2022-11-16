@@ -6,12 +6,14 @@
     $blue_points = array();
     $max_permission_time = null;
     $min_members = null;
+    $init_persons = null;
     $name = null;
     foreach ($rules as $key => $rule) {
         if ($rule->red_points != null && $rule->red_points != '') $red_points = json_decode($rule->red_points);
         if ($rule->blue_points != null && $rule->blue_points != '') $blue_points = json_decode($rule->blue_points);
         $max_permission_time = $rule->max_permission_time;
         $min_members = $rule->min_members;
+        $init_persons = $rule->init_persons;
         $name = $rule->name;
     }
 ?>
@@ -65,6 +67,18 @@
                         <p class="error-message max_permission_time">{{ $message }}</p>
                     @enderror
                 </div>
+                <button type="button" class="clear-btn history" onclick="clearImage()">選択を全てクリア</button>
+            </div>
+            <div class="setting-head">
+                <div style="margin-right:30px;">
+                    <label>現在のピット内人数：</label>
+                    <input name="init_persons" type="number" inputmode="numeric" pattern="\d*" max='10' min='0' class='members_input'
+                        value="{{old('init_persons', isset($init_persons)?$init_persons:'')}}">
+                        <span style="font-size: 14px;">人</span>
+                    @error('init_persons')
+                        <p class="error-message init_persons">{{ $message }}</p>
+                    @enderror
+                </div>
                 <div class="ai-guide-area" style="">
                     <input onchange="changeHeatMap(this)" class="tgl tgl-flat" id="ai_guide" type="checkbox">
                     <label class="tgl-btn" for="ai_guide"></label>
@@ -73,8 +87,8 @@
                 <div class="reset-heatmap-area">
                     <button onclick="resetHeatMap({{$camera_id}})" type='button' class="reset-heatmap-button">再取得</button>
                 </div>
-                <button type="button" class="clear-btn history" onclick="clearImage()">選択を全てクリア</button>
             </div>
+
             <div class="notice-area">※カメラの位置や画角を変更した場合は、AI検知精度の再取得を行う必要がありますので、「再取得」ボタンを押してください。</div>
         @endif
 

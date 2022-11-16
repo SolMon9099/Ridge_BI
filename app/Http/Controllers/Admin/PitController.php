@@ -334,6 +334,20 @@ class PitController extends AdminController
         $pit_detections = PitService::searchDetections($request, true)->get()->all();
         $pit_over_detections = array_reverse($pit_detections);
         $pit_over_detections = PitService::extractOverData($pit_over_detections);
+
+        $graph_data = [];
+        foreach (array_reverse($pit_detections) as $item) {
+            if (!isset($graph_data[date('Y-m-d H:i:s', strtotime($item->starttime))])) {
+                $graph_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $item->sum_in_pit;
+            } else {
+                $delta = 1;
+                while (isset($graph_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)])) {
+                    ++$delta;
+                }
+                $graph_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)] = $item->sum_in_pit;
+            }
+        }
+
         $cameras = PitService::getAllCameras();
         $access_token = '';
         $camera_imgs = [];
@@ -360,6 +374,7 @@ class PitController extends AdminController
 
         return view('admin.pit.detail')->with([
             'pit_detections' => $pit_detections,
+            'graph_data' => $graph_data,
             'pit_over_detections' => array_reverse($pit_over_detections),
             'request_params' => $search_params,
             'selected_rule' => $selected_rule,
@@ -427,7 +442,7 @@ class PitController extends AdminController
                 ];
             }
         }
-        if ($request['selected_rule'] > 0 && $selected_rule_object == null){
+        if ($request['selected_rule'] > 0 && $selected_rule_object == null) {
             $selected_rule_object = PitService::doSearch(['selected_rule' => $request['selected_rule']])->get()->first();
         }
         $search_params = [];
@@ -448,9 +463,22 @@ class PitController extends AdminController
         $pit_detections = PitService::searchDetections($request)->get()->all();
         $pit_over_detections = array_reverse($pit_detections);
         $pit_over_detections = PitService::extractOverData($pit_over_detections);
+        $graph_data = [];
+        foreach (array_reverse($pit_detections) as $item) {
+            if (!isset($graph_data[date('Y-m-d H:i:s', strtotime($item->starttime))])) {
+                $graph_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $item->sum_in_pit;
+            } else {
+                $delta = 1;
+                while (isset($graph_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)])) {
+                    ++$delta;
+                }
+                $graph_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)] = $item->sum_in_pit;
+            }
+        }
 
         return view('admin.pit.past_analysis')->with([
             'pit_detections' => $pit_detections,
+            'graph_data' => $graph_data,
             'pit_over_detections' => array_reverse($pit_over_detections),
             'request_params' => (array) $search_params,
             'rules' => $rules,

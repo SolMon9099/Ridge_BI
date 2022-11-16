@@ -491,20 +491,20 @@ class TopController extends AdminController
                         $request['selected_camera'] = count($item->cameras) > 0 ? $item->cameras[0]['id'] : null;
                     }
                     $live_pit_detections = PitService::searchDetections($request, true)->get()->all();
-
-                    $total_data = [];
-                    foreach (array_reverse($live_pit_detections) as $pit_item) {
-                        if (!isset($total_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))])) {
-                            $total_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))] = $pit_item->nb_entry - $pit_item->nb_exit;
+                    $live_pit_detections = PitService::setSumInPit(array_reverse($live_pit_detections));
+                    $graph_data = [];
+                    foreach ($live_pit_detections as $pit_item) {
+                        if (!isset($graph_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))])) {
+                            $graph_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))] = $pit_item->sum_in_pit;
                         } else {
                             $delta = 1;
-                            while (isset($total_data[date('Y-m-d H:i:s.u', strtotime($pit_item->starttime) + $delta)])) {
+                            while (isset($graph_data[date('Y-m-d H:i:s.u', strtotime($pit_item->starttime) + $delta)])) {
                                 ++$delta;
                             }
-                            $total_data[date('Y-m-d H:i:s.u', strtotime($pit_item->starttime) + $delta)] = $pit_item->nb_entry - $pit_item->nb_exit;
+                            $graph_data[date('Y-m-d H:i:s.u', strtotime($pit_item->starttime) + $delta)] = $pit_item->sum_in_pit;
                         }
                     }
-                    $item->pit_live_graph_data = $total_data;
+                    $item->pit_live_graph_data = $graph_data;
                     break;
                 case config('const.top_block_type_codes')['past_graph_pit']:
                     if (!isset($pit_rules)) {
@@ -539,25 +539,25 @@ class TopController extends AdminController
                         }
                     }
                     $past_pit_detections = PitService::searchDetections($request)->get()->all();
-
+                    $past_pit_detections = PitService::setSumInPit(array_reverse($past_pit_detections));
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
                     $item->selected_rule = isset($request['selected_rule']) ? $request['selected_rule'] : null;
                     $item->rules = $pit_rules;
 
-                    $total_data = [];
-                    foreach (array_reverse($past_pit_detections) as $pit_item) {
-                        if (!isset($total_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))])) {
-                            $total_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))] = $pit_item->nb_entry - $pit_item->nb_exit;
+                    $graph_data = [];
+                    foreach ($past_pit_detections as $pit_item) {
+                        if (!isset($graph_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))])) {
+                            $graph_data[date('Y-m-d H:i:s', strtotime($pit_item->starttime))] = $pit_item->sum_in_pit;
                         } else {
                             $delta = 1;
-                            while (isset($total_data[date('Y-m-d H:i:s.u', strtotime($pit_item->starttime) + $delta)])) {
+                            while (isset($graph_data[date('Y-m-d H:i:s.u', strtotime($pit_item->starttime) + $delta)])) {
                                 ++$delta;
                             }
-                            $total_data[date('Y-m-d H:i:s.u', strtotime($pit_item->starttime) + $delta)] = $pit_item->nb_entry - $pit_item->nb_exit;
+                            $graph_data[date('Y-m-d H:i:s.u', strtotime($pit_item->starttime) + $delta)] = $pit_item->sum_in_pit;
                         }
                     }
-                    $item->pit_past_graph_data = $total_data;
+                    $item->pit_past_graph_data = $graph_data;
                     break;
                 case config('const.top_block_type_codes')['live_video_shelf']:
                     if (!isset($shelf_cameras)) {
@@ -1266,7 +1266,7 @@ class TopController extends AdminController
                     } else {
                         $res .= '<td class="stick-t"><div class="checkbtn-wrap">';
                         $checked = '';
-                        if (isset($request['selected_rule_id']) && $request['selected_rule_id'] > 0 && $request['selected_rule_id'] == $item->id){
+                        if (isset($request['selected_rule_id']) && $request['selected_rule_id'] > 0 && $request['selected_rule_id'] == $item->id) {
                             $checked = 'checked';
                         }
                         $res .= '<input name="selected_rule" value="'.$item->id.'" type="radio" '.$checked.' id="rule-'.$item->id.'"/>';
@@ -1315,7 +1315,7 @@ class TopController extends AdminController
                     } else {
                         $res .= '<td class="stick-t"><div class="checkbtn-wrap">';
                         $checked = '';
-                        if (isset($request['selected_rule_id']) && $request['selected_rule_id'] > 0 && $request['selected_rule_id'] == $item->id){
+                        if (isset($request['selected_rule_id']) && $request['selected_rule_id'] > 0 && $request['selected_rule_id'] == $item->id) {
                             $checked = 'checked';
                         }
                         $res .= '<input name="selected_rule" value="'.$item->id.'" type="radio" '.$checked.' id="rule-'.$item->id.'"/>';

@@ -446,17 +446,33 @@
                                             $video_path .= asset('storage/video/').'/';
                                             $video_path .= $item->danger_detection['video_file_path'];
 
-                                            $thumb_path = asset('storage/thumb/').'/'.$item->danger_detection['thumb_img_path'];
+                                            if (isset($item->danger_detection['thumb_img_path']) && $item->danger_detection['thumb_img_path'] != ''){
+                                                $thumb_path = asset('storage/thumb/').'/'.$item->danger_detection['thumb_img_path'];
+                                            } else {
+                                                $thumb_path = asset('assets/admin/img/samplepic.png');
+                                            }
+                                            $video_enabled = false;
+                                            if (isset($item->danger_detection['thumb_img_path']) && $item->danger_detection['thumb_img_path'] != '' && isset($item->danger_detection['video_file_path']) && $item->danger_detection['video_file_path'] != ''){
+                                                $video_enabled = true;
+                                            }
                                         ?>
                                         <div class="camera-id">カメラID：{{$item->danger_detection['serial_no']}}</div>
-                                        <div class="movie" video-path = "{{$video_path}}">
-                                            <a data-target="movie0000"
-                                                {{-- onclick="videoPlay(this, '{{$video_path}}')"  --}}
-                                                class="video-open setting2 play">
+                                        @if($video_enabled)
+                                            <div class="movie" video-path = "{{$video_path}}">
+                                                <a data-target="movie0000"
+                                                    {{-- onclick="videoPlay(this, '{{$video_path}}')"  --}}
+                                                    class="video-open setting2 play">
+                                                    <img src="{{$thumb_path}}"/>
+                                                </a>
+                                            </div>
+                                            <video style="" class = 'video-play' src = '{{$video_path}}' type= 'video/mp4' controls></video>
+                                        @else
+                                            <div class="movie">
                                                 <img src="{{$thumb_path}}"/>
-                                            </a>
-                                        </div>
-                                        <video style="" class = 'video-play' src = '{{$video_path}}' type= 'video/mp4' controls></video>
+                                                <time>検知時点の映像は、Safieのマイページにてご確認ください</time>
+                                            </div>
+                                        @endif
+
                                         <div class="cap">検知時間：<time>{{date('Y/m/d H:i', strtotime($item->danger_detection['starttime']))}}</time></div>
                                         <div class="cap">検知条件：
                                             <time>
@@ -500,12 +516,18 @@
                                                     $video_path = '';
                                                     $video_path .= asset('storage/video/').'/';
                                                     $video_path .= $detection_item['video_file_path'];
+                                                    $video_enabled = false;
+                                                    if (isset($detection_item['thumb_img_path']) && $detection_item['thumb_img_path'] != '' && isset($detection_item['video_file_path']) && $detection_item['video_file_path'] != ''){
+                                                        $video_enabled = true;
+                                                    }
                                                 ?>
                                                 <tr>
                                                     <td>
-                                                        <div video-path = "{{$video_path}}">
-                                                            <a data-target="movie0000" class="video-open list-play-icon play"></a>
-                                                        </div>
+                                                        @if($video_enabled)
+                                                            <div video-path = "{{$video_path}}">
+                                                                <a data-target="movie0000" class="video-open list-play-icon play"></a>
+                                                            </div>
+                                                        @endif
                                                     </td>
                                                     <td>{{$detection_item['serial_no']}}</td>
                                                     <td>{{date('Y/m/d H:i', strtotime($detection_item['starttime']))}}</td>
@@ -631,17 +653,6 @@
                                         <div class="camera-id">カメラID：{{$item->selected_camera['serial_no']}}</div>
                                     @endif
                                     @if (isset($item->pit_detections) && count($item->pit_detections) > 0)
-                                        <?php
-                                            $sum = 0;
-                                            $sum_data = array();
-                                            foreach ($item->pit_detections as $detection_item) {
-                                                if($detection_item['nb_entry'] != $detection_item['nb_exit']){
-                                                    $sum += ($detection_item['nb_entry'] - $detection_item['nb_exit']);
-                                                    $sum_data[$detection_item->id] = $sum;
-                                                    $total_data[date('Y-m-d H:i:s', strtotime($detection_item['starttime']))] = $sum;
-                                                }
-                                            }
-                                        ?>
                                         <table class="pit-detect-list list-table">
                                             <thead>
                                                 <tr>
@@ -657,7 +668,7 @@
                                                     <td>{{date('Y-m-d H:i:s', strtotime($detection_item['starttime']))}}</td>
                                                     <td>{{$detection_item['nb_entry'] > $detection_item['nb_exit'] ? '入場' : '退場'}} </td>
                                                     <td><span class="{{$detection_item['nb_entry'] > $detection_item['nb_exit'] ? 'f-red' : 'f-blue'}}">{{$detection_item['nb_entry'] - $detection_item['nb_exit']}}</span></td>
-                                                    <td>{{$sum_data[$detection_item->id]}}</td>
+                                                    <td>{{$detection_item['sum_in_pit']}}</td>
                                                 </tr>
                                             @endforeach
                                             </tbody>
@@ -673,17 +684,33 @@
                                             $video_path .= asset('storage/video/').'/';
                                             $video_path .= $item->pit_detection->video_file_path;
 
-                                            $thumb_path = asset('storage/thumb/').'/'.$item->pit_detection->thumb_img_path;
+                                            if (isset($item->pit_detection->thumb_img_path) && $item->pit_detection->thumb_img_path != ''){
+                                                $thumb_path = asset('storage/thumb/').'/'.$item->pit_detection->thumb_img_path;
+                                            } else {
+                                                $thumb_path = asset('assets/admin/img/samplepic.png');
+                                            }
+                                            $video_enabled = false;
+                                            if (isset($item->pit_detection->thumb_img_path) && $item->pit_detection->thumb_img_path != '' && isset($item->pit_detection->video_file_path) && $item->pit_detection->video_file_path != ''){
+                                                $video_enabled = true;
+                                            }
                                         ?>
                                         <div class="camera-id">カメラID：{{$item->pit_detection->serial_no}}</div>
-                                        <div class="movie" video-path = "{{$video_path}}">
-                                            <a data-target="movie0000"
-                                                {{-- onclick="videoPlay(this, '{{$video_path}}')"  --}}
-                                                class="video-open setting2 play">
+                                        @if($video_enabled)
+                                            <div class="movie" video-path = "{{$video_path}}">
+                                                <a data-target="movie0000"
+                                                    {{-- onclick="videoPlay(this, '{{$video_path}}')"  --}}
+                                                    class="video-open setting2 play">
+                                                    <img src="{{$thumb_path}}"/>
+                                                </a>
+                                            </div>
+                                            <video style="" class = 'video-play' src = '{{$video_path}}' type= 'video/mp4' controls></video>
+                                        @else
+                                            <div class="movie">
                                                 <img src="{{$thumb_path}}"/>
-                                            </a>
-                                        </div>
-                                        <video style="" class = 'video-play' src = '{{$video_path}}' type= 'video/mp4' controls></video>
+                                                <time>検知時点の映像は、Safieのマイページにてご確認ください</time>
+                                            </div>
+                                        @endif
+
                                         <div class="cap">検知時間：<time>{{date('Y/m/d H:i', strtotime($item->pit_detection->detect_time))}}</time></div>
                                         <div class="cap">検知条件：<time>{{$item->pit_detection->min_members.'人以上/'.$item->pit_detection->max_permission_time.'分超過'}}</time></div>
                                         <div class="cap">{{"　　　　　"}}<time>ピット内人数({{$item->pit_detection->sum_in_pit.'人'}})</time></div>
@@ -722,12 +749,18 @@
                                                     $video_path = '';
                                                     $video_path .= asset('storage/video/').'/';
                                                     $video_path .= $detection_item['video_file_path'];
+                                                    $video_enabled = false;
+                                                    if (isset($detection_item['thumb_img_path']) && $detection_item['thumb_img_path'] != '' && isset($detection_item['video_file_path']) && $detection_item['video_file_path'] != ''){
+                                                        $video_enabled = true;
+                                                    }
                                                 ?>
                                                 <tr>
                                                     <td>
-                                                        <div video-path = "{{$video_path}}">
-                                                            <a data-target="movie0000" class="video-open list-play-icon play"></a>
-                                                        </div>
+                                                        @if($video_enabled)
+                                                            <div video-path = "{{$video_path}}">
+                                                                <a data-target="movie0000" class="video-open list-play-icon play"></a>
+                                                            </div>
+                                                        @endif
                                                     </td>
                                                     <td>{{$detection_item['serial_no']}}</td>
                                                     <td>{{date('Y/m/d H:i', strtotime($detection_item['detect_time']))}}</td>
@@ -1983,37 +2016,27 @@
 
     function resortPitData(data, time_period){
         var temp = {};
-        var sum = 0;
         switch(time_period){
             case 'day':
                 Object.keys(data).map(date_time => {
                     var date = formatDateLine(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
-                    temp[date] += data[date_time];
+                    temp[date] = data[date_time];
                 })
                 break;
             case 'week':
                 Object.keys(data).map(date_time => {
                     var date = formatYearWeekNum(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
-                    temp[date] += data[date_time];
+                    temp[date] = data[date_time];
                 })
                 break;
             case 'month':
                 Object.keys(data).map(date_time => {
                     var date = formatYearMonth(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
-                    temp[date] += data[date_time];
+                    temp[date] = data[date_time];
                 })
                 break;
             default:
-                Object.keys(data).map(date_time => {
-                    sum += data[date_time];
-                    temp[date_time] = sum;
-                })
+                temp = data;
         }
         return temp;
     }
@@ -2456,67 +2479,89 @@
                     }
                 } else {
                     var y_add_flag = false;
+                    var y_value={};
+                    Object.keys(actions).map(id => {
+                        y_value[id] = 0;
+                    })
                     Object.keys(graph_data).map((detect_time, index) => {
                         var detect_time_object = new Date(detect_time);
-                        if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000){
-                            if (index == 0){
-                                y_add_flag = true;
-                                if  (detect_time_object.getTime() != cur_time.getTime()){
-                                    date_labels.push(detect_time_object);
-                                    Object.keys(actions).map(id => {
-                                        totals_by_action[id].push(0);
-                                    })
-                                }
-                            } else {
-                                date_labels.push(detect_time_object);
-                            }
+                        if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000 && detect_time_object.getTime() <= max_time.getTime()){
+                            // if (index == 0){
+                            //     y_add_flag = true;
+                            //     if  (detect_time_object.getTime() != cur_time.getTime()){
+                            //         date_labels.push(detect_time_object);
+                            //         Object.keys(actions).map(id => {
+                            //             totals_by_action[id].push(0);
+                            //         })
+                            //     }
+                            // } else {
+                            //     date_labels.push(detect_time_object);
+                            // }
                             Object.keys(actions).map(id => {
+                                // if (graph_data[detect_time][id] != undefined){
+                                //     totals_by_action[id].push(graph_data[detect_time][id]);
+                                //     if (graph_data[detect_time][id] > max_y) max_y = graph_data[detect_time][id];
+                                // } else {
+                                //     totals_by_action[id].push(0);
+                                // }
                                 if (graph_data[detect_time][id] != undefined){
-                                    totals_by_action[id].push(graph_data[detect_time][id]);
-                                    if (graph_data[detect_time][id] > max_y) max_y = graph_data[detect_time][id];
-                                } else {
-                                    totals_by_action[id].push(0);
+                                    y_value[id] += graph_data[detect_time][id];
                                 }
                             })
                         }
                     })
-                    if (y_add_flag == false){
-                        Object.keys(actions).map(id => {
-                            totals_by_action[id].push(0);
-                        })
-                    }
+                    Object.keys(actions).map(id => {
+                        if (max_y < y_value[id]) max_y = y_value[id];
+                        totals_by_action[id].push(y_value[id]);
+                    })
+                    // if (y_add_flag == false){
+                    //     Object.keys(actions).map(id => {
+                    //         totals_by_action[id].push(0);
+                    //     })
+                    // }
                 }
             } else {
                 var y_add_flag = false;
+                var y_value={};
+                Object.keys(actions).map(id => {
+                    y_value[id] = 0;
+                })
                 Object.keys(graph_data).map((detect_time, index) => {
                     var detect_time_object = new Date(detect_time);
                     if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000 && detect_time_object.getTime() <= max_time.getTime()){
-                        if (index == 0){
-                            y_add_flag = true;
-                            if  (detect_time_object.getTime() != cur_time.getTime()){
-                                date_labels.push(detect_time_object);
-                                Object.keys(actions).map(id => {
-                                    totals_by_action[id].push(0);
-                                })
-                            }
-                        } else {
-                            date_labels.push(detect_time_object);
-                        }
+                        // if (index == 0){
+                        //     y_add_flag = true;
+                        //     if  (detect_time_object.getTime() != cur_time.getTime()){
+                        //         date_labels.push(detect_time_object);
+                        //         Object.keys(actions).map(id => {
+                        //             totals_by_action[id].push(0);
+                        //         })
+                        //     }
+                        // } else {
+                        //     date_labels.push(detect_time_object);
+                        // }
                         Object.keys(actions).map(id => {
+                            // if (graph_data[detect_time][id] != undefined){
+                            //     totals_by_action[id].push(graph_data[detect_time][id]);
+                            //     if (graph_data[detect_time][id] > max_y) max_y = graph_data[detect_time][id];
+                            // } else {
+                            //     totals_by_action[id].push(0);
+                            // }
                             if (graph_data[detect_time][id] != undefined){
-                                totals_by_action[id].push(graph_data[detect_time][id]);
-                                if (graph_data[detect_time][id] > max_y) max_y = graph_data[detect_time][id];
-                            } else {
-                                totals_by_action[id].push(0);
+                                y_value[id] += graph_data[detect_time][id];
                             }
                         })
                     }
                 })
-                if (y_add_flag == false){
-                    Object.keys(actions).map(id => {
-                        totals_by_action[id].push(0);
-                    })
-                }
+                Object.keys(actions).map(id => {
+                    if (max_y < y_value[id]) max_y = y_value[id];
+                    totals_by_action[id].push(y_value[id]);
+                })
+                // if (y_add_flag == false){
+                //     Object.keys(actions).map(id => {
+                //         totals_by_action[id].push(0);
+                //     })
+                // }
             }
             switch(x_range){
                 case 'time':

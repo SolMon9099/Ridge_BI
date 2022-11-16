@@ -82,7 +82,13 @@ class DetectionController extends Controller
         Log::info('record enddatetime = '.$record_end_time);
 
         $safie_service = new SafieApiService($camera_data->contract_no);
-        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '危険エリア侵入検知');
+        $request_id = null;
+        if ($camera_data->is_enabled == 1) {
+            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '危険エリア侵入検知');
+        } else {
+            Log::info('動画取得が中止されたカメラ '.$camera_data->camera_id);
+        }
+
         Log::info('request_id = '.$request_id);
         if ($request_id > 0) {
             $temp_save_data = [
@@ -193,7 +199,12 @@ class DetectionController extends Controller
         Log::info('record enddatetime = '.$record_end_time);
 
         $safie_service = new SafieApiService($camera_data->contract_no);
-        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '棚乱れ検知');
+        $request_id = null;
+        if ($camera_data->is_enabled == 1) {
+            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '棚乱れ検知');
+        } else {
+            Log::info('動画取得が中止されたカメラ '.$camera_data->camera_id);
+        }
         Log::info('request_id = '.$request_id);
         if ($request_id > 0) {
             $temp_save_data = [
@@ -301,7 +312,14 @@ class DetectionController extends Controller
         Log::info('record enddatetime = '.$record_end_time);
 
         $safie_service = new SafieApiService($camera_data->contract_no);
-        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, 'ピット入退場検知');
+
+        $request_id = null;
+        if ($camera_data->is_enabled == 1) {
+            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, 'ピット入退場検知');
+        } else {
+            Log::info('動画取得が中止されたカメラ '.$camera_data->camera_id);
+        }
+
         Log::info('request_id = '.$request_id);
         if ($request_id > 0) {
             $temp_save_data = [
@@ -417,7 +435,14 @@ class DetectionController extends Controller
         Log::info('record enddatetime = '.$record_end_time);
 
         $safie_service = new SafieApiService($camera_data->contract_no);
-        $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '大量盗難検知');
+
+        $request_id = null;
+        if ($camera_data->is_enabled == 1) {
+            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '大量盗難検知');
+        } else {
+            Log::info('動画取得が中止されたカメラ '.$camera_data->camera_id);
+        }
+
         Log::info('request_id = '.$request_id);
         if ($request_id > 0) {
             $temp_save_data = [

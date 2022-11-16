@@ -89,6 +89,7 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
             Route::post('/getHeatmapData', 'CameraController@getHeatmapData')->name('admin.camera.getHeatmapData');
             Route::post('AjaxRefreshImg', 'CameraController@AjaxRefreshImg')->name('admin.camera.AjaxRefreshImg');
             Route::post('/reset_heatmap', 'CameraController@reset_heatmap')->name('admin.camera.reset_heatmap');
+            Route::post('/update_camera', 'CameraController@update_camera')->name('admin.camera.update_camera');
         });
 
         Route::group(['prefix' => 'pit'], function () {

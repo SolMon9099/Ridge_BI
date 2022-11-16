@@ -6,20 +6,6 @@
     $endtime = (isset($request_params) && isset($request_params['endtime']))?date('Y-m-d', strtotime($request_params['endtime'])):date('Y-m-d');
     $search_period = (strtotime($endtime) - strtotime($starttime))/86400;
     $selected_rule = old('selected_rule', (isset($request_params) && isset($request_params['selected_rule']))?$request_params['selected_rule']:null);
-    $total_data = array();
-    $sum = 0;
-    $pit_detections = array_reverse($pit_detections);
-    foreach ($pit_detections as $item) {
-        if (!isset($total_data[date('Y-m-d H:i:s', strtotime($item->starttime))])) {
-            $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $item->nb_entry - $item->nb_exit;
-        } else {
-            $delta = 1;
-            while(isset($total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)])){
-                $delta += 1;
-            }
-            $total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)] = $item->nb_entry - $item->nb_exit;
-        }
-    }
 ?>
 <form action="{{route('admin.pit.past_analysis')}}" method="get" name="form1" id="form1">
 @csrf
@@ -159,13 +145,6 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php
-                                        $sum_data = array();
-                                        foreach ($pit_detections as $pit_item) {
-                                            $sum += ($pit_item->nb_entry - $pit_item->nb_exit);
-                                            $sum_data[$pit_item->id] = $sum;
-                                        }
-                                    ?>
                                     @foreach (array_reverse($pit_detections) as $pit_item)
                                         <tr>
                                             <td>{{date('Y-m-d H:i:s', strtotime($pit_item->starttime))}}</td>
@@ -175,7 +154,7 @@
                                                     {{($pit_item->nb_entry - $pit_item->nb_exit)}}
                                                 </span>
                                             </td>
-                                            <td>{{$sum_data[$pit_item->id]}}</td>
+                                            <td>{{$pit_item->sum_in_pit}}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -563,37 +542,28 @@
             case 'day':
                 Object.keys(data).map(date_time => {
                     var date = formatDateLine(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
-                    temp[date] += data[date_time];
+                    temp[date] = data[date_time];
                 })
                 break;
             case 'week':
                 Object.keys(data).map(date_time => {
                     var date = formatYearWeekNum(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
-                    temp[date] += data[date_time];
+                    temp[date] = data[date_time];
                 })
                 break;
             case 'month':
                 Object.keys(data).map(date_time => {
                     var date = formatYearMonth(date_time);
-                    if (temp[date] == undefined) temp[date] = sum;
-                    sum += data[date_time];
-                    temp[date] += data[date_time];
+                    temp[date] = data[date_time];
                 })
                 break;
             default:
-                Object.keys(data).map(date_time => {
-                    sum += data[date_time];
-                    temp[date_time] = sum;
-                })
+                temp = data;
         }
         return temp;
     }
     var myLineChart = null;
-    var total_data = <?php echo json_encode($total_data);?>;
+    var graph_data = <?php echo json_encode($graph_data);?>;
     function displayGraphData(e = null, time_period = '3', start_init_flag = true){
         var time_labels = [];
         var y_data = [];
@@ -628,7 +598,7 @@
             cur_time.setMinutes(0);
             cur_time.setSeconds(0);
         }
-        var graph_data = resortData(total_data, time_period);
+        var sorted_graph_data = resortData(graph_data, time_period);
         while(cur_time.getTime() <= max_time.getTime()){
             time_labels.push(new Date(cur_time));
             point_radius.push(0);
@@ -642,12 +612,12 @@
                 var date_key = formatDateLine(cur_time);
                 if (time_period == 'week') date_key = formatYearWeekNum(cur_time);
                 if (time_period == 'month') date_key = formatYearMonth(cur_time);
-                if (graph_data[date_key] != undefined){
-                    y_data[y_data.length - 1] = graph_data[date_key];
+                if (sorted_graph_data[date_key] != undefined){
+                    y_data[y_data.length - 1] = sorted_graph_data[date_key];
                     point_radius[point_radius.length - 1] = 3;
                 }
             } else {
-                Object.keys(graph_data).map((time, index) => {
+                Object.keys(sorted_graph_data).map((time, index) => {
                     if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000 && new Date(time).getTime() <= max_time.getTime()){
                         if (index == 0){
                             if (new Date(time).getTime() != cur_time.getTime()) {
@@ -661,11 +631,11 @@
                             }
                         } else {
                             time_labels.push(new Date(time));
-                            y_data.push(graph_data[time]);
+                            y_data.push(sorted_graph_data[time]);
                             point_radius.push(3);
                         }
                         point_radius[point_radius.length - 1] = 3;
-                        y_data[y_data.length - 1] = graph_data[time];
+                        y_data[y_data.length - 1] = sorted_graph_data[time];
                     }
                 })
             }

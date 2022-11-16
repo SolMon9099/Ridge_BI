@@ -621,35 +621,46 @@
 
             } else {
                 var y_add_flag = false;
+                var y_value = {};
+                Object.keys(actions).map(id => {
+                    y_value[id] = 0;
+                })
                 Object.keys(graph_data).map((detect_time, index) => {
                     var detect_time_object = new Date(detect_time);
                     if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000 && detect_time_object.getTime() <= max_time.getTime()){
-                        if (index == 0){
-                            y_add_flag = true;
-                            if  (detect_time_object.getTime() != cur_time.getTime()){
-                                date_labels.push(detect_time_object);
-                                Object.keys(actions).map(id => {
-                                    totals_by_action[id].push(0);
-                                })
-                            }
-                        } else {
-                            date_labels.push(detect_time_object);
-                        }
+                        // if (index == 0){
+                        //     y_add_flag = true;
+                        //     if  (detect_time_object.getTime() != cur_time.getTime()){
+                        //         date_labels.push(detect_time_object);
+                        //         Object.keys(actions).map(id => {
+                        //             totals_by_action[id].push(0);
+                        //         })
+                        //     }
+                        // } else {
+                        //     date_labels.push(detect_time_object);
+                        // }
                         Object.keys(actions).map(id => {
+                        //     if (graph_data[detect_time][id] != undefined){
+                        //         totals_by_action[id].push(graph_data[detect_time][id]);
+                        //         if (graph_data[detect_time][id] > max_y) max_y = graph_data[detect_time][id];
+                        //     } else {
+                        //         totals_by_action[id].push(0);
+                        //     }
                             if (graph_data[detect_time][id] != undefined){
-                                totals_by_action[id].push(graph_data[detect_time][id]);
-                                if (graph_data[detect_time][id] > max_y) max_y = graph_data[detect_time][id];
-                            } else {
-                                totals_by_action[id].push(0);
+                                y_value[id] += graph_data[detect_time][id];
                             }
                         })
                     }
                 })
-                if (y_add_flag == false){
-                    Object.keys(actions).map(id => {
-                        totals_by_action[id].push(0);
-                    })
-                }
+                Object.keys(actions).map(id => {
+                    if (max_y < y_value[id]) max_y = y_value[id];
+                    totals_by_action[id].push(y_value[id]);
+                });
+                // if (y_add_flag == false){
+                //     Object.keys(actions).map(id => {
+                //         totals_by_action[id].push(0);
+                //     })
+                // }
             }
             switch(time_period){
                 case 'time':

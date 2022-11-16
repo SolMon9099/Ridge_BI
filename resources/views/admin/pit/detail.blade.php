@@ -3,9 +3,12 @@
 @section('content')
 <?php
     $selected_camera = old('selected_camera', (isset($request_params) && isset($request_params['selected_camera']))?$request_params['selected_camera']:null);
-    $total_data = array();
     $sum = 0;
     $time_period = '3';
+    $current_persons_in_pit = 0;
+    if (count($pit_detections) > 0){
+        $current_persons_in_pit = $pit_detections[0]->sum_in_pit > 0 ? $pit_detections[0]->sum_in_pit : 0;
+    }
 ?>
 <form action="{{route('admin.pit.detail')}}" method="get" name="form1" id="form1">
 @csrf
@@ -22,7 +25,7 @@
                 <h2 class="title">TOP(ピット入退場検知)</h2>
             </div>
             <h5>{{date('Y/m/d')}}のデータを表示</h5>
-            <div class="title-wrap ver2 stick" style="margin-top: 10px;">
+            <div class="title-wrap ver2 stick" style="margin-top: 10px;margin-bottom:15px;">
                 <div class="sp-ma">
                     <div class="sort">
                         <ul class="date-list">
@@ -39,6 +42,7 @@
                 </div>
             </div>
             @if($selected_rule != null)
+                <h3 class="title">現在のピット内人数：{{$current_persons_in_pit}}人</h3>
                 <div class="list">
                     <div class="inner active">
                         <div style="display: flex;">
@@ -120,32 +124,13 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php
-                                                $sum_data = array();
-                                                foreach (array_reverse($pit_detections) as $item) {
-                                                    if ($item->nb_entry != $item->nb_exit){
-                                                        $sum += ($item->nb_entry - $item->nb_exit);
-                                                        $sum_data[$item->id] = $sum;
-                                                        if (!isset($total_data[date('Y-m-d H:i:s', strtotime($item->starttime))])) {
-                                                            $total_data[date('Y-m-d H:i:s', strtotime($item->starttime))] = $sum;
-                                                        } else {
-                                                            $delta = 1;
-                                                            while(isset($total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)])){
-                                                                $delta += 1;
-                                                            }
-                                                            $total_data[date('Y-m-d H:i:s.u', strtotime($item->starttime) + $delta)] = $sum;
-                                                        }
-                                                    }
-                                                }
-                                            ?>
                                             @foreach ($pit_detections as $item)
                                                 @if($item->nb_entry != $item->nb_exit)
-
                                                 <tr>
                                                     <td>{{date('Y-m-d H:i:s', strtotime($item->starttime))}}</td>
                                                     <td>{{$item->nb_entry > $item->nb_exit ? '入場' : '退場'}} </td>
                                                     <td><span class="{{$item->nb_entry > $item->nb_exit ? 'f-red' : 'f-blue'}}">{{$item->nb_entry - $item->nb_exit}}</span></td>
-                                                    <td>{{$sum_data[$item->id]}}</td>
+                                                    <td>{{$item->sum_in_pit}}</td>
                                                 </tr>
                                                 @endif
                                             @endforeach
@@ -271,7 +256,7 @@
     var time_period = "<?php echo $time_period;?>";
     var selected_camera = "<?php echo $selected_camera;?>";
     var grid_unit = 15;
-    var total_data = <?php echo json_encode($total_data);?>;
+    var graph_data = <?php echo json_encode($graph_data);?>;
 
     function drawGraph(x_data, y_data, point_radius){
         ctx.innerHTML = '';
@@ -396,7 +381,7 @@
                 y_data.push(null);
             }
 
-            Object.keys(total_data).map((time, index) => {
+            Object.keys(graph_data).map((time, index) => {
                 if (new Date(time).getTime() >= cur_time.getTime() && new Date(time).getTime() < cur_time.getTime() + grid_unit* 60 * 1000 && new Date(time).getTime() <= max_time.getTime()){
                     if (index == 0){
                         if (new Date(time).getTime() != cur_time.getTime()) {
@@ -411,10 +396,10 @@
                     } else {
                         time_labels.push(new Date(time));
                         point_radius.push(3);
-                        y_data.push(total_data[time]);
+                        y_data.push(graph_data[time]);
                     }
                     point_radius[point_radius.length - 1] = 3;
-                    y_data[y_data.length - 1] = total_data[time];
+                    y_data[y_data.length - 1] = graph_data[time];
                 }
             })
             cur_time.setMinutes(cur_time.getMinutes() + grid_unit);

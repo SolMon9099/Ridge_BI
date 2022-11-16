@@ -114,7 +114,7 @@
                 <th>備考</th>
                 <td><textarea name="remarks">{{ old('remarks', isset($camera->remarks)?$camera->remarks:'')}}</textarea></td>
             </tr>
-            <tr>
+            {{-- <tr>
                 <th>稼働状況</th>
                 <td>
                     <ul class="radio-list">
@@ -126,7 +126,7 @@
                     @endforeach
                     </ul>
                 </td>
-            </tr>
+            </tr> --}}
         </thead>
     </table>
 </div>

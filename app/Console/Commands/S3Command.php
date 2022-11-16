@@ -36,7 +36,7 @@ class S3Command extends Command
         $now_date = $cur_time_object->format('Y-m-d');
 
         Log::info('カメラチェック開始');
-        $cameras = Camera::all();
+        $cameras = Camera::query()->where('is_enabled', 1)->get()->all();
         if (count($cameras) == 0) {
             return 0;
         }
@@ -182,7 +182,7 @@ class S3Command extends Command
             ->where('contract_no', $contract_no)
             ->where('status', '!=', 2)
             ->where('status', '!=', 3)
-            ->orderByDesc('updated_at')->get();
+            ->orderBy('start_time')->get()->all();
         $safie_service = new SafieApiService($contract_no);
         foreach ($data as $item) {
             if ($item->request_id == 'error_503') {

@@ -316,4 +316,16 @@ class CameraController extends AdminController
 
         return $camera_id;
     }
+
+    public function update_camera(Request $request)
+    {
+        $camera_id = $request['camera_id'];
+        $params = $request['params'];
+        $res = false;
+        if ($camera_id > 0) {
+            $res = CameraService::updateCameraById($camera_id, $params);
+        }
+
+        return $res;
+    }
 }

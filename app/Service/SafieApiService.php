@@ -7,6 +7,7 @@ use KubAT\PhpSimple\HtmlDomParser;
 use App\Models\Token;
 use App\Models\MediaRequestHistory;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class SafieApiService
 {
@@ -318,6 +319,28 @@ class SafieApiService
     public function makeMediaFile($device_id = null, $start = null, $end = null, $request_resource = null)
     {
         $device_id = $device_id != null ? $device_id : $this->device_id;
+        $media_history_data = MediaRequestHistory::query()->where('device_id', $device_id)
+            ->where('created_at', '>', date('Y-m-d H:i:s', strtotime('-12 hour')))
+            ->orderByDesc('created_at')->limit(50)
+            ->get()->all();
+        $check_camera_enable = true;
+        if (count($media_history_data) >= 50) {
+            $check_camera_enable = false;
+            foreach ($media_history_data as $item) {
+                if ($item->http_code == 200) {
+                    $check_camera_enable = true;
+                    break;
+                }
+            }
+        }
+
+        if ($check_camera_enable == false) {
+            Log::info('動画取得中止 '.$device_id);
+            DB::table('cameras')->where('camera_id', $device_id)->whereNull('deleted_at')->update(['is_enabled' => 0]);
+
+            return null;
+        }
+
         $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests', $device_id);
         $header = [
             'Authorization: Bearer '.$this->access_token,

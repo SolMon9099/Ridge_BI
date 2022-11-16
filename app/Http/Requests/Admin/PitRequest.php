@@ -45,6 +45,7 @@ class PitRequest extends FormRequest
             if ($this->action == 'admin.pit.store') {
                 $rules['max_permission_time'] = ['required'];
                 $rules['min_members'] = ['required', 'max:2'];
+                $rules['init_persons'] = ['max:2'];
                 $rules['name'] = ['max:6'];
             }
         }
@@ -68,6 +69,7 @@ class PitRequest extends FormRequest
         $messages['max_permission_time.required'] = 'アラート対象滞在時間を選択してください。';
         $messages['min_members.required'] = 'ピット内人数を入力してください。';
         $messages['min_members.max'] = 'ピット内人数は2桁以下にして入力してください。';
+        $messages['init_persons.max'] = '現在のピット内人数は2桁以下にして入力してください。';
 
         return $messages;
     }

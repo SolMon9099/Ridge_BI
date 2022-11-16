@@ -26,7 +26,7 @@ return [
         3 => '寄りかかる',
         4 => '侵入する',
         5 => '指差し',
-        6 => '喫煙'
+        6 => '喫煙',
     ],
 
     'action_cond_statement' => [
@@ -35,7 +35,7 @@ return [
         3 => '寄りかかる',
         4 => 'エリア侵入',
         5 => '指差し',
-        6 => '喫煙'
+        6 => '喫煙',
     ],
     'action_statement' => [
         1 => '横たわる',
@@ -43,7 +43,7 @@ return [
         3 => '寄りかかる',
         4 => 'エリア内侵入検知',
         5 => '指差し',
-        6 => '喫煙'
+        6 => '喫煙',
     ],
 
     'action_code' => [
@@ -53,7 +53,6 @@ return [
         'invade' => 4,
         'pointing' => 5,
         'smoking' => 6,
-
     ],
 
     //メーター種別
@@ -228,8 +227,8 @@ return [
         19 => 'admin.thief.cameras_for_rule',
     ],
 
-    'camera_start_time' => '00:00:00',
-    'camera_end_time' => '23:59:59',
+    'camera_start_time' => '09:00:00',
+    'camera_end_time' => '21:00:00',
     'request_interval' => 1,        //分
     'detection_video_length' => 30,    //秒
     'pit_time_options' => [15, 30, 45, 60, 75, 90, 105, 120],

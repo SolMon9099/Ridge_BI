@@ -64,23 +64,22 @@
                                 @endforeach
                                 </select>
                             </div>
-                            {{-- <input type="text" name="floor_number" value="{{ old('floor_number', (isset($input) && $input->has('floor_number'))?$input->floor_number:'')}}"/> --}}
                         </li>
                     </ul>
-                    {{-- <ul class="date-list">
-                        <li><h4>稼働状況 </h4></li>
+                    <ul class="date-list">
+                        <li><h4>動画取得状況 </h4></li>
                         <li>
                             <ul class="radio-list">
                                 @foreach (config('const.camera_status') as $key => $status )
                                     <li>
                                         <input name="is_enabled" type="radio" id="is_enabled_{{ $key }}" value="{{ $key }}"
-                                        {{ old('is_enabled', (isset($input) && $input->has('is_enabled') && $input->is_enabled != '') ? $input->is_enabled : config('const.enable_status_code.enable')) == $key ? 'checked' : ''  }}>
+                                        {{ old('is_enabled', (isset($input) && $input->has('is_enabled') && $input->is_enabled != '') ? (int)$input->is_enabled : '') === $key ? 'checked' : '' }}>
                                         <label for="is_enabled_{{ $key }}">{{  $status }}</label>
                                     </li>
                                 @endforeach
                             </ul>
                         </li>
-                    </ul> --}}
+                    </ul>
                     <button type="submit" class="apply">絞り込む</button>
                 </div>
             </div>

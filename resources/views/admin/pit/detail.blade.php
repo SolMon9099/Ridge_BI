@@ -42,7 +42,8 @@
                 </div>
             </div>
             @if($selected_rule != null)
-                <h3 class="title">現在のピット内人数：{{$current_persons_in_pit}}人</h3>
+                <h3 class="title">現在のピット内人数</h3>
+                <div style="padding-left: 190px;">{{$current_persons_in_pit}}人</div>
                 <div class="list">
                     <div class="inner active">
                         <div style="display: flex;">

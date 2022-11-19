@@ -54,6 +54,16 @@ return [
         'temp' => [
             'driver' => 'local',
             'root' => storage_path('app/public/temp'),
+            'permissions' => [
+                'file' => [
+                    'private' => 0777,
+                    'public' => 0777,
+                ],
+                'dir' => [
+                    'private' => 0777,
+                    'public' => 0777,
+                ]
+            ]
         ],
 
         'drawings' => [
@@ -63,14 +73,44 @@ return [
         'video' => [
             'driver' => 'local',
             'root' => storage_path('app/public/video'),
+            'permissions' => [
+                'file' => [
+                    'private' => 0777,
+                    'public' => 0777,
+                ],
+                'dir' => [
+                    'private' => 0777,
+                    'public' => 0777,
+                ]
+            ]
         ],
         'thumb' => [
             'driver' => 'local',
             'root' => storage_path('app/public/thumb'),
+            'permissions' => [
+                'file' => [
+                    'private' => 0777,
+                    'public' => 0777,
+                ],
+                'dir' => [
+                    'private' => 0777,
+                    'public' => 0777,
+                ]
+            ]
         ],
         'recent_camera_image' => [
             'driver' => 'local',
             'root' => storage_path('app/public/recent_camera_image'),
+            'permissions' => [
+                'file' => [
+                    'private' => 0777,
+                    'public' => 0777,
+                ],
+                'dir' => [
+                    'private' => 0777,
+                    'public' => 0777,
+                ]
+            ]
         ],
     ],
 

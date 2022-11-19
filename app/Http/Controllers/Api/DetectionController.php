@@ -84,7 +84,7 @@ class DetectionController extends Controller
         $safie_service = new SafieApiService($camera_data->contract_no);
         $request_id = null;
         if ($camera_data->is_enabled == 1) {
-            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '危険エリア侵入検知');
+            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '危険エリア侵入検知', $camera_data->reopened_at);
         } else {
             Log::info('動画取得が中止されたカメラ '.$camera_data->camera_id);
         }
@@ -140,7 +140,7 @@ class DetectionController extends Controller
             $detection_model->save();
             Log::info('危険エリア侵入検知解析結果送受信API（AI→BI）終了');
 
-            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 500);
+            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 200);
         }
     }
 
@@ -201,7 +201,7 @@ class DetectionController extends Controller
         $safie_service = new SafieApiService($camera_data->contract_no);
         $request_id = null;
         if ($camera_data->is_enabled == 1) {
-            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '棚乱れ検知');
+            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '棚乱れ検知', $camera_data->reopened_at);
         } else {
             Log::info('動画取得が中止されたカメラ '.$camera_data->camera_id);
         }
@@ -245,7 +245,7 @@ class DetectionController extends Controller
             }
             Log::info('棚乱れ検知ルール通知解析結果送受信API（AI→BI）終了');
 
-            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 500);
+            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 200);
         }
     }
 
@@ -315,7 +315,7 @@ class DetectionController extends Controller
 
         $request_id = null;
         if ($camera_data->is_enabled == 1) {
-            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, 'ピット入退場検知');
+            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, 'ピット入退場検知', $camera_data->reopened_at);
         } else {
             Log::info('動画取得が中止されたカメラ '.$camera_data->camera_id);
         }
@@ -375,7 +375,7 @@ class DetectionController extends Controller
 
             Log::info('ピット入退場解析結果送受信API（AI→BI）終了');
 
-            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 500);
+            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 200);
         }
     }
 
@@ -438,7 +438,7 @@ class DetectionController extends Controller
 
         $request_id = null;
         if ($camera_data->is_enabled == 1) {
-            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '大量盗難検知');
+            $request_id = $safie_service->makeMediaFile($camera_data->camera_id, $record_start_time, $record_end_time, '大量盗難検知', $camera_data->reopened_at);
         } else {
             Log::info('動画取得が中止されたカメラ '.$camera_data->camera_id);
         }
@@ -483,7 +483,7 @@ class DetectionController extends Controller
             }
             Log::info('大量盗難解析結果送受信API（AI→BI）終了');
 
-            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 500);
+            return response()->json(['error' => 'カメラメディアファイル作成失敗'], 200);
         }
     }
 

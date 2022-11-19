@@ -316,29 +316,55 @@ class SafieApiService
     }
 
     //メディアファイル 作成要求
-    public function makeMediaFile($device_id = null, $start = null, $end = null, $request_resource = null)
+    public function makeMediaFile($device_id = null, $start = null, $end = null, $request_resource = null, $camera_reopened_at = null)
     {
         $device_id = $device_id != null ? $device_id : $this->device_id;
-        $media_history_data = MediaRequestHistory::query()->where('device_id', $device_id)
-            ->where('created_at', '>', date('Y-m-d H:i:s', strtotime('-12 hour')))
-            ->orderByDesc('created_at')->limit(50)
-            ->get()->all();
+        $media_history_query = MediaRequestHistory::query()->where('device_id', $device_id)
+            ->where('created_at', '>', date('Y-m-d H:i:s', strtotime('-12 hour')));
+        if ($camera_reopened_at != null) {
+            $media_history_query->where('created_at', '>', date('Y-m-d H:i:s', strtotime($camera_reopened_at)));
+        }
+        $media_history_data = $media_history_query->orderByDesc('created_at')->limit(50)->get()->all();
         $check_camera_enable = true;
-        if (count($media_history_data) >= 50) {
+        $check_all_503_error = true;
+        $count_40x_error = 0;
+        if (count($media_history_data) == 50) {
             $check_camera_enable = false;
             foreach ($media_history_data as $item) {
+                if ($item->http_code != 503) {
+                    $check_all_503_error = false;
+                    ++$count_40x_error;
+                }
                 if ($item->http_code == 200) {
                     $check_camera_enable = true;
                     break;
                 }
             }
         }
+        if ($count_40x_error <= 5) {
+            $check_all_503_error = true;
+        }
 
         if ($check_camera_enable == false) {
-            Log::info('動画取得中止 '.$device_id);
-            DB::table('cameras')->where('camera_id', $device_id)->whereNull('deleted_at')->update(['is_enabled' => 0]);
+            if ($check_all_503_error) {
+                $diff_from_last = strtotime(date('Y-m-d H:i:s')) - strtotime($media_history_data[0]->created_at);
+                if ($diff_from_last >= (int) config('const.camera_auto_reopen_interval')) {
+                    Log::info('動画取得再開_____503  '.$device_id);
+                    DB::table('cameras')->where('camera_id', $device_id)->whereNull('deleted_at')->update(['is_enabled' => 1]);
+                } else {
+                    Log::info('動画取得中止 '.$device_id);
+                    DB::table('cameras')->where('camera_id', $device_id)->whereNull('deleted_at')->update(['is_enabled' => 0]);
 
-            return null;
+                    return null;
+                }
+            } else {
+                Log::info('動画取得中止 '.$device_id);
+                DB::table('cameras')->where('camera_id', $device_id)->whereNull('deleted_at')->update(['is_enabled' => 0]);
+
+                return null;
+            }
+        } else {
+            DB::table('cameras')->where('camera_id', $device_id)->whereNull('deleted_at')->update(['is_enabled' => 1]);
         }
 
         $url = sprintf('https://openapi.safie.link/v1/devices/%s/media_files/requests', $device_id);

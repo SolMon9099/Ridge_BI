@@ -152,6 +152,9 @@ class CameraService
         }
         if (isset($params) && isset($params['is_enabled'])) {
             DB::table('cameras')->where('id', $id)->update(['is_enabled' => $params['is_enabled']]);
+            if ($params['is_enabled'] == 1) {
+                DB::table('cameras')->where('id', $id)->update(['reopened_at' => date('Y-m-d H:i:s')]);
+            }
         }
 
         return true;

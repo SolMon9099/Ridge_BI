@@ -12,6 +12,7 @@ use App\Models\S3VideoHistory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\Camera;
+use App\Models\MediaRequestHistory;
 use Illuminate\Support\Facades\DB;
 
 class S3Command extends Command
@@ -36,7 +37,7 @@ class S3Command extends Command
         $now_date = $cur_time_object->format('Y-m-d');
 
         Log::info('カメラチェック開始');
-        $cameras = Camera::query()->where('is_enabled', 1)->get()->all();
+        $cameras = Camera::query()->get()->all();
         if (count($cameras) == 0) {
             return 0;
         }
@@ -61,12 +62,12 @@ class S3Command extends Command
 
             //メディアファイル作成要求一覧取得・S3に保存--------------------------------
             Log::info('メディアファイル作成要求一覧取得・S3に保存ーーーー');
-            $this->saveMedia($camera->camera_id, $camera->contract_no, $camera->id);
+            $this->saveMedia($camera);
             //----------------------------------------------------------------------
-            if (strtotime($now_date.' '.$camera_start_on_time) <= strtotime($now) && strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
+            if ($camera->is_enabled == 1 && strtotime($now_date.' '.$camera_start_on_time) <= strtotime($now) && strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
                 //メディアファイル作成要求--------------------------------
                 Log::info('メディアファイル作成要求--------------------------------');
-                $request_id = $safie_service->makeMediaFile($camera->camera_id, $record_start_time, $record_end_time, '定期ダウンロード');
+                $request_id = $safie_service->makeMediaFile($camera->camera_id, $record_start_time, $record_end_time, '定期ダウンロード', $camera->reopened_at);
                 Log::info('request_id = '.$request_id);
                 if ($request_id > 0) {
                     $this->createS3History($request_id, $record_start_time_object, $record_end_time_object, $camera->camera_id, $camera->contract_no);
@@ -175,36 +176,59 @@ class S3Command extends Command
         $record->save();
     }
 
-    public function saveMedia($device_id = null, $contract_no = null, $id_camera = 0)
+    public function saveMedia($camera_item)
     {
-        $device_id = $device_id == null ? 'FvY6rnGWP12obPgFUj0a' : $device_id;
+        $device_id = $camera_item->camera_id;
         $data = S3VideoHistory::query()->where('device_id', $device_id)
-            ->where('contract_no', $contract_no)
+            ->where('contract_no', $camera_item->contract_no)
             ->where('status', '!=', 2)
             ->where('status', '!=', 3)
             ->orderBy('start_time')->get()->all();
-        $safie_service = new SafieApiService($contract_no);
+        $safie_service = new SafieApiService($camera_item->contract_no);
+        $retry_count_index = 0;
         foreach ($data as $item) {
-            if ($item->request_id == 'error_503') {
-                // Log::info('メディアファイル------503-------作成要求');
-                // $start_datetime_object = new \DateTime( $item->start_time, new \DateTimeZone("GMT+9") );
-                // $end_datetime_object = new \DateTime( $item->end_time, new \DateTimeZone("GMT+9") );
-                // Log::info('retry start = '.$start_datetime_object->format('c'));
-                // Log::info('retry end = '.$end_datetime_object->format('c'));
-                // $request_id = $safie_service->makeMediaFile($item->device_id, $start_datetime_object->format('c'), $end_datetime_object->format('c'), '定期ダウンロード');
-                // Log::info('retry request id = '. $request_id);
-                // if ($request_id > 0){
-                //     $this->createS3History($request_id, $start_datetime_object, $end_datetime_object, $item->device_id, $item->contract_no);
-                //     $item->delete();
-                // } else {
-                //     if ($request_id != null) {
-                //         $http_code = str_replace('http_code_', '', $request_id);
-                //         if ($http_code == 503) {
-                //             continue;
-                //         }
-                //     }
-                //     $item->delete();
-                // }
+            if (!((int) $item->request_id > 0)) {
+                $error_code = (int) str_replace('error_', '', $item->request_id);
+                if ($error_code == 400 || $error_code == 403 || $error_code == 404) {
+                    $item->delete();
+                    continue;
+                }
+                if ($camera_item->is_enabled != 1) {
+                    continue;
+                }
+                $camera_start_on_time = config('const.camera_start_time');
+                $camera_end_off_time = config('const.camera_end_time');
+                $cur_time_object = new \DateTime();
+                $cur_time_object->setTimezone(new \DateTimeZone('+0900')); //GMT
+                $now = $cur_time_object->format('Y-m-d H:i:s');
+                $now_date = $cur_time_object->format('Y-m-d');
+                if (!(strtotime($now_date.' '.$camera_start_on_time) <= strtotime($now) && strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now))) {
+                    if ($retry_count_index > 0) {
+                        continue;
+                    }
+                    ++$retry_count_index;
+                    Log::info('BI->AI用失敗したメディアファイル再作成要求');
+                    $start_datetime_object = new \DateTime($item->start_time, new \DateTimeZone('GMT+9'));
+                    $end_datetime_object = new \DateTime($item->end_time, new \DateTimeZone('GMT+9'));
+                    Log::info('retry start = '.$start_datetime_object->format('c'));
+                    Log::info('retry end = '.$end_datetime_object->format('c'));
+                    $request_id = $safie_service->makeMediaFile($item->device_id, $start_datetime_object->format('c'), $end_datetime_object->format('c'), '定期ダウンロード', $camera_item->reopened_at);
+                    Log::info('retry request id = '.$request_id);
+                    if ($request_id > 0) {
+                        $this->createS3History($request_id, $start_datetime_object, $end_datetime_object, $item->device_id, $item->contract_no);
+                        $item->delete();
+                    } else {
+                        if ($request_id != 'http_code_404' && $request_id != null) {
+                            continue;
+                        }
+                        if ($request_id == 'http_code_404') {
+                            Log::info('delete history '.$item->start_time);
+                            MediaRequestHistory::query()->where('start_time', $item->start_time)->where('http_code', 404)->where('device_id', $item->device_id)->delete();
+                        }
+                        $item->delete();
+                    }
+                    Log::info('BI->AI用失敗したメディアファイル再作成終了');
+                }
             } else {
                 Log::info('メディアファイル 作成要求取得ーーーー');
                 $media_status = $safie_service->getMediaFileStatus($device_id, $item->request_id);
@@ -228,7 +252,7 @@ class S3Command extends Command
                             //request rule data to AI--------
                             $aws_url = config('const.aws_url');
                             $movie_path = $aws_url.$device_id.'/'.$start_date.'/'.$file_name;
-                            $this->reqeuestToAI($device_id, $id_camera, $movie_path);
+                            $this->reqeuestToAI($device_id, $camera_item->id, $movie_path);
                             //-------------------------------
                         }
                         if ($video_data == 'not_found') {

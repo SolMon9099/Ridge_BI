@@ -21,7 +21,7 @@ class CreateCamerasTable extends Migration
             $table->string('installation_position')->comment('設置場所');
             $table->foreignId('location_id')->references('id')->on('locations');
             $table->string('remarks')->nullable()->comment('備考');
-            $table->integer('is_enabled')->default(1)->comment('稼働状況 (1:稼働中, 0:停止中)');
+            $table->integer('is_enabled')->default(1)->comment('動画取得状況 (1:動画取得稼働中, 0:動画取得停止)');
             $table->integer('created_by')->nullable()->comment('データ作成者ID');
             $table->integer('updated_by')->nullable()->comment('データ最終更新者ID');
             $table->integer('deleted_by')->nullable()->comment('データ論理削除者ID');

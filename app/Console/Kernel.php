@@ -32,6 +32,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('s3:video_get_save')->everyMinute();
         $schedule->command('ai:check_request_download')->everyMinute();
         $schedule->command('s3:sorted_image_save')->everyMinute();
+        $schedule->command('auto_open_camera')->everyFiveMinutes();
         $schedule->command('ai:get_heatmap_data')->everyFiveMinutes();
     }
 

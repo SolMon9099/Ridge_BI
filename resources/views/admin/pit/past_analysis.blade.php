@@ -145,7 +145,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (array_reverse($pit_detections) as $pit_item)
+                                    @foreach ($pit_detections as $pit_item)
                                         <tr>
                                             <td>{{date('Y-m-d H:i:s', strtotime($pit_item->starttime))}}</td>
                                             <td>{{$pit_item->nb_entry > $pit_item->nb_exit ? '入場':'退場'}}</td>
@@ -694,7 +694,7 @@
                     yAxes: [{
                         ticks: {
                             suggestedMax: Math.max(...y_data) + 1,
-                            suggestedMin: Math.min(...y_data) - 1,
+                            suggestedMin: 0,
                             stepSize: parseInt((Math.max(...y_data) + 2)/5) + 1,
                             fontSize: 20,
                             callback: function(value, index, values){

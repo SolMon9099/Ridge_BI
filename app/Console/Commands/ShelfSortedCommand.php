@@ -6,9 +6,7 @@ use Illuminate\Console\Command;
 use App\Service\SafieApiService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-// use App\Models\Camera;
 use App\Models\ShelfDetectionRule;
-
 class ShelfSortedCommand extends Command
 {
     protected $signature = 's3:sorted_image_save';
@@ -76,7 +74,7 @@ class ShelfSortedCommand extends Command
                 }
             }
         }
-
+        Log::info('定時撮影チェック終了ーーーーーー');
         return 0;
     }
 }

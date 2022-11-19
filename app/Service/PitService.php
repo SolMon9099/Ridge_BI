@@ -306,9 +306,12 @@ class PitService
 
     public static function setSumInPit($data)
     {
+        $pit_reset_enable = env('PIT_RESET_ENABLE', true);
         $sum_in_pit = [];
         $sum_in_pit_by_camera = [];
+        $current_date = null;
         foreach ($data as $item) {
+            $date_change_flag = ($current_date == date('Y-m-d', strtotime($item->starttime)));
             if (!isset($sum_in_pit[$item->rule_id])) {
                 if (isset($sum_in_pit_by_camera[$item->device_id])) {
                     $sum_in_pit[$item->rule_id] = $item->init_persons > 0 ? $item->init_persons : 0;
@@ -317,8 +320,14 @@ class PitService
                     $sum_in_pit[$item->rule_id] = $sum_in_pit_by_camera[$item->device_id];
                 }
             }
-            $sum_in_pit[$item->rule_id] += ($item->nb_entry - $item->nb_exit);
-            $item->sum_in_pit = $sum_in_pit[$item->rule_id];
+            if (!$date_change_flag && $pit_reset_enable) {
+                $sum_in_pit[$item->rule_id] = ($item->nb_entry - $item->nb_exit);
+                $current_date = date('Y-m-d', strtotime($item->starttime));
+            } else {
+                $sum_in_pit[$item->rule_id] += ($item->nb_entry - $item->nb_exit);
+            }
+
+            $item->sum_in_pit = $sum_in_pit[$item->rule_id] < 0 ? 0 : $sum_in_pit[$item->rule_id];
         }
 
         return $data;
@@ -326,6 +335,11 @@ class PitService
 
     public static function getInitPersonsinPit($record)
     {
+        $pit_reset_enable = env('PIT_RESET_ENABLE', true);
+        if ($pit_reset_enable) {
+            return 0;
+        }
+
         $res = $record->init_persons > 0 ? $record->init_persons : 0;
         $prev_records = PitDetection::query()
             ->select('nb_entry', 'nb_exit')
@@ -348,8 +362,11 @@ class PitService
         $min_members = [];
         $over_start_time = [];
         $sum_in_pit_by_camera = [];
+        $pit_reset_enable = env('PIT_RESET_ENABLE', true);
+        $current_date = null;
 
         foreach ($data as $index => $item) {
+            $date_change_flag = ($current_date == date('Y-m-d', strtotime($item->starttime)));
             $nb_entry = $item->nb_entry;
             $nb_exit = $item->nb_exit;
             if (!isset($sum_in_pit[$item->rule_id])) {
@@ -366,8 +383,13 @@ class PitService
             if (!isset($min_members[$item->rule_id])) {
                 $min_members[$item->rule_id] = $item->min_members;
             }
-            $sum_in_pit[$item->rule_id] += ($nb_entry - $nb_exit);
-            $item->sum_in_pit = $sum_in_pit[$item->rule_id];
+            if (!$date_change_flag && $pit_reset_enable) {
+                $sum_in_pit[$item->rule_id] = ($nb_entry - $nb_exit);
+                $current_date = date('Y-m-d', strtotime($item->starttime));
+            } else {
+                $sum_in_pit[$item->rule_id] += ($nb_entry - $nb_exit);
+            }
+            $item->sum_in_pit = $sum_in_pit[$item->rule_id] < 0 ? 0 : $sum_in_pit[$item->rule_id];
             if ($sum_in_pit[$item->rule_id] >= $min_members[$item->rule_id]) {
                 if (!isset($over_start_time[$item->rule_id]) || $over_start_time[$item->rule_id] == null) {
                     if ($index == count($data) - 1) {
@@ -385,6 +407,12 @@ class PitService
                 $add_item = null;
                 do {
                     if (strtotime($item->starttime) - strtotime($over_start_time[$item->rule_id]) >= $max_permission_time[$item->rule_id] * 60) {
+                        if ($pit_reset_enable) {
+                            if (date('Y-m-d', strtotime($item->starttime)) != date('Y-m-d', strtotime($over_start_time[$item->rule_id]))) {
+                                $over_start_time[$item->rule_id] = null;
+                                break;
+                            }
+                        }
                         if (isset($data[$index - $increatment])) {
                             $prev_item = $data[$index - $increatment];
                             if ($item->rule_id == $prev_item->rule_id && ($prev_item->nb_entry - $prev_item->nb_exit > 0)) {
@@ -415,6 +443,12 @@ class PitService
                     $add_item = null;
                     do {
                         if (strtotime($item->starttime) - strtotime($over_start_time[$item->rule_id]) >= $max_permission_time[$item->rule_id] * 60) {
+                            if ($pit_reset_enable) {
+                                if (date('Y-m-d', strtotime($item->starttime)) != date('Y-m-d', strtotime($over_start_time[$item->rule_id]))) {
+                                    $over_start_time[$item->rule_id] = null;
+                                    break;
+                                }
+                            }
                             if (isset($data[$index - $increatment])) {
                                 $prev_item = $data[$index - $increatment];
                                 if ($item->rule_id == $prev_item->rule_id && ($prev_item->nb_entry - $prev_item->nb_exit > 0)) {

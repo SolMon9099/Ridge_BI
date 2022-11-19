@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddInitPersonsToPitDetectionRules extends Migration
+class AddReopenedAtToCamerasTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddInitPersonsToPitDetectionRules extends Migration
      */
     public function up()
     {
-        Schema::table('pit_detection_rules', function (Blueprint $table) {
-            $table->integer('init_persons')->nullable()->after('min_members')->comment('現在のピット内人数');
+        Schema::table('cameras', function (Blueprint $table) {
+            $table->dateTime('reopened_at')->nullable()->after('is_enabled')->comment('検知再開時刻');
         });
     }
 
@@ -25,8 +25,8 @@ class AddInitPersonsToPitDetectionRules extends Migration
      */
     public function down()
     {
-        Schema::table('pit_detection_rules', function (Blueprint $table) {
-            $table->dropColumn('init_persons');
+        Schema::table('cameras', function (Blueprint $table) {
+            $table->dropColumn('reopened_at');
         });
     }
 }

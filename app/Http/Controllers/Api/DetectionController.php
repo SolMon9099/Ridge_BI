@@ -497,23 +497,42 @@ class DetectionController extends Controller
 
             return response()->json(['error' => 'デバイスがありません。'], 400);
         }
-        // if (!isset($request['analyze_result'])) {
-        //     Log::info('計算結果がありません。-------------');
+        if (!(isset($request['movie_info']) && isset($request['movie_info']['movie_path']) && $request['movie_info']['movie_path'] != '')) {
+            Log::info('映像パスがありません。-------------');
 
-        //     return ['error' => '計算結果がありません。'];
-        // }
+            return response()->json(['error' => '映像パスがありません。'], 400);
+        }
         if (!(isset($request['heatmap']) && $request['heatmap'] != '' && is_array($request['heatmap']))) {
             Log::info('ヒートマップデータがありません。-------------');
 
             return response()->json(['error' => 'ヒートマップデータがありません。'], 400);
         }
+        $movie_path = $request['movie_info']['movie_path'];
+        $movie_path = str_replace(config('const.ai_server'), '', $movie_path);
+        Log::info('映像パス = '.$movie_path);
+        $split_data = explode('_', $movie_path);
+        if (count($split_data) <= 1) {
+            Log::info('映像パスが正確ではありません。-------------');
+
+            return response()->json(['error' => '映像パスが正確ではありません。'], 400);
+        }
+        $endtime = date('Y-m-d H:i:s', strtotime($split_data[1]));
+        $split_data = explode('/', $split_data[0]);
+        if (count($split_data) <= 1) {
+            Log::info('映像パスが正確ではありません。-------------');
+
+            return response()->json(['error' => '映像パスが正確ではありません。'], 400);
+        }
+        $starttime = $split_data[count($split_data) - 1];
+        $starttime = date('Y-m-d H:i:s', strtotime($starttime));
+
         $quaility_score = 0.82;
         if (isset($request['quality_score']) && $request['quality_score'] > 0) {
             $quaility_score = $request['quality_score'];
         }
         $camera_id = $request['camera_info']['camera_id'];
         Log::info('heatmap parameter*****************');
-        Log::info($request['heatmap']);
+        // Log::info($request['heatmap']);
         $heatmap_data = $request['heatmap'];
         $check_flag = false;
         foreach ($heatmap_data as $rows) {
@@ -530,6 +549,9 @@ class DetectionController extends Controller
             $new_heatmap->camera_id = $camera_id;
             $new_heatmap->quality_score = $quaility_score;
             $new_heatmap->heatmap_data = json_encode($heatmap_data);
+            $new_heatmap->starttime = $starttime;
+            $new_heatmap->endtime = $endtime;
+            $new_heatmap->time_dff = strtotime($endtime) - strtotime($starttime);
             $new_heatmap->save();
             Log::info('ヒートマップ計算結果保存成功');
         } else {

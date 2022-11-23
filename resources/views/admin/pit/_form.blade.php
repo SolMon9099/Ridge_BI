@@ -747,6 +747,10 @@
     function resetHeatMap(camera_id){
         helper_confirm("dialog-confirm", "再取得確認", "AI検知精度ガイドを再取得しますがよろしいですか？<br/>＜注意＞<br/>　・現在のAI検知精度ガイドはリセットされます<br/>　・AI検知精度の再取得まではお時間がかかります（最大１日程度）", 600, "再取得", "キャンセル", function(){
             resetHeatMapAjax(camera_id);
+            heatmap_records = [];
+            $('.grid').css('opacity', 0);
+            $('.video-area').show();
+            $('#ai_guide').prop('checked', false);
         });
     }
 

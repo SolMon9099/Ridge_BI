@@ -400,4 +400,5 @@ return [
     'aws_url' => 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/',
     'ai_server' => 'https://43.206.48.25/api/v1/',
     'camera_auto_reopen_interval' => 300,       //単位 : 秒
+    'heatmap_video_min_numbers' => 60,
 ];

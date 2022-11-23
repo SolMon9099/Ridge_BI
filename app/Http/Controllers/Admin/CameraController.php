@@ -313,6 +313,13 @@ class CameraController extends AdminController
     public function reset_heatmap(Request $request)
     {
         $camera_id = $request['camera_id'];
+        $camera_data = CameraService::getCameraInfoById($camera_id);
+        if ($camera_data != null) {
+            $device_id = $camera_data->camera_id;
+            Heatmap::query()->where('camera_id', $device_id)->delete();
+        } else {
+            return false;
+        }
 
         return $camera_id;
     }

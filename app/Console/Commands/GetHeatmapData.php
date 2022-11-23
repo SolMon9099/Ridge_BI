@@ -3,11 +3,11 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\Camera;
 use App\Models\Heatmap;
 use App\Models\S3VideoHistory;
+use Illuminate\Support\Facades\DB;
 
 class GetHeatmapData extends Command
 {
@@ -31,32 +31,52 @@ class GetHeatmapData extends Command
             return 0;
         }
         foreach ($cameras as $camera) {
-            if ($camera->contract_no == null) {
+            if ($camera->contract_no == null || $camera->is_enabled == 0) {
                 continue;
             }
+            //ヒートマップDBチェック----------------
+            $heat_map_data = Heatmap::query()->where('camera_id', $camera->camera_id)->orderby('starttime')->get()->all();
+            if (count($heat_map_data) >= config('const.heatmap_video_min_numbers')) {
+                Log::info('ヒートマップデータが登録されているカメラ：　'.$camera->camera_id);
+                continue;
+            }
+            $start_datetime = null;
+            $registered_starttime_array = [];
+            if (count($heat_map_data) > 0) {
+                $start_datetime = $heat_map_data[0]->starttime;
+                foreach ($heat_map_data as $heat_item) {
+                    $registered_starttime_array[] = $heat_item->starttime;
+                }
+            } else {
+                $deleted_heat_data = DB::table('heatmaps')->where('camera_id', $camera->camera_id)->whereNotNull('deleted_at')->orderByDesc('deleted_at')->get()->first();
+                if ($deleted_heat_data != null) {
+                    $start_datetime = $deleted_heat_data->deleted_at;
+                }
+            }
+
+            //------------------------------------
             //s3の保存された動画チェック-----------
-            $s3_data = S3VideoHistory::query()->where('device_id', $camera->camera_id)->whereNotNull('file_path')->orderByDesc('start_time')->limit(20)->get()->all();
-            // if (!(Storage::disk('s3')->exists($camera->camera_id))) {
-            if (count($s3_data) == 0) {
+            $s3_data_query = S3VideoHistory::query()->where('device_id', $camera->camera_id)->whereNotNull('file_path')->orderByDesc('start_time');
+            if ($start_datetime != null) {
+                $s3_data_query->where('start_time', '>=', $start_datetime);
+            }
+            if (count($registered_starttime_array) > 0) {
+                $s3_data_query->whereNotIn('start_time', $registered_starttime_array);
+            }
+            $s3_item = $s3_data_query->get()->first();
+            if ($s3_item == null) {
                 Log::info('登録した動画がありません。：　'.$camera->camera_id);
                 continue;
             }
             //-----------------------------------
-            //ヒートマップDBチェック----------------
-            $heat_map_data = Heatmap::query()->where('camera_id', $camera->camera_id)->get()->all();
-            if (count($heat_map_data) >= 3) {
-                Log::info('ヒートマップデータが登録されているカメラ：　'.$camera->camera_id);
-                continue;
-            }
-            //------------------------------------
             $movie_path_array = [];
-            foreach ($s3_data as $s3_item) {
-                $movie_path_array[] = config('const.aws_url').$s3_item->file_path;
-            }
+            // foreach ($s3_data as $s3_item) {
+            //     $movie_path_array[] = config('const.aws_url').$s3_item->file_path;
+            // }
             $params = [
                 'camera_info' => ['camera_id' => $camera->camera_id],
                 'movie_info' => [
-                    'movie_path' => config('const.aws_url').$s3_data[0]->file_path,
+                    'movie_path' => config('const.aws_url').$s3_item->file_path,
                 ],
                 'model_info' => [
                     'grid_size' => [128, 72],

@@ -15,7 +15,6 @@ class Handler extends ExceptionHandler
      * @var array<int, class-string<Throwable>>
      */
     protected $dontReport = [
-        //
     ];
 
     /**
@@ -37,13 +36,12 @@ class Handler extends ExceptionHandler
     public function register()
     {
         $this->reportable(function (Throwable $e) {
-            //
         });
     }
+
     public function render($request, Throwable $e)
     {
         $response = parent::render($request, $e);
-
 
         if (is_object($e)) {
             // エラーコードの取得
@@ -51,15 +49,25 @@ class Handler extends ExceptionHandler
 
             // 404, 500, 502の時のみSlackに通知
             // if ($status_code == 404 || $status_code == 502 || $status_code == 500) {
-            if($status_code == 404){
-                Log::info("----- 404エラー発生------");
+            if ($status_code == 404) {
+                Log::info('----- 404エラー発生------');
                 $url = URL::current();
                 $split_urls = explode('/edit/', $url);
-                if (count($split_urls) > 1){
-                    $request->session()->flash('error', 'ログインしている別の方が変更したデータです。');
-                    return redirect($split_urls[0]);
+                $redirect_url = $split_urls[0];
+                if (count($split_urls) == 1) {
+                    $split_urls = explode('/edit_drawing/', $split_urls[0]);
+                    $redirect_url = $split_urls[0].'/mapping';
+                }
+                if (count($split_urls) == 1) {
+                    $split_urls = explode('/mapping_detail/', $split_urls[0]);
+                    $redirect_url = $split_urls[0].'/mapping';
+                }
+                if (count($split_urls) > 1) {
+                    $request->session()->flash('error', '選択したデータは別の方が変更中だったので最新の状態に更新しました。');
+
+                    return redirect($redirect_url);
                 } else {
-                    return redirect()->route('admin.error', ['error_code'=>$status_code]);
+                    return redirect()->route('admin.error', ['error_code' => $status_code]);
                 }
             }
 
@@ -68,7 +76,6 @@ class Handler extends ExceptionHandler
             //     SlackService::send($message);
             // }
 
-
             if ($e instanceof \Illuminate\Session\TokenMismatchException) {
                 return redirect()->route('admin.login');
             }
@@ -76,6 +83,7 @@ class Handler extends ExceptionHandler
                 return redirect()->route('admin.login');
             }
         }
+
         return $response;
     }
 }

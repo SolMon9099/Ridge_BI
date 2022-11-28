@@ -194,11 +194,18 @@ class CameraService
         if (is_object($camera_mapping_info)) {
             foreach ($camera_mapping_info as $drawing_id => $mapping_data) {
                 foreach ($mapping_data as $item) {
+                    $drawing_record = DB::table('location_drawings')->where('id', $item->drawing_id)->whereNull('deleted_at')->get()->first();
+                    if ($drawing_record == null) {
+                        return 404;
+                    }
                     if (isset($item->id) && $item->id > 0) {
                         $cur_record = CameraMappingDetail::find($item->id);
                         if (isset($item->is_deleted) && $item->is_deleted == true) {
                             $cur_record->delete();
                         } else {
+                            if ($cur_record == null) {
+                                return 404;
+                            }
                             $cur_record->drawing_id = $item->drawing_id;
                             $cur_record->camera_id = $item->camera_id;
                             $cur_record->x_coordinate = $item->x_coordinate;
@@ -208,15 +215,26 @@ class CameraService
                             $cur_record->save();
                         }
                     } else {
-                        $new_mapping = new CameraMappingDetail();
-                        $new_mapping->drawing_id = $item->drawing_id;
-                        $new_mapping->camera_id = $item->camera_id;
-                        $new_mapping->x_coordinate = $item->x_coordinate;
-                        $new_mapping->y_coordinate = $item->y_coordinate;
-                        $new_mapping->created_by = Auth::guard('admin')->user()->id;
-                        $new_mapping->updated_by = Auth::guard('admin')->user()->id;
+                        $cur_record = DB::table('camera_mapping_details')->where('drawing_id', $item->drawing_id)->where('camera_id', $item->camera_id)
+                            ->whereNull('deleted_at')->get()->first();
+                        if ($cur_record != null) {
+                            DB::table('camera_mapping_details')->where('id', $cur_record->id)
+                                ->update([
+                                    'x_coordinate' => $item->x_coordinate,
+                                    'y_coordinate' => $item->y_coordinate,
+                                    'updated_by' => Auth::guard('admin')->user()->id,
+                                ]);
+                        } else {
+                            $new_mapping = new CameraMappingDetail();
+                            $new_mapping->drawing_id = $item->drawing_id;
+                            $new_mapping->camera_id = $item->camera_id;
+                            $new_mapping->x_coordinate = $item->x_coordinate;
+                            $new_mapping->y_coordinate = $item->y_coordinate;
+                            $new_mapping->created_by = Auth::guard('admin')->user()->id;
+                            $new_mapping->updated_by = Auth::guard('admin')->user()->id;
 
-                        $new_mapping->save();
+                            $new_mapping->save();
+                        }
                     }
                 }
             }

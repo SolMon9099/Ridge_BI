@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Heatmap;
 use App\Models\DangerAreaDetection;
 use App\Models\PitDetection;
+use Illuminate\Support\Facades\DB;
 
 class DetectionController extends Controller
 {
@@ -491,7 +492,6 @@ class DetectionController extends Controller
     {
         Log::info('ヒートマップ計算結果送受信API（AI→BI）開始');
         Log::info('パラメータ');
-        Log::info($request);
         if (!(isset($request['camera_info']) && isset($request['camera_info']['camera_id']) && $request['camera_info']['camera_id'] != '')) {
             Log::info('デバイスがありません。-------------');
 
@@ -516,7 +516,10 @@ class DetectionController extends Controller
 
             return response()->json(['error' => '映像パスが正確ではありません。'], 400);
         }
-        $endtime = date('Y-m-d H:i:s', strtotime($split_data[1]));
+        $endtime = (int) str_replace('.mp4', '', $split_data[1]);
+        Log::info('endtime = '.$endtime);
+        $endtime = date('Y-m-d H:i:s', strtotime($endtime));
+        Log::info('format endtime = '.$endtime);
         $split_data = explode('/', $split_data[0]);
         if (count($split_data) <= 1) {
             Log::info('映像パスが正確ではありません。-------------');
@@ -524,11 +527,12 @@ class DetectionController extends Controller
             return response()->json(['error' => '映像パスが正確ではありません。'], 400);
         }
         $starttime = $split_data[count($split_data) - 1];
+        Log::info('starttime = '.$starttime);
         $starttime = date('Y-m-d H:i:s', strtotime($starttime));
-
-        $quaility_score = 0.82;
+        Log::info('format starttime = '.$starttime);
+        $quality_score = 0.82;
         if (isset($request['quality_score']) && $request['quality_score'] > 0) {
-            $quaility_score = $request['quality_score'];
+            $quality_score = $request['quality_score'];
         }
         $camera_id = $request['camera_info']['camera_id'];
         Log::info('heatmap parameter*****************');
@@ -544,15 +548,28 @@ class DetectionController extends Controller
                 }
             }
         }
+        $record = Heatmap::query()->where('camera_id', $camera_id)
+            ->where('starttime', $starttime)
+            ->where('endtime', $endtime)
+            ->where('status', 1)->get()->first();
+        if ($record != null) {
+            DB::table('heatmaps')->where('id', $record->id)
+                ->update([
+                    'heatmap_data' => $check_flag ? json_encode($heatmap_data) : '',
+                    'quality_score' => $quality_score,
+                    'status' => 2,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+        }
         if ($check_flag) {
-            $new_heatmap = new Heatmap();
-            $new_heatmap->camera_id = $camera_id;
-            $new_heatmap->quality_score = $quaility_score;
-            $new_heatmap->heatmap_data = json_encode($heatmap_data);
-            $new_heatmap->starttime = $starttime;
-            $new_heatmap->endtime = $endtime;
-            $new_heatmap->time_dff = strtotime($endtime) - strtotime($starttime);
-            $new_heatmap->save();
+            // $new_heatmap = new Heatmap();
+            // $new_heatmap->camera_id = $camera_id;
+            // $new_heatmap->quality_score = $quality_score;
+            // $new_heatmap->heatmap_data = json_encode($heatmap_data);
+            // $new_heatmap->starttime = $starttime;
+            // $new_heatmap->endtime = $endtime;
+            // $new_heatmap->time_diff = strtotime($endtime) - strtotime($starttime);
+            // $new_heatmap->save();
             Log::info('ヒートマップ計算結果保存成功');
         } else {
             Log::info('すべてNaNデーターーーーーー');

@@ -134,7 +134,11 @@ class CameraController extends AdminController
             return redirect()->route('admin.top');
         }
         $camera_mapping_info = json_decode($request['camera_mapping_info']);
-        if (CameraService::storeMapping($camera_mapping_info)) {
+        $res = CameraService::storeMapping($camera_mapping_info);
+        if ($res === 404) {
+            return redirect()->route('admin.error', ['error_code' => 404]);
+        }
+        if ($res) {
             $request->session()->flash('success', '登録しました。');
 
             return redirect()->route('admin.camera.mapping');
@@ -273,11 +277,11 @@ class CameraController extends AdminController
     public function delete_drawing(Request $request, LocationDrawing $drawing)
     {
         if (LocationDrawingService::doDelete($drawing)) {
-            $request->session()->flash('success', 'カメラを削除しました。');
+            $request->session()->flash('success', '現場図面を削除しました。');
 
             return redirect()->route('admin.camera.mapping');
         } else {
-            $request->session()->flash('error', 'カメラ削除が失敗しました。');
+            $request->session()->flash('error', '現場図面削除が失敗しました。');
 
             return redirect()->route('admin.camera.mapping');
         }
@@ -297,7 +301,8 @@ class CameraController extends AdminController
     public function getHeatmapData(Request $request)
     {
         $camera_id = $request['camera_id'];
-        $heatmap_data = Heatmap::query()->where('camera_id', $camera_id)->orderByDesc('created_at')->get()->all();
+        $heatmap_data = Heatmap::query()->where('camera_id', $camera_id)->where('status', 2)
+            ->where('heatmap_data', '!=', '')->orderByDesc('created_at')->get()->all();
         foreach ($heatmap_data as &$item) {
             $item->heatmap_data = json_decode($item->heatmap_data);
         }

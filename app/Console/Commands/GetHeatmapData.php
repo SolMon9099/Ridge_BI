@@ -58,7 +58,7 @@ class GetHeatmapData extends Command
             //s3の保存された動画チェック-----------
             $s3_data_query = S3VideoHistory::query()->where('device_id', $camera->camera_id)->whereNotNull('file_path')->orderByDesc('start_time');
             if ($start_datetime != null) {
-                $s3_data_query->where('start_time', '>=', $start_datetime);
+                $s3_data_query->where('start_time', '>', $start_datetime);
             }
             if (count($registered_starttime_array) > 0) {
                 $s3_data_query->whereNotIn('start_time', $registered_starttime_array);
@@ -91,7 +91,19 @@ class GetHeatmapData extends Command
             ];
             Log::info('ヒートマップ計算リクエスト（BI→AI）開始ーーーー');
             $url = config('const.ai_server').'heatmap/register-camera';
-            $this->sendPostApi($url, $header, $params, 'json');
+            $res = $this->sendPostApi($url, $header, $params, 'json');
+            if ($res != null) {
+                Log::info('ヒートマップ計算リクエストをDBに保存');
+                $new_heatmap = new Heatmap();
+                $new_heatmap->camera_id = $camera->camera_id;
+                $new_heatmap->quality_score = '';
+                $new_heatmap->heatmap_data = '';
+                $new_heatmap->starttime = $s3_item->start_time;
+                $new_heatmap->endtime = $s3_item->end_time;
+                $new_heatmap->time_diff = strtotime($s3_item->end_time) - strtotime($s3_item->start_time);
+                $new_heatmap->status = 1;
+                $new_heatmap->save();
+            }
         }
         Log::info('ヒートマップ計算終了');
 
@@ -137,7 +149,7 @@ class GetHeatmapData extends Command
 
             Log::info('【Finish Post Api】url:'.$url);
 
-            return $response_return;
+            return $httpcode;
         } else {
             return null;
         }

@@ -8,7 +8,7 @@
             </div>
             @if($error_code == 404)
             <div class="error-content">
-                該当するルールが削除済みです
+                該当するデータが削除済みです
                 <div class="go-back-area">
                     <button onclick="history.back()">以前のページへ戻る</button>
                 </div>

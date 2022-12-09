@@ -44,7 +44,6 @@ class SafieApiService
             $this->contract_no = 'super_admin';
         }
         $token_data = Token::query()->where('contract_no', $this->contract_no)->get()->first();
-
         if ($token_data != null) {
             $this->access_token = $token_data->access_token;
             $this->refresh_token = $token_data->refresh_token;

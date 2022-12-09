@@ -64,7 +64,7 @@ class S3Command extends Command
             Log::info('メディアファイル作成要求一覧取得・S3に保存ーーーー');
             $this->saveMedia($camera);
             //----------------------------------------------------------------------
-            if ($camera->is_enabled == 1 && strtotime($now_date.' '.$camera_start_on_time) <= strtotime($now) && strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
+            if ($camera->is_enabled == 1 && strtotime($now_date.' '.$camera_start_on_time) + ($request_interval + 3) * 60 <= strtotime($now) && ($request_interval + 3) * 60 + strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
                 //メディアファイル作成要求--------------------------------
                 Log::info('メディアファイル作成要求--------------------------------');
                 $request_id = $safie_service->makeMediaFile($camera->camera_id, $record_start_time, $record_end_time, '定期ダウンロード', $camera->reopened_at);
@@ -183,52 +183,54 @@ class S3Command extends Command
             ->where('contract_no', $camera_item->contract_no)
             ->where('status', '!=', 2)
             ->where('status', '!=', 3)
+            ->where('status', '!=', 4)
             ->orderBy('start_time')->get()->all();
         $safie_service = new SafieApiService($camera_item->contract_no);
         $retry_count_index = 0;
+        $camera_start_on_time = config('const.camera_start_time');
+        $camera_end_off_time = config('const.camera_end_time');
+        $request_interval = config('const.request_interval');
+        $cur_time_object = new \DateTime();
+        $cur_time_object->setTimezone(new \DateTimeZone('+0900')); //GMT
+        $now = $cur_time_object->format('Y-m-d H:i:s');
+        $now_date = $cur_time_object->format('Y-m-d');
         foreach ($data as $item) {
             if (!((int) $item->request_id > 0)) {
-                $error_code = (int) str_replace('error_', '', $item->request_id);
-                if ($error_code == 400 || $error_code == 403 || $error_code == 404) {
-                    $item->delete();
-                    continue;
-                }
-                if ($camera_item->is_enabled != 1) {
-                    continue;
-                }
-                $camera_start_on_time = config('const.camera_start_time');
-                $camera_end_off_time = config('const.camera_end_time');
-                $cur_time_object = new \DateTime();
-                $cur_time_object->setTimezone(new \DateTimeZone('+0900')); //GMT
-                $now = $cur_time_object->format('Y-m-d H:i:s');
-                $now_date = $cur_time_object->format('Y-m-d');
-                if (!(strtotime($now_date.' '.$camera_start_on_time) <= strtotime($now) && strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now))) {
-                    if ($retry_count_index > 0) {
-                        continue;
-                    }
-                    ++$retry_count_index;
-                    Log::info('BI->AI用失敗したメディアファイル再作成要求');
-                    $start_datetime_object = new \DateTime($item->start_time, new \DateTimeZone('GMT+9'));
-                    $end_datetime_object = new \DateTime($item->end_time, new \DateTimeZone('GMT+9'));
-                    Log::info('retry start = '.$start_datetime_object->format('c'));
-                    Log::info('retry end = '.$end_datetime_object->format('c'));
-                    $request_id = $safie_service->makeMediaFile($item->device_id, $start_datetime_object->format('c'), $end_datetime_object->format('c'), '定期ダウンロード', $camera_item->reopened_at);
-                    Log::info('retry request id = '.$request_id);
-                    if ($request_id > 0) {
-                        $this->createS3History($request_id, $start_datetime_object, $end_datetime_object, $item->device_id, $item->contract_no);
-                        $item->delete();
-                    } else {
-                        if ($request_id != 'http_code_404' && $request_id != null) {
-                            continue;
-                        }
-                        if ($request_id == 'http_code_404') {
-                            Log::info('delete history '.$item->start_time);
-                            MediaRequestHistory::query()->where('start_time', $item->start_time)->where('http_code', 404)->where('device_id', $item->device_id)->delete();
-                        }
-                        $item->delete();
-                    }
-                    Log::info('BI->AI用失敗したメディアファイル再作成終了');
-                }
+                // $error_code = (int) str_replace('error_', '', $item->request_id);
+                // if ($error_code == 400 || $error_code == 403 || $error_code == 404) {
+                //     $item->delete();
+                //     continue;
+                // }
+                // if ($camera_item->is_enabled != 1) {
+                //     continue;
+                // }
+                // if (!(strtotime($now_date.' '.$camera_start_on_time) <= strtotime($now) && strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now))) {
+                //     if ($retry_count_index > 0) {
+                //         continue;
+                //     }
+                //     ++$retry_count_index;
+                //     Log::info('BI->AI用失敗したメディアファイル再作成要求');
+                //     $start_datetime_object = new \DateTime($item->start_time, new \DateTimeZone('GMT+9'));
+                //     $end_datetime_object = new \DateTime($item->end_time, new \DateTimeZone('GMT+9'));
+                //     Log::info('retry start = '.$start_datetime_object->format('c'));
+                //     Log::info('retry end = '.$end_datetime_object->format('c'));
+                //     $request_id = $safie_service->makeMediaFile($item->device_id, $start_datetime_object->format('c'), $end_datetime_object->format('c'), '定期ダウンロード', $camera_item->reopened_at);
+                //     Log::info('retry request id = '.$request_id);
+                //     if ($request_id > 0) {
+                //         $this->createS3History($request_id, $start_datetime_object, $end_datetime_object, $item->device_id, $item->contract_no);
+                //         $item->delete();
+                //     } else {
+                //         if ($request_id != 'http_code_404' && $request_id != null) {
+                //             continue;
+                //         }
+                //         if ($request_id == 'http_code_404') {
+                //             Log::info('delete history '.$item->start_time);
+                //             MediaRequestHistory::query()->where('start_time', $item->start_time)->where('http_code', 404)->where('device_id', $item->device_id)->delete();
+                //         }
+                //         $item->delete();
+                //     }
+                //     Log::info('BI->AI用失敗したメディアファイル再作成終了');
+                // }
             } else {
                 Log::info('メディアファイル 作成要求取得ーーーー');
                 $media_status = $safie_service->getMediaFileStatus($device_id, $item->request_id);
@@ -252,7 +254,10 @@ class S3Command extends Command
                             //request rule data to AI--------
                             $aws_url = config('const.aws_url');
                             $movie_path = $aws_url.$device_id.'/'.$start_date.'/'.$file_name;
-                            $this->reqeuestToAI($device_id, $camera_item->id, $movie_path);
+                            $is_night = 1;  //no night
+                            if (strtotime($now_date.' '.$camera_start_on_time) + ($request_interval + 3)*60 <= strtotime($now) && ($request_interval + 3)*60 + strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
+                                $this->reqeuestToAI($device_id, $camera_item->id, $movie_path, $is_night);
+                            }
                             //-------------------------------
                         }
                         if ($video_data == 'not_found') {
@@ -267,8 +272,11 @@ class S3Command extends Command
         }
     }
 
-    public function reqeuestToAI($device_id, $id_camera, $movie_path = null)
+    public function reqeuestToAI($device_id, $id_camera, $movie_path = null, $is_night = 1)
     {
+        if (!Storage::disk('temp')->exists('retry_ai_request')) {
+            Storage::disk('temp')->makeDirectory('retry_ai_request');
+        }
         $url = '';
         $header = [
             'Content-Type: application/json',
@@ -285,28 +293,48 @@ class S3Command extends Command
                 if (!isset($params['movie_info'])) {
                     $params['movie_info'] = [];
                 }
-                // if ($device_id == 'FvY6rnGWP12obPgFUj0a') {
-                //     $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_danger/20220922/20220922150000_20220922150200.mp4';
-                // } else {
                 $params['movie_info']['movie_path'] = $movie_path;
-                // }
                 if (!isset($params['rect_info'])) {
                     $params['rect_info'] = [];
                 }
 
                 $params['rect_info']['rect_id'] = (string) $rule->id;
                 $params['rect_info']['rect_point_array'] = json_decode($rule->points);
-                // $sample_point_data = '[{"x": 1041,"y": 238,"id": 0},{"x": 1001,"y": 433,"id": 1},{"x": 581,"y": 231,"id": 2},{"x": 707,"y": 114,"id": 3}]';
-                // $params['rect_info']['rect_point_array'] = json_decode($sample_point_data);
                 $action_data = [];
                 foreach (json_decode($rule->action_id) as $action_code) {
                     $action_data[] = (int) $action_code;
                 }
                 $params['rect_info']['action_id'] = $action_data;
                 $params['priority'] = 1;
+                $params['request_type'] = $is_night;
                 Log::info('危険エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
                 $url = config('const.ai_server').'danger-zone/register-camera';
-                $this->sendPostApi($url, $header, $params, 'json');
+
+                $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+                //save unsuccess api to AI------------------------
+                if ($ai_res != 200) {
+                    if ($ai_res == 503 || $ai_res == 530) {
+                        Log::info('解析を止める用API（BI→AI）開始--------');
+                        $stop_url = config('const.ai_server').'stop-analysis';
+                        $stop_params = [];
+                        $stop_params['camera_info'] = [];
+                        $stop_params['camera_info']['camera_id'] = $device_id;
+                        $stop_params['camera_info']['rule_name'] = 'danger_zone';
+                        $stop_params['priority'] = 1;
+                        $stop_params['request_type'] = $is_night;
+                        $this->sendPostApi($stop_url, $header, $stop_params, 'json');
+                        Log::info('解析を止める用API（BI→AI）中止--------');
+                    }
+                    $params['request_type'] = 2;
+                    $temp_save_data = [
+                        'url' => $url,
+                        'params' => $params,
+                        'type' => 'danger',
+                        'device_id' => $device_id,
+                    ];
+                    Storage::disk('temp')->put('retry_ai_request\\'.'danger_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+                }
+                //-------------------------------------------------
             }
         }
         //--------------------------------------
@@ -325,7 +353,6 @@ class S3Command extends Command
                         $params['movie_info'] = [];
                     }
                     $params['movie_info']['movie_path'] = $movie_path;
-                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_pit/20220707/20220707153430_20220707153455.mp4';
                     if (!isset($params['rect_info'])) {
                         $params['rect_info'] = [];
                     }
@@ -333,79 +360,129 @@ class S3Command extends Command
                     $params['rect_info']['entrance_rect_point_array'] = json_decode($rule->red_points);
                     $params['rect_info']['exit_rect_point_array'] = json_decode($rule->blue_points);
                     $params['priority'] = 1;
-
+                    $params['request_type'] = $is_night;
                     Log::info('ピット入退場解析リクエスト（BI→AI）開始ーーーー');
                     $url = config('const.ai_server').'pit/register-camera';
-                    $this->sendPostApi($url, $header, $params, 'json');
+                    $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+                    //save unsuccess api to AI------------------------
+                    if ($ai_res != 200) {
+                        if ($ai_res == 503 || $ai_res == 530) {
+                            Log::info('解析を止める用API（BI→AI）開始--------');
+                            $stop_url = config('const.ai_server').'stop-analysis';
+                            $stop_params = [];
+                            $stop_params['camera_info'] = [];
+                            $stop_params['camera_info']['camera_id'] = $device_id;
+                            $stop_params['camera_info']['rule_name'] = 'ee_count';
+                            $stop_params['priority'] = 1;
+                            $stop_params['request_type'] = $is_night;
+                            $this->sendPostApi($stop_url, $header, $stop_params, 'json');
+                            Log::info('解析を止める用API（BI→AI）中止--------');
+                        }
+                        $params['request_type'] = 2;
+                        $temp_save_data = [
+                            'url' => $url,
+                            'params' => $params,
+                            'type' => 'pit',
+                            'device_id' => $device_id,
+                        ];
+                        Storage::disk('temp')->put('retry_ai_request\\'.'pit_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+                    }
+                    //-------------------------------------------------
                 }
             }
         }
         //--------------------------------------
-        //６．棚乱れ解析リクエスト（BI→AI） /api/v1/shelf-theft/register-camera
-        $rules = ShelfService::getRulesByCameraID($id_camera);
-        // $rules = ShelfService::getRulesByCameraID(11);
-        if (count($rules) > 0) {
-            if (count($rules) > 0) {
-                $params = [];
-                foreach ($rules as $rule) {
-                    if (!isset($params['camera_info'])) {
-                        $params['camera_info'] = [];
-                    }
-                    $params['camera_info']['camera_id'] = $device_id;
-                    if (!isset($params['movie_info'])) {
-                        $params['movie_info'] = [];
-                    }
+        // //６．棚乱れ解析リクエスト（BI→AI） /api/v1/shelf-theft/register-camera
+        // $rules = ShelfService::getRulesByCameraID($id_camera);
+        // if (count($rules) > 0) {
+        //     if (count($rules) > 0) {
+        //         $params = [];
+        //         foreach ($rules as $rule) {
+        //             if (!isset($params['camera_info'])) {
+        //                 $params['camera_info'] = [];
+        //             }
+        //             $params['camera_info']['camera_id'] = $device_id;
+        //             if (!isset($params['movie_info'])) {
+        //                 $params['movie_info'] = [];
+        //             }
 
-                    $params['movie_info']['movie_path'] = $movie_path;
-                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_shelf/20220922/20220922150000_20220922150200.mp4';
-                    if (!isset($params['rect_info'])) {
-                        $params['rect_info'] = [];
-                    }
-                    $rect_param = [];
-                    $rect_param['rect_id'] = (string) $rule->id;
-                    $rect_param['rect_point_array'] = json_decode($rule->points);
-                    $params['rect_info'][] = $rect_param;
-                    $params['priority'] = 1;
-                }
-                Log::info('棚乱れ解析リクエスト（BI→AI）開始ーーーー');
-                $url = config('const.ai_server').'shelf-theft/register-camera';
-                $this->sendPostApi($url, $header, $params, 'json');
-            }
-        }
-        //--------------------------------------
+        //             $params['movie_info']['movie_path'] = $movie_path;
+        //             if (!isset($params['rect_info'])) {
+        //                 $params['rect_info'] = [];
+        //             }
+        //             $rect_param = [];
+        //             $rect_param['rect_id'] = (string) $rule->id;
+        //             $rect_param['rect_point_array'] = json_decode($rule->points);
+        //             $params['rect_info'][] = $rect_param;
+        //             $params['priority'] = 1;
+        //             $params['request_type'] = $is_night;
+        //         }
+        //         Log::info('棚乱れ解析リクエスト（BI→AI）開始ーーーー');
+        //         $url = config('const.ai_server').'shelf-theft/register-camera';
+        //         $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+        //         //save unsuccess api to AI------------------------
+        //         if ($ai_res != 200) {
+                        // if ($ai_res == 503 || $ai_res == 530) {
+                        // } else {
+                        // $params['request_type'] = 2;
+                        // $temp_save_data = [
+                        //     'url' => $url,
+                        //     'params' => $params,
+                        //     'type' => 'shelf',
+                        // ];
+                        // Storage::disk('temp')->put('retry_ai_request\\'.'shelf_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+                        // }
+        //         }
+        //         //-------------------------------------------------
+        //     }
+        // }
+        // //--------------------------------------
 
-        //９．大量盗難解析リクエスト（BI→AI） /api/v1/hanger-counter/register-camera
-        $rules = ThiefService::getRulesByCameraID($id_camera);
-        // $rules = ThiefService::getRulesByCameraID(10);
-        if (count($rules) > 0) {
-            if (count($rules) > 0) {
-                $params = [];
-                foreach ($rules as $rule) {
-                    if (!isset($params['camera_info'])) {
-                        $params['camera_info'] = [];
-                    }
-                    $params['camera_info']['camera_id'] = $device_id;
-                    if (!isset($params['movie_info'])) {
-                        $params['movie_info'] = [];
-                    }
-                    $params['movie_info']['movie_path'] = $movie_path;
-                    // $params['movie_info']['movie_path'] = 'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_hanger/20220922/20220922150000_20220922150200.mp4';
-                    if (!isset($params['rect_info'])) {
-                        $params['rect_info'] = [];
-                    }
-                    $rect_param = [];
-                    $rect_param['rect_id'] = (string) $rule->id;
-                    $rect_param['color_code'] = $rule->hanger;
-                    $rect_param['rect_point_array'] = json_decode($rule->points);
-                    $params['rect_info'][] = $rect_param;
-                    $params['priority'] = 1;
-                }
-                Log::info('大量盗難解析リクエスト（BI→AI）開始ーーーー');
-                $url = config('const.ai_server').'hanger-counter/register-camera';
-                $this->sendPostApi($url, $header, $params, 'json');
-            }
-        }
-        //--------------------------------------
+        // //９．大量盗難解析リクエスト（BI→AI） /api/v1/hanger-counter/register-camera
+        // $rules = ThiefService::getRulesByCameraID($id_camera);
+        // if (count($rules) > 0) {
+        //     if (count($rules) > 0) {
+        //         $params = [];
+        //         foreach ($rules as $rule) {
+        //             if (!isset($params['camera_info'])) {
+        //                 $params['camera_info'] = [];
+        //             }
+        //             $params['camera_info']['camera_id'] = $device_id;
+        //             if (!isset($params['movie_info'])) {
+        //                 $params['movie_info'] = [];
+        //             }
+        //             $params['movie_info']['movie_path'] = $movie_path;
+        //             if (!isset($params['rect_info'])) {
+        //                 $params['rect_info'] = [];
+        //             }
+        //             $rect_param = [];
+        //             $rect_param['rect_id'] = (string) $rule->id;
+        //             $rect_param['color_code'] = $rule->hanger;
+        //             $rect_param['rect_point_array'] = json_decode($rule->points);
+        //             $params['rect_info'][] = $rect_param;
+        //             $params['priority'] = 1;
+        //             $params['request_type'] = $is_night;
+        //         }
+        //         Log::info('大量盗難解析リクエスト（BI→AI）開始ーーーー');
+        //         $url = config('const.ai_server').'hanger-counter/register-camera';
+        //         $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+        //         //save unsuccess api to AI------------------------
+        //         if ($ai_res != 200) {
+                    // if ($ai_res == 503 || $ai_res == 530) {
+                    // } else {
+                    //             $params['request_type'] = 2;
+        //             $temp_save_data = [
+        //                 'url' => $url,
+        //                 'params' => $params,
+        //                 'type' => 'thief',
+        //             ];
+        //             Storage::disk('temp')->put('retry_ai_request\\'.'thief_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+                        // }
+        //         }
+        //         //-------------------------------------------------
+        //     }
+        // }
+        // //--------------------------------------
     }
 
     public function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
@@ -442,14 +519,7 @@ class S3Command extends Command
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         Log::info('httpcode = '.$httpcode);
         curl_close($curl);
-        if ($httpcode == 200) {
-            $response_return = json_decode($response, true);
 
-            Log::info('【Finish Post Api】url:'.$url);
-
-            return $response_return;
-        } else {
-            return null;
-        }
+        return $httpcode;
     }
 }

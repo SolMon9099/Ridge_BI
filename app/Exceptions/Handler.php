@@ -50,8 +50,8 @@ class Handler extends ExceptionHandler
             // 404, 500, 502の時のみSlackに通知
             // if ($status_code == 404 || $status_code == 502 || $status_code == 500) {
             if ($status_code == 404) {
-                Log::info('----- 404エラー発生------');
                 $url = URL::current();
+                Log::info('----- 404エラー発生------'.$url);
                 $split_urls = explode('/edit/', $url);
                 $redirect_url = $split_urls[0];
                 if (count($split_urls) == 1) {

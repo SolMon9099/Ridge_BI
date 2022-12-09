@@ -8,6 +8,7 @@ use App\Console\Commands\SafieApiCommand;
 use App\Console\Commands\S3Command;
 use App\Console\Commands\AICommand;
 use App\Console\Commands\ShelfSortedCommand;
+use App\Console\Commands\RetryRequestNight;
 
 class Kernel extends ConsoleKernel
 {
@@ -23,6 +24,7 @@ class Kernel extends ConsoleKernel
         S3Command::class,
         AICommand::class,
         ShelfSortedCommand::class,
+        RetryRequestNight::class,
     ];
 
     protected function schedule(Schedule $schedule)
@@ -30,6 +32,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('safie:refresh_access_token')->daily();
         // $schedule->command('s3:video_get_save')->everyFiveMinutes();
         $schedule->command('s3:video_get_save')->everyMinute();
+        $schedule->command('ai:retry_request_night')->everyMinute();
         $schedule->command('ai:check_request_download')->everyMinute();
         $schedule->command('s3:sorted_image_save')->everyMinute();
         $schedule->command('auto_open_camera')->everyFiveMinutes();

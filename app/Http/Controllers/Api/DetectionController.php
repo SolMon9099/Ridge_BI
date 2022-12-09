@@ -65,6 +65,20 @@ class DetectionController extends Controller
         }
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
+        $exist_record = DangerAreaDetection::query()->where('camera_id', $camera_data->id)
+            ->where('starttime', $start_datetime)
+            ->get()->first();
+        if ($exist_record != null) {
+            DangerAreaDetection::query()->where('id', $exist_record->id)
+                ->update([
+                    'rule_id' => $rule_id,
+                    'detection_action_id' => $detection_action_id,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+
+            return response()->json(['success' => '送信成功'], 200);
+        }
+
         Log::info('start datetime = '.$start_datetime);
 
         $time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $start_datetime, new \DateTimeZone('+0900'));
@@ -296,6 +310,24 @@ class DetectionController extends Controller
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
         Log::info('start datetime = '.$start_datetime);
+
+        $exist_records = PitDetection::query()->where('camera_id', $camera_data->id)
+            ->where('starttime', $start_datetime)
+            ->get()->all();
+        if (count($exist_records) > 0) {
+            if (count($exist_records) == 1) {
+                PitDetection::query()->where('id', $exist_records[0]->id)
+                ->update([
+                    'rule_id' => $rule_id,
+                    'nb_entry' => $nb_entry,
+                    'nb_exit' => $nb_exit,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            } else {
+            }
+
+            return response()->json(['success' => '送信成功'], 200);
+        }
 
         $time_object = \DateTime::createFromFormat('Y-m-d H:i:s', $start_datetime, new \DateTimeZone('+0900'));
         $record_end_time_object = clone $time_object;

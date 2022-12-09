@@ -186,14 +186,59 @@ class AICommand extends Command
             }
             Log::info('リトライダウンロードjsonチェック終了****************');
         }
+        Log::info('Ending check detection json file exist****************');
 
         $camera_start_on_time = config('const.camera_start_time');
         $camera_end_off_time = config('const.camera_end_time');
+        $request_interval = config('const.request_interval');
         $detection_video_length = config('const.detection_video_length');
         $cur_time_object = new \DateTime();
         $cur_time_object->setTimezone(new \DateTimeZone('+0900')); //GMT
         $now = $cur_time_object->format('Y-m-d H:i:s');
         $now_date = $cur_time_object->format('Y-m-d');
+
+        if (!(strtotime($now_date.' '.$camera_start_on_time) + ($request_interval + 3) * 60 <= strtotime($now) && ($request_interval + 3) * 60 + strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now))) {
+            $try_limit = 0;
+            $re_request_files = Storage::disk('temp')->files('retry_ai_request');
+            if (count($re_request_files) > 0) {
+                Log::info('失敗したBI->AIリクエストjsonチェック開始!!!!!!!');
+                foreach ($re_request_files as $file) {
+                    if ($try_limit > 6) {
+                        continue;
+                    }
+                    $file_content = Storage::disk('temp')->get($file);
+                    if ($file_content != null) {
+                        $file_content = json_decode($file_content);
+                    }
+                    $url = $file_content->url;
+                    $params = $file_content->params;
+                    $header = [
+                        'Content-Type: application/json',
+                    ];
+                    $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+                    if ($ai_res == 200) {
+                        Storage::disk('temp')->delete($file);
+                        ++$try_limit;
+                    } else {
+                        if ($ai_res == 503 || $ai_res == 530) {
+                            Log::info('解析を止める用API（BI→AI）開始--------');
+                            $stop_url = config('const.ai_server').'stop-analysis';
+                            $stop_params = [];
+                            $stop_params['camera_info'] = [];
+                            $stop_params['camera_info']['camera_id'] = $file_content->device_id;
+                            $stop_params['camera_info']['rule_name'] = $file_content->type == 'danger' ? 'danger_zone' : 'ee_count';
+                            $stop_params['priority'] = 1;
+                            $stop_params['request_type'] = 2;
+                            $this->sendPostApi($stop_url, $header, $stop_params, 'json');
+                            Log::info('解析を止める用API（BI→AI）中止--------');
+                        }
+                    }
+                }
+                Log::info('失敗したBI->AIリクエストjsonチェック終了!!!!!!!');
+            }
+        }
+
+        //check failed detection data------------------------------------------------
         $camera_data = [];
         // if (!(strtotime($now_date.' '.$camera_start_on_time) <= strtotime($now) && strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now))) {
         $data = DangerAreaDetection::query()->where('video_file_path', '')->orderBy('starttime')->get()->all();
@@ -227,6 +272,10 @@ class AICommand extends Command
                         'starttime_format_for_image' => $thumb_datetime_object->format('Y-m-d\TH:i:sO'),
                     ];
                 Storage::disk('temp')->put('retry_video_request\\'.$camera_data[$item->camera_id]->camera_id.'_danger_area_'.$item->id.'.json', json_encode($temp_save_data));
+            } else {
+                if ($request_id == 'http_code_404') {
+                    DB::table('danger_area_detections')->where('id', $item->id)->delete();
+                }
             }
         }
 
@@ -261,6 +310,10 @@ class AICommand extends Command
                         'starttime_format_for_image' => $thumb_datetime_object->format('Y-m-d\TH:i:sO'),
                     ];
                 Storage::disk('temp')->put('retry_video_request\\'.$camera_data[$item->camera_id]->camera_id.'_pit_'.$item->id.'.json', json_encode($temp_save_data));
+            } else {
+                if ($request_id == 'http_code_404') {
+                    DB::table('pit_detections')->where('id', $item->id)->delete();
+                }
             }
         }
         $data = ShelfDetection::query()->where('video_file_path', '')->orderBy('starttime')->get()->all();
@@ -294,6 +347,10 @@ class AICommand extends Command
                         'starttime_format_for_image' => $thumb_datetime_object->format('Y-m-d\TH:i:sO'),
                     ];
                 Storage::disk('temp')->put('retry_video_request\\'.$camera_data[$item->camera_id]->camera_id.'_shelf_'.$item->id.'.json', json_encode($temp_save_data));
+            } else {
+                if ($request_id == 'http_code_404') {
+                    DB::table('shelf_detections')->where('id', $item->id)->delete();
+                }
             }
         }
         $data = ThiefDetection::query()->where('video_file_path', '')->orderBy('starttime')->get()->all();
@@ -327,54 +384,52 @@ class AICommand extends Command
                         'starttime_format_for_image' => $thumb_datetime_object->format('Y-m-d\TH:i:sO'),
                     ];
                 Storage::disk('temp')->put('retry_video_request\\'.$camera_data[$item->camera_id]->camera_id.'_thief_'.$item->id.'.json', json_encode($temp_save_data));
+            } else {
+                if ($request_id == 'http_code_404') {
+                    DB::table('thief_detections')->where('id', $item->id)->delete();
+                }
             }
         }
         // }
-        // $all_503_files = Storage::disk('temp')->files('media_request_503');
-        // if (count($all_503_files) > 0) {
-        //     Log::info('503jsonチェック開始****************');
-        //     foreach ($all_503_files as $file) {
-        //         $file_content = Storage::disk('temp')->get($file);
-        //         if ($file_content != null) {
-        //             $file_content = json_decode($file_content);
-        //         }
-        //         if (isset($file_content->device_id) && $file_content->device_id != '') {
-        //             $type = $file_content->type;
-        //             $resource_name = '危険エリア侵入検知';
-        //             switch ($type) {
-        //                 case 'danger_area':
-        //                     $resource_name = '危険エリア侵入検知';
-        //                     break;
-        //                 case 'pit':
-        //                     $resource_name = 'ピット入退場検知';
-        //                     break;
-        //                 case 'shelf':
-        //                     $resource_name = '棚乱れ検知';
-        //                     break;
-        //                 case 'thief':
-        //                     $resource_name = '大量盗難検知';
-        //                     break;
-        //             }
-
-        //             $safie_service = new SafieApiService($file_content->contract_no);
-        //             $request_id = $safie_service->makeMediaFile($file_content->device_id, $file_content->record_start_time, $file_content->record_end_time, $resource_name);
-        //             Log::info('503 retry http code = '.$request_id);
-        //             if ($request_id > 0) {
-        //                 $file_content->request_id = $request_id;
-        //                 Storage::disk('temp')->put('video_request\\'.$request_id.'.json', json_encode((array) $file_content));
-        //             } else {
-        //                 if ($request_id != null && str_replace('http_code_', '', $request_id) == 503) {
-        //                     continue;
-        //                 }
-        //             }
-        //             Storage::disk('temp')->delete($file);
-        //         }
-        //     }
-        //     Log::info('503jsonチェック終了****************');
-        // }
-
-        Log::info('Ending check detection json file exist****************');
 
         return 0;
+    }
+
+    public function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
+    {
+        Log::info('【Start Post Api for AI】url:'.$url);
+
+        $curl = curl_init($url);
+        //POSTで送信
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_HEADER, true);
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+        if ($header) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+        }
+
+        if ($data) {
+            switch ($request_type) {
+                case 'query':
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+                    break;
+                case 'json':
+                    Log::info('post param data ='.json_encode($data));
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                    break;
+            }
+        }
+
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('httpcode = '.$httpcode);
+        curl_close($curl);
+
+        return $httpcode;
     }
 }

@@ -1,7 +1,10 @@
 @extends('admin.layouts.app')
 
 @section('content')
-
+<?php
+    $login_user = Auth::guard('admin')->user();
+    $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
+?>
 <div id="wrapper">
     <div class="breadcrumb">
         <ul>
@@ -12,6 +15,7 @@
     <div id="r-content">
         <div class="title-wrap">
             <h2 class="title">アカウント一覧</h2>
+            @if($super_admin_flag != true)
             <div class="new-btn">
                 <a href="{{route('admin.account.create')}}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255,255,255, 1);transform: ;msFilter:;">
@@ -21,6 +25,7 @@
                 新規登録
                 </a>
             </div>
+            @endif
         </div>
     @include('admin.layouts.flash-message')
     {{ $admins->appends([])->links('vendor.pagination.admin-pagination') }}
@@ -54,7 +59,7 @@
                     <td>{{$admin->email}}</td>
                     <td>{{$admin->is_enabled ? "有効":"無効"}}</td>
                     <td>
-                        @if ($admin->id !== 1 && $admin->id != Auth::guard('admin')->user()->id)
+                        @if ($admin->id !== 1 && $admin->id != Auth::guard('admin')->user()->id && $super_admin_flag != true && $admin->is_main_admin != 1)
                             <button type="button" class="delete_accounts history" delete_index="{{ $admin->id }}">削除</button>
                             <form id="frm_delete_{{ $admin->id }}" action="{{ route('admin.account.delete', ['admin'=> $admin->id]) }}" method="POST" style="display: none;">
                                 @csrf

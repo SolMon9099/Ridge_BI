@@ -2,6 +2,10 @@
     $login_user = Auth::guard('admin')->user();
     $super_admin_flag = ($login_user->authority_id == config('const.super_admin_code'));
     $edit_user_authority = old('authority_id', isset($admin->authority_id)?$admin->authority_id:1);
+    $is_main_admin = 0;
+    if (isset($admin->is_main_admin)){
+        $is_main_admin = $admin->is_main_admin;
+    }
 ?>
 <div class="no-scroll">
     <table class="table">
@@ -18,6 +22,11 @@
                             </select>
                         @endif
                     @else
+                        @if($is_main_admin)
+                        <select name="authority_id" readonly>
+                            <option value="{{config('const.authorities_codes.admin')}}" selected>{{config('const.authorities')[config('const.authorities_codes.admin')]}}</option>
+                        </select>
+                        @else
                         <select name="authority_id">
                             @foreach(config('const.authorities') as $authority_id => $authority)
                             @if (old('authority_id', isset($admin->authority_id)?$admin->authority_id:1) == $authority_id)
@@ -27,6 +36,7 @@
                             @endif
                             @endforeach
                         </select>
+                        @endif
                     @endif
 
                 </td>
@@ -43,8 +53,56 @@
                     $headers = isset($login_user->header_menu_ids)?explode(",", $login_user->header_menu_ids):[];
                 }
             ?>
+            <tr>
+                <th>
+                    ヘッダメニュー<br/>
+                    <button type="button" class="edit left mt5 create_header">追加</button>
+                </th>
+                <td>
+                    <ul class="delete-list" id="header_group">
+                        @if (isset($headers) && count($headers)> 0)
+                            @foreach($headers as $header_id)
+                                <li>
+                                <select name="headers[]" class="w90">
+                                    <option value="0">選択する</option>
+                                    @foreach(config('const.header_menus') as $h_id => $header_name)
+                                    @if ($header_id == $h_id)
+                                    <option value="{{$h_id}}" selected>{{$header_name}}</option>
+                                    @else
+                                    <option value="{{$h_id}}">{{$header_name}}</option>
+                                    @endif
+                                    @endforeach
+                                </select>
+                                @if (!($loop->first) )
+                                <button type="button" class="history2 delete_header">削除</button>
+                                @endif
+                                </li>
+                            @endforeach
+                        @else
+                            <li>
+                            <select name="headers[]" class="w90">
+                                <option value="0">選択する</option>
+                                @foreach(config('const.header_menus') as $h_id => $header_name)
+                                <option value="{{$h_id}}">{{$header_name}}</option>
+                                @endforeach
+                            </select>
+                            </li>
+                            <li>
+                            <select name="headers[]" class="w90">
+                                <option value="0">選択する</option>
+                                @foreach(config('const.header_menus') as $h_id => $header_name)
+                                <option value="{{$h_id}}">{{$header_name}}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" class="history2 delete_header">削除</button>
+                            </li>
+                        @endif
+                    </ul>
+                </td>
+            </tr>
             @if ($edit_user_authority != config('const.super_admin_code') && $super_admin_flag)
-                <tr>
+                <input name = 'contract_no' type="hidden" value="{{ old('contract_no', isset($admin->contract_no)?$admin->contract_no:'')}}"/>
+                {{-- <tr>
                     <th>契約ID</th>
                     <td>
                         <input style="background:white" name = 'contract_no' type="number" value="{{ old('contract_no', isset($admin->contract_no)?$admin->contract_no:'')}}"/>
@@ -88,8 +146,8 @@
                         <p class="error-message">{{ $message }}</p>
                         @enderror
                     </td>
-                </tr>
-                <tr>
+                </tr> --}}
+                {{-- <tr>
                     <th>
                         ヘッダメニュー<br/>
                         <button type="button" class="edit left mt5 create_header">追加</button>
@@ -135,16 +193,18 @@
                             @endif
                         </ul>
                     </td>
-                </tr>
+                </tr> --}}
             @elseif (!$super_admin_flag)
-                <tr>
+                <input name = 'contract_no' type="hidden" readonly
+                            value="{{ isset($admin->contract_no)?$admin->contract_no:(isset($login_user->contract_no) ? $login_user->contract_no : '')}}"/>
+                {{-- <tr>
                     <th>契約ID</th>
                     <td>
                         <input style="background:white" name = 'contract_no' type="number" readonly
                             value="{{ isset($admin->contract_no)?$admin->contract_no:(isset($login_user->contract_no) ? $login_user->contract_no : '')}}"/>
                     </td>
-                </tr>
-                <tr>
+                </tr> --}}
+                {{-- <tr>
                     <th>ヘッダメニュー</th>
                     <td>
                         <ul class="delete-list">
@@ -155,7 +215,7 @@
                             @endforeach
                         </ul>
                     </td>
-                </tr>
+                </tr> --}}
                 {{-- <tr> --}}
                     {{-- <th>担当現場</th> --}}
                     {{-- <td><a data-target="rule" class="modal-open setting white">クリックして現場を選択してください</a></td> --}}
@@ -171,7 +231,13 @@
             </tr>
             <tr>
                 <th>メールアドレス</th>
-                <td><input type="email" name="email" value="{{ old('email', isset($admin->email)?$admin->email:'')}}">
+                <td>
+                    @if($is_main_admin)
+                        <input readonly type="email" name="email" value="{{ old('email', isset($admin->email)?$admin->email:'')}}">
+                    @else
+                        <input type="email" name="email" value="{{ old('email', isset($admin->email)?$admin->email:'')}}">
+                    @endif
+
                     @error('email')
                     <p class="error-message">{{ $message }}</p>
                     @enderror
@@ -189,7 +255,7 @@
             <tr>
                 <th>パスワード確認</th>
                 <td>
-                    <input type="password" name="password_confirmation" id="password_confirmation" placeholder="英数8文字以上（記号可）" pattern="^[a-zA-Z0-9!-/:-@¥[-`{-~]*$">
+                    <input type="password" name="password_confirmation" id="password_confirmation" placeholder="英数8文字以上（記号可）" pattern="^[a-zA-Z0-9!-/:-@¥[-`{-~]*$"/>
                 </td>
             </tr>
             <tr>

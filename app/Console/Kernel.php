@@ -31,7 +31,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('safie:refresh_access_token')->daily();
         // $schedule->command('s3:video_get_save')->everyFiveMinutes();
-        $schedule->command('s3:video_get_save')->everyMinute();
+        $schedule->command('s3:video_get_save')->everyTwoMinutes();
         $schedule->command('ai:retry_request_night')->everyMinute();
         $schedule->command('ai:check_request_download')->everyMinute();
         $schedule->command('s3:sorted_image_save')->everyMinute();

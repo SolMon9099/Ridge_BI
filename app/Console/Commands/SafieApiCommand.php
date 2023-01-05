@@ -25,9 +25,9 @@ class SafieApiCommand extends Command
         MediaRequestHistory::query()
             ->where('created_at', '<', date('Y-m-d', strtotime('-1 month')))
             ->delete();
-        // S3VideoHistory::query()
-        //     ->where('created_at', '<', date('Y-m-d', strtotime('-3 month')))
-        //     ->delete();
+        S3VideoHistory::query()
+            ->where('created_at', '<', date('Y-m-d', strtotime('-3 month')))
+            ->delete();
         Log::info('Refresh Token****************');
         $contracts_data = Admin::query()->where('is_main_admin', 1)->get()->all();
         if (count($contracts_data) > 0) {

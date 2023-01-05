@@ -15,7 +15,6 @@ class AccountService
         $new_user->email = $params['email'];
         $new_user->name = $params['name'];
         $new_user->department = $params['department'];
-        $new_user->email = $params['email'];
         $new_user->authority_id = $params['authority_id'];
         $new_user->password = Hash::make($params['password']);
         $new_user->is_enabled = isset($params['is_enabled']) ? $params['is_enabled'] : 1;

@@ -62,6 +62,79 @@ class SafieApiService
         return SafieApiService::$_instance;
     }
 
+    public static function checkSafieUser($email, $password)
+    {
+        $url = sprintf('%s%s', 'https://openapi.safie.link/v1/', 'auth/authorize');
+
+        $params = [];
+        $params['client_id'] = env('CLIENT_ID', 'dc2537ffb887');
+        $params['response_type'] = 'code';
+        $params['scope'] = 'safie-api';
+        $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', 'http://54.95.92.211/');
+        $params['state'] = '';
+
+        $auth_url = sprintf('%s?%s', $url, http_build_query($params));
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $auth_url);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('first  httpcode = '.$httpcode);
+        if ($httpcode == 200) {
+            $dom = HtmlDomParser::str_get_html($response);
+            $access_confirm = $dom->find('input[name="access_confirm"]');
+            if (count($access_confirm) > 0) {
+                $access_confirm = $access_confirm[0]->value;
+                Log::info('second access_confirm = '.$access_confirm);
+                $authorize_url = 'https://app.safie.link/auth/authorize';
+
+                $params = [];
+                $params['username'] = $email;
+                $params['password'] = $password;
+                $params['client_id'] = env('CLIENT_ID', 'dc2537ffb887');
+                $params['response_type'] = 'code';
+                $params['scope'] = 'safie-api';
+                $params['redirect_uri'] = env('SAFIE_REDIRECT_URL', 'http://54.95.92.211/');
+                $params['state'] = '';
+                $params['access_confirm'] = $access_confirm;
+                $params['authorize'] = '許可する';
+
+                $curl = curl_init($authorize_url);
+                //POSTで送信
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_HEADER, true);
+                curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
+
+                $response = curl_exec($curl);
+                $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                Log::info('second  httpcode = '.$httpcode);
+                curl_close($curl);
+                if ($httpcode != 200) {
+                    return false;
+                }
+                $split_data = explode('code=', $response);
+                if (count($split_data) > 1) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
     public function generateRefreshToken()
     {
         if (isset($this->refresh_token) && $this->refresh_token != '') {
@@ -129,7 +202,6 @@ class SafieApiService
         $params['refresh_token'] = $refresh_token;
         $params['scope'] = 'safie-api';
         $response = $this->sendPostwithHttpCode($url, null, $params);
-        Log::info($response);
         if (isset($response['http_code'])) {
             if ($response['http_code'] == 200) {
                 $this->updateTokenDB($response['response_data']);

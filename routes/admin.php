@@ -156,6 +156,12 @@ Route::group(['middleware' => 'prevent-back-history'], function () {
             Route::get('/detail', 'MeterController@detail')->name('admin.meter.detail');
         });
 
+        Route::group(['prefix' => 'vc'], function () {
+            Route::get('/detail', 'VcController@detail')->name('admin.vc.detail');
+            Route::get('/list', 'VcController@list')->name('admin.vc.list');
+            Route::get('/past_analysis', 'VcController@past_analysis')->name('admin.vc.past_analysis');
+        });
+
         Route::group(['prefix' => 'analyze'], function () {
             Route::get('/', 'AnalyzeController@index')->name('admin.analyze');
             Route::get('/now_list', 'AnalyzeController@now_list')->name('admin.analyze.now_list');

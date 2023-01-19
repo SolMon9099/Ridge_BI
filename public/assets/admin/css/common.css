@@ -435,6 +435,13 @@ input[type=text], input[type=password], input[type=number] {
 #dropmenu li.thief-menu a:hover {
   background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAWdJREFUSEvdlNFxwkAMRLWdhE6gE6gkSSWhE0gloZPNrOZ0s7Yx2Ez8k5vhw9xJT1rtHWLjhY3zxz8EkNxHxA3Aba18JN8BfHrcRCKSbIDdGoCSR8SHfg4ZAEheIkIdXAEcVgLeIuJHxUXECcBV8R1Asg7o/50kInkEcH4Eclmsi16gA44R8RURZwAnO6xqEtKK2Nt3yVIxvQsAKbEDlFyQTEhS7SqgvmtfcZWwipIpMqHFpQoOqIQlj4YdAPJMG36plQlnZK05HjQHB/SNNigBtfKgSeYd9LlZIYNCHTCwmTkqbTdTbcmWknmnBXSA7Kku0gEt4cW0rX3vSh0oJm0p1zWj3HVRHe6DdXtacAeM7TvueuCi1t7EFZVkBOjWtf2SeHBJ7z0V0vV7fMFGQx48B3ZHulwFXvxck5zcgyVPyauAxW/VGkDdExW+CaAukAD9aXgm05oO8ulo6+8Bzyqd21/cwauAX935BCjvx7meAAAAAElFTkSuQmCC") no-repeat 15px 50% #0062de;
 }
+#dropmenu li.vc-menu a {
+  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAVNJREFUSEvVlEFugzAQRb/pRUC0e+gJkpskt/Au6c63aG+SnKCwb1E4Ca4G4zIYY1uRIrVsEALm/e+ZPwIPvsSD6+PvACp5yzMMJw2dazwdW1X0Ke6THdSy06xgr5HtUyBJgEp2JwGcAVjVuQbOrSrfYi6iADoageFGhTSGPd0Fsot5zoqYiwTArL5RZUGFa9kRMMlFEOCqb9XLlQCV/NqluogArHp9bdTzeDz2epXduwYOsV5sApbqzVnbSWpUKab31Is81IsAwKjnCjmAnKS48AJ86qfmjlkgB6YX44QFXXgBW8pcBwZinArg41OVRzcXKwBXb5Xan/yAsIsVoJbfF0DsYtPBlc5JX0/bAsDmu7eh4oV8Dpi7KXzLdC8AsYSGAFsufgHs7L3qY0ttuUJmFwwwxz+lWOgbWop2rTg9GEfuQOm8F+IOR3Sb3guy//1/wA+FReAZ5hg2IAAAAABJRU5ErkJggg==") no-repeat 15px 50% #FFF;
+  padding-left: 50px
+}
+#dropmenu li.vc-menu a:hover {
+  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAASdJREFUSEvVlNFtwzAMRO82qTdpNqkniTtJu0mzSbLJBTRIQ1ZkiQgQoPGPETjmu0eTIl588cX18X8Akj4AnAHYfSZ5y9inDSSpKGjFTxlICiDJki8AIrVZLCS/RxZDgLfm6oVOfv/z+zSyyAC29CQnKyzJgCmLLqBOT/LigE8AKYsRINJfSEZ71u5I+gHwNfoWh4Aq/drrmCSS9OdmYa06/BY9QKTfpqUEZC2agFZ6L7jughn4b0vftTgCNPtbGzgkTH9JzvVePADK9JE0XjoAdC1aAFO2MUxtamXxMG07gKSY71ssVancMijsYvl2E1UDuhs6ADR3ZgMUvW+mHx1q1RGyWZSAcv0z9Xr/saN8PVbqFpmmrb9NxrPXbjiGp+mzlHjv/QF3p7G0GYRb0BYAAAAASUVORK5CYII=") no-repeat 15px 50% #0062de;
+}
 #dropmenu li.analysis-menu a {
   background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAActJREFUSEu1VctxwjAQfetJH5gxuZs0EKgk0IVugZu6gE5wGgi+Bw9OH4mVWdvCa8uyyAEuzIC077Ort4QHf+jB9REESNXXCoheCWYF0ApASUDGxCqYD4BmBGz4twrRPtfzUpL2AqTqGhN+D23Ru4QScPzUyTYIkKrinYBde7A0wBGoPnL9nDEw8BMDFBPoMEAuzzqZTwLI4gbY5TrZ++gv1eUkFQYVNLZUVy5oUK2Z8ZQ3wsaYVY6R6fXAMhpj3lhTvQHmGzBlCNwSuwGk6rJpPXV8HFrBl9mOsakZKhYATWOH7GVxLtrYh40FGU6NF+BFFQe+aGC2uV7UhYQqGERzO+P/6dVNwVIV3Ny4X6ixbWw6pvoVfAf2QDeyJjvrxVpeHFPM/y9VYfj7rJOa/GRUcEwQohPHg0G0HrdIWucqDmaRZSozyDYZ6CuziuWgBAHs/IvoaJ1ybev60g1KEKDrB6cqcQbNbC7JnoiI6b0jB0Awrmddeu+LDdErJ2IcAOG51woPc36ATjg6AHbMRJFbXANP7TLhuOYlVL/ouH3do8l7h4LgrikNqq0v/CZ70CwaTk9ei93KbB9QxivTxoqPxt1TFNThOfBwgD8nexkoSkTF2QAAAABJRU5ErkJggg==") no-repeat 15px 50% #FFF;
   padding-left: 50px;
@@ -561,6 +568,9 @@ input[type=text], input[type=password], input[type=number] {
 }
 #dropmenu li.thief-menu:hover > a, #dropmenu > li:hover > div {
   background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAZVJREFUSEu1VdttwzAQIydpM0mbSdpM0mSSZpM4kzSd5AoKOuEsyZL7EQGBHT+OvCNFE09efHJ9TAHM7B3AGwAd9XsAWDKxO4AXAJ/52oWk7pe1CWBmrwC+c9G9jV5JnqYAZvYF4JwfFKMrgDvJJQML3AnEeg+ShyFAVfxM8rJF38xuVYfjDjK7n1zwKMaj2YQxqhsVb8isNAiMGua52AeAXwk9A3diBcDM5ASJ2syxMwq9L10a19QdRwAXdsW+Kq6iWiKTQGrXjADEXi+eSKZCoSv9PbjH/6NV7EDiSqxYyMfWMB3pNd0H/kCw7ELyGF80s6bj3LXpSDKRH0ZFjgl5XZtNtk0xUI1o2PGeLHKmMYNc5FVnoeNilD0A0kX+9+jwSfXG5ju7GGUKEPRQkgpM6ZlyqdLEbb7aRw1A2LE+hjL7QSYJXOy1VhHTA/CZb45ig7kuNxHTA0g2C6vEdXaTbmlU+gipS513i3dtGvy9NZH6ughI1G7yzjRQZCg9JWz8ZApEBSW251OX0G4X7W2nfu7pAH85sNcZ69O/OwAAAABJRU5ErkJggg==") no-repeat 15px 50% #0062de;
+}
+#dropmenu li.vc-menu:hover > a, #dropmenu > li:hover > div {
+  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAASdJREFUSEvVlNFtwzAMRO82qTdpNqkniTtJu0mzSbLJBTRIQ1ZkiQgQoPGPETjmu0eTIl588cX18X8Akj4AnAHYfSZ5y9inDSSpKGjFTxlICiDJki8AIrVZLCS/RxZDgLfm6oVOfv/z+zSyyAC29CQnKyzJgCmLLqBOT/LigE8AKYsRINJfSEZ71u5I+gHwNfoWh4Aq/drrmCSS9OdmYa06/BY9QKTfpqUEZC2agFZ6L7jughn4b0vftTgCNPtbGzgkTH9JzvVePADK9JE0XjoAdC1aAFO2MUxtamXxMG07gKSY71ssVancMijsYvl2E1UDuhs6ADR3ZgMUvW+mHx1q1RGyWZSAcv0z9Xr/saN8PVbqFpmmrb9NxrPXbjiGp+mzlHjv/QF3p7G0GYRb0BYAAAAASUVORK5CYII=") no-repeat 15px 50% #0062de;
 }
 #dropmenu > li:hover li:hover > a {
   background: #0062de;
@@ -6017,4 +6027,9 @@ ul.time + .error-message + p{
     margin-right: 60px;
     border: 1px solid lightgray;
     background: white;
+}
+.duplicate-svg{
+    position:absolute;
+    right:45px;
+    top:30px;
 }

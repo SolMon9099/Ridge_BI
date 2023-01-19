@@ -7,6 +7,7 @@ use App\Service\SafieApiService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\ShelfDetectionRule;
+
 class ShelfSortedCommand extends Command
 {
     protected $signature = 's3:sorted_image_save';
@@ -31,6 +32,11 @@ class ShelfSortedCommand extends Command
         //     Storage::disk('s3')->put($file_name, $file_content);
         // }
         // $files = Storage::disk('video')->files('test_movie/ピット入退場検知');
+        // foreach ($files as $file_name) {
+        //     $file_content = Storage::disk('video')->get($file_name);
+        //     Storage::disk('s3')->put($file_name, $file_content);
+        // }
+        // $files = Storage::disk('video')->files('test_movie/new_test');
         // foreach ($files as $file_name) {
         //     $file_content = Storage::disk('video')->get($file_name);
         //     Storage::disk('s3')->put($file_name, $file_content);
@@ -75,6 +81,7 @@ class ShelfSortedCommand extends Command
             }
         }
         Log::info('定時撮影チェック終了ーーーーーー');
+
         return 0;
     }
 }

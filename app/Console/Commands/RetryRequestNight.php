@@ -241,6 +241,35 @@ class RetryRequestNight extends Command
                     Storage::disk('temp')->put('retry_ai_request\\'.'danger_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
                 }
                 //-------------------------------------------------
+
+                //車両--------------------------------------
+                $params['request_type'] = $is_night;
+                Log::info('Retry------車両エリア侵入検知解析リクエスト（BI→AI）開始');
+                $url = config('const.ai_server').'vc-incursion/register-camera';
+                $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+                if ($ai_res != 200) {
+                    if ($ai_res == 503 || $ai_res == 530) {
+                        Log::info('Retry------解析を止める用API（BI→AI）開始');
+                        $stop_url = config('const.ai_server').'stop-analysis';
+                        $stop_params = [];
+                        $stop_params['camera_info'] = [];
+                        $stop_params['camera_info']['camera_id'] = $device_id;
+                        $stop_params['camera_info']['rule_name'] = 'vc';
+                        $stop_params['priority'] = 1;
+                        $stop_params['request_type'] = $is_night;
+                        $this->sendPostApi($stop_url, $header, $stop_params, 'json');
+                        Log::info('Retry------解析を止める用API（BI→AI）中止');
+                    }
+                    $params['request_type'] = 2;
+                    $temp_save_data = [
+                        'url' => $url,
+                        'params' => $params,
+                        'type' => 'vc',
+                        'device_id' => $device_id,
+                    ];
+                    Storage::disk('temp')->put('retry_ai_request\\'.'vc_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+                }
+                //------------------------------------------
             }
         }
         //--------------------------------------

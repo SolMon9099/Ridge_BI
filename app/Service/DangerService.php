@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Models\Camera;
 use App\Models\DangerAreaDetectionRule;
 use App\Models\DangerAreaDetection;
+use App\Models\VcDetection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -256,6 +257,76 @@ class DangerService
             });
         }
         $query->orderByDesc('danger_area_detections.starttime');
+
+        return $query;
+    }
+
+    public static function searchVCDetections($params)
+    {
+        $query = VcDetection::query()
+            ->select(
+                'vc_detections.*',
+                'danger_area_detection_rules.action_id',
+                'danger_area_detection_rules.points',
+                'danger_area_detection_rules.color',
+                'danger_area_detection_rules.name as rule_name',
+                'cameras.installation_position',
+                'cameras.location_id',
+                'cameras.contract_no',
+                'cameras.camera_id as device_id',
+                'cameras.serial_no',
+                'locations.name as location_name'
+            )
+            ->leftJoin('danger_area_detection_rules', 'danger_area_detection_rules.id', 'vc_detections.rule_id')
+            ->leftJoin('cameras', 'cameras.id', 'vc_detections.camera_id')
+            ->leftJoin('locations', 'locations.id', 'cameras.location_id');
+        if ($params != null) {
+            if (isset($params['starttime']) && $params['starttime'] != '') {
+                $query->whereDate('vc_detections.starttime', '>=', $params['starttime']);
+            } else {
+                if ($params != null) {
+                    $query->whereDate('vc_detections.starttime', '>=', date('Y-m-d', strtotime('-1 week')));
+                }
+            }
+            if (isset($params['endtime']) && $params['endtime'] != '') {
+                $query->whereDate('vc_detections.starttime', '<=', $params['endtime']);
+            } else {
+                $query->whereDate('vc_detections.starttime', '<=', date('Y-m-d'));
+            }
+            if (isset($params['rule_ids']) && $params['rule_ids'] != '') {
+                $rule_ids = json_decode($params['rule_ids']);
+                if (count($rule_ids) > 0) {
+                    $query->whereIn('vc_detections.rule_id', $rule_ids);
+                }
+            }
+            if (isset($params['selected_rule']) && $params['selected_rule'] > 0) {
+                $query->where('vc_detections.rule_id', $params['selected_rule']);
+            }
+            if (isset($params['selected_rules']) && is_array($params['selected_rules']) && count($params['selected_rules']) > 0) {
+                $query->whereIn('vc_detections.rule_id', $params['selected_rules']);
+            }
+            if (isset($params['selected_cameras']) && is_array($params['selected_cameras']) && count($params['selected_cameras']) > 0) {
+                $query->whereIn('vc_detections.camera_id', $params['selected_cameras']);
+            }
+            if (isset($params['selected_camera']) && $params['selected_camera'] > 0) {
+                $query->where('vc_detections.camera_id', $params['selected_camera']);
+            }
+            if (isset($params['selected_actions']) && is_array($params['selected_actions']) && count($params['selected_actions']) > 0) {
+                $query->whereIn('danger_area_detection_rules.action_id', $params['selected_actions']);
+            }
+        }
+
+        if (Auth::guard('admin')->user()->contract_no != null) {
+            $query->where('cameras.contract_no', Auth::guard('admin')->user()->contract_no);
+        }
+        if (Auth::guard('admin')->user()->authority_id == config('const.authorities_codes.manager')) {
+            $query->where(function ($q) {
+                $q->orWhere('locations.manager', Auth::guard('admin')->user()->id);
+                $q->orWhere('locations.manager', 'Like', '%'.Auth::guard('admin')->user()->id.',%');
+                $q->orWhere('locations.manager', 'Like', '%,'.Auth::guard('admin')->user()->id.'%');
+            });
+        }
+        $query->orderByDesc('vc_detections.starttime');
 
         return $query;
     }

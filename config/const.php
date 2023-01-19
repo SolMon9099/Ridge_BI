@@ -54,6 +54,11 @@ return [
         'pointing' => 5,
         'smoking' => 6,
     ],
+    'vc_names' => [
+        'forklift' => 'フォークリフト',
+        'truck' => 'トラック',
+        'wheel loader' => 'ホイールローダー',
+    ],
 
     //メーター種別
     'meter_type' => [
@@ -107,7 +112,7 @@ return [
         2 => 'admin.danger',
         3 => 'admin.shelf',
         4 => 'admin.thief',
-        // 5 => 'admin.analyze',
+        5 => 'admin.vc.detail',
     ],
 
     'header_menus' => [
@@ -115,7 +120,7 @@ return [
         2 => '危険エリア侵入検知',
         3 => '棚乱れ検知',
         4 => '大量盗難検知',
-        // 5 => '過去分析',
+        5 => '車両侵入検知',
     ],
 
     'header_menu_classes' => [
@@ -123,7 +128,7 @@ return [
         2 => 'danger-menu',
         3 => 'shelf-menu',
         4 => 'thief-menu',
-        // 5 => '過去分析',
+        5 => 'vc-menu',
     ],
 
     'header_menu_codes' => [
@@ -131,7 +136,7 @@ return [
         'danger_area' => 2,
         'shelf' => 3,
         'thief' => 4,
-        // 'past_analysis' => 5,
+        'vc' => 5,
     ],
 
     'admin_pages' => ['全般', '現場設定', 'カメラ設定'],
@@ -180,11 +185,11 @@ return [
             ['id' => 20, 'name' => '検知リスト'],
             ['id' => 25, 'name' => '過去グラフ'],
         ],
-        // '過去分析' => [
-        //     ['id' => 16, 'name' => '新規分析依頼'],
-        //     ['id' => 17, 'name' => '新規分析依頼中リスト'],
-        //     ['id' => 18, 'name' => '分析済みリスト'],
-        // ],
+        '車両侵入検知' => [
+            ['id' => 16, 'name' => 'TOP'],
+            ['id' => 17, 'name' => '検知リスト'],
+            ['id' => 18, 'name' => '過去グラフ'],
+        ],
     ],
 
     'page_route_names' => [
@@ -210,9 +215,9 @@ return [
         14 => 'admin.shelf.list',
         15 => 'admin.shelf.detail',
         24 => 'admin.shelf.past_analysis',
-        // 16 => 'admin.analyze',
-        // 17 => 'admin.analyze.now_list',
-        // 18 => 'admin.analyze.finish_list',
+        16 => 'admin.vc.detail',
+        17 => 'admin.vc.list',
+        18 => 'admin.vc.past_analysis',
         19 => 'admin.thief.cameras_for_rule',
         29 => 'admin.thief',
         20 => 'admin.thief.list',
@@ -260,6 +265,12 @@ return [
         19 => 'recent_detect_danger',
         20 => 'recent_detect_shelf',
         21 => 'recent_detect_thief',
+
+        22 => 'live_video_vc',
+        23 => 'live_graph_vc',
+        24 => 'detect_list_vc',
+        25 => 'past_graph_vc',
+        26 => 'recent_detect_vc',
     ],
 
     'top_block_type_codes' => [
@@ -284,6 +295,12 @@ return [
         'recent_detect_danger' => 19,
         'recent_detect_shelf' => 20,
         'recent_detect_thief' => 21,
+
+        'live_video_vc' => 22,
+        'live_graph_vc' => 23,
+        'detect_list_vc' => 24,
+        'past_graph_vc' => 25,
+        'recent_detect_vc' => 26,
     ],
 
     'top_block_titles' => [
@@ -308,6 +325,12 @@ return [
         19 => '最新の検知(危険エリア侵入)',
         20 => '最新の検知(棚乱れ)',
         21 => '最新の検知(大量盗難)',
+
+        22 => 'リアルタイム映像(車両エリア侵入)',
+        23 => '当日グラフ(車両エリア侵入)',
+        24 => '検知リスト(車両エリア侵入)',
+        25 => '最新の検知(車両エリア侵入)',
+        26 => '最新の検知(車両エリア侵入)',
     ],
 
     'top_block_gears' => [
@@ -392,6 +415,22 @@ return [
             'change_camera' => '指定カメラ変更',
         ],
         21 => [
+            'delete' => '削除',
+            'change_camera' => '指定カメラ変更',
+        ],
+        22 => [
+            'delete' => '削除',
+            'change_camera' => '指定カメラ変更',
+        ],
+        23 => [
+            'delete' => '削除',
+            'change_camera' => '指定カメラ変更',
+        ],
+        24 => [
+            'delete' => '削除',
+            'change_camera' => '指定カメラ変更',
+        ],
+        25 => [
             'delete' => '削除',
             'change_camera' => '指定カメラ変更',
         ],

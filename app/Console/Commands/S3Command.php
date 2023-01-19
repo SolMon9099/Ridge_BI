@@ -84,62 +84,63 @@ class S3Command extends Command
         }
 
         //--------test--------pit------------
-        $test_path_array = [
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107150625_20221107150636.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107150705_20221107150716.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107150824_20221107150836.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107150909_20221107150927.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107151819_20221107151835.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152141_20221107152146.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152145_20221107152156.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152206_20221107152213.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152438_20221107152448.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152628_20221107152635.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152730_20221107152741.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152820_20221107152821.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152853_20221107152855.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107153005_20221107153008.mp4',
-            'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107153043_20221107153050.mp4',
-        ];
-        $params = [];
-        $header = [
-            'Content-Type: application/json',
-        ];
 
-        if (Storage::disk('temp')->exists('test_pit.json')) {
-            $test_index = Storage::disk('temp')->get('test_pit.json');
-            $test_index = (int) $test_index;
-            if ($test_index < 15) {
-                Storage::disk('temp')->put('test_pit.json', $test_index + 1);
-            }
-        } else {
-            Storage::disk('temp')->put('test_pit.json', 1);
-            $test_index = 0;
-        }
+        // $test_path_array = [
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107150625_20221107150636.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107150705_20221107150716.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107150824_20221107150836.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107150909_20221107150927.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107151819_20221107151835.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152141_20221107152146.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152145_20221107152156.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152206_20221107152213.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152438_20221107152448.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152628_20221107152635.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152730_20221107152741.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152820_20221107152821.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107152853_20221107152855.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107153005_20221107153008.mp4',
+        //     'https://s3-ap-northeast-1.amazonaws.com/ridge-bi-s3/test_movie/20221107153043_20221107153050.mp4',
+        // ];
+        // $params = [];
+        // $header = [
+        //     'Content-Type: application/json',
+        // ];
 
-        $rule = DB::table('pit_detection_rules')->where('id', 74)->get()->first();
-        if (isset($test_path_array[$test_index])) {
-            Log::info('テスト用ピット入退場解析リクエスト（BI→AI）開始ーーーー'.$test_index.')');
-            $path = $test_path_array[$test_index];
-            if (!isset($params['camera_info'])) {
-                $params['camera_info'] = [];
-            }
-            $params['camera_info']['camera_id'] = 'FvY6rnGWP12obPgFUj0a';
-            if (!isset($params['movie_info'])) {
-                $params['movie_info'] = [];
-            }
-            $params['movie_info']['movie_path'] = $path;
-            if (!isset($params['rect_info'])) {
-                $params['rect_info'] = [];
-            }
-            $params['rect_info']['rect_id'] = '74';
-            $params['rect_info']['entrance_rect_point_array'] = json_decode($rule->red_points);
-            $params['rect_info']['exit_rect_point_array'] = json_decode($rule->blue_points);
-            $params['priority'] = 1;
+        // if (Storage::disk('temp')->exists('test_pit.json')) {
+        //     $test_index = Storage::disk('temp')->get('test_pit.json');
+        //     $test_index = (int) $test_index;
+        //     if ($test_index < 15) {
+        //         Storage::disk('temp')->put('test_pit.json', $test_index + 1);
+        //     }
+        // } else {
+        //     Storage::disk('temp')->put('test_pit.json', 1);
+        //     $test_index = 0;
+        // }
 
-            $url = config('const.ai_server').'pit/register-camera';
-            $this->sendPostApi($url, $header, $params, 'json');
-        }
+        // $rule = DB::table('pit_detection_rules')->where('id', 74)->get()->first();
+        // if (isset($test_path_array[$test_index])) {
+        //     Log::info('テスト用ピット入退場解析リクエスト（BI→AI）開始ーーーー'.$test_index.')');
+        //     $path = $test_path_array[$test_index];
+        //     if (!isset($params['camera_info'])) {
+        //         $params['camera_info'] = [];
+        //     }
+        //     $params['camera_info']['camera_id'] = 'FvY6rnGWP12obPgFUj0a';
+        //     if (!isset($params['movie_info'])) {
+        //         $params['movie_info'] = [];
+        //     }
+        //     $params['movie_info']['movie_path'] = $path;
+        //     if (!isset($params['rect_info'])) {
+        //         $params['rect_info'] = [];
+        //     }
+        //     $params['rect_info']['rect_id'] = '74';
+        //     $params['rect_info']['entrance_rect_point_array'] = json_decode($rule->red_points);
+        //     $params['rect_info']['exit_rect_point_array'] = json_decode($rule->blue_points);
+        //     $params['priority'] = 1;
+
+        //     $url = config('const.ai_server').'pit/register-camera';
+        //     $this->sendPostApi($url, $header, $params, 'json');
+        // }
 
         //-----------------------------------
 
@@ -255,7 +256,7 @@ class S3Command extends Command
                             $aws_url = config('const.aws_url');
                             $movie_path = $aws_url.$device_id.'/'.$start_date.'/'.$file_name;
                             $is_night = 1;  //no night
-                            if (strtotime($now_date.' '.$camera_start_on_time) + ($request_interval + 3)*60 <= strtotime($now) && ($request_interval + 3)*60 + strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
+                            if (strtotime($now_date.' '.$camera_start_on_time) + ($request_interval + 3) * 60 <= strtotime($now) && ($request_interval + 3) * 60 + strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
                                 $this->reqeuestToAI($device_id, $camera_item->id, $movie_path, $is_night);
                             }
                             //-------------------------------
@@ -335,6 +336,26 @@ class S3Command extends Command
                     Storage::disk('temp')->put('retry_ai_request\\'.'danger_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
                 }
                 //-------------------------------------------------
+
+                //車両--------------------------------------
+                $params['request_type'] = $is_night;
+                Log::info('車両エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
+                $url = config('const.ai_server').'vc-incursion/register-camera';
+
+                $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+                //save unsuccess api to AI------------------------
+                if ($ai_res != 200) {
+                    $params['request_type'] = 2;
+                    $temp_save_data = [
+                        'url' => $url,
+                        'params' => $params,
+                        'type' => 'vc',
+                        'device_id' => $device_id,
+                    ];
+                    Storage::disk('temp')->put('retry_ai_request\\'.'vc_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+                }
+                //------------------------------------------
+                //------------------------------------------
             }
         }
         //--------------------------------------

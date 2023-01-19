@@ -5,18 +5,18 @@
 <div id="wrapper">
     <div class="breadcrumb">
         <ul>
-            <li><a href="{{route('admin.danger')}}">危険エリア侵入判定</a></li>
-            <li>危険エリア検知リスト(アーカイブ)</li>
+            <li><a href="{{route('admin.vc.detail')}}">車両エリア侵入判定</a></li>
+            <li>車両エリア検知リスト(アーカイブ)</li>
         </ul>
     </div>
     <div id="r-content">
         <div class="title-wrap">
-            <h2 class="title">危険エリア検知リスト(アーカイブ)</h2>
+            <h2 class="title">車両エリア検知リスト(アーカイブ)</h2>
         </div>
         <div class='notice-area'>
             ※現在のプランでは検知してから検知リストに反映されるまで最低5分程度かかります。検知後表示までの時間を短くしたい場合はご相談ください。
         </div>
-        <form action="{{route('admin.danger.list')}}" method="get" name="form1" id="form1">
+        <form action="{{route('admin.vc.list')}}" method="get" name="form1" id="form1">
         @csrf
             <div class="title-wrap ver2 stick">
                 <div class="sp-ma">
@@ -48,19 +48,19 @@
                 </div>
             </div>
         </form>
-        @if(count($danger_detections) > 0)
-            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_danger']}})">ダッシュボートへ追加</button>
+        @if(count($vc_detections) > 0)
+            <button type="button" class="add-to-toppage <?php echo $from_top?'from_top':'' ?>" onclick="addDashboard({{config('const.top_block_type_codes')['detect_list_vc']}})">ダッシュボートへ追加</button>
         @endif
-        @if(!(count($danger_detections) > 0))
+        @if(!(count($vc_detections) > 0))
             <div class="no-data">検知データがありません。</div>
         @endif
-        {{ $danger_detections->appends([
+        {{ $vc_detections->appends([
             'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
             'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
             'rule_ids' => isset($request) && $request->has('rule_ids')?$request->rule_ids:''
         ])->links('vendor.pagination.admin-pagination') }}
         <ul class="kenchi-list">
-            @foreach ($danger_detections as $item)
+            @foreach ($vc_detections as $item)
             <?php
                 $video_path = '';
                 $video_path .= asset('storage/video/').'/';
@@ -119,12 +119,12 @@
                         <li>
                             <h2 class="icon-content">ルール</h2>
                             <dl>
-                                <dt style="padding-top: 8px;"><p>検知条件</p></dt>
+                                <dt style="padding-top: 8px;"><p>検知対象</p></dt>
                                 <dd>
                                     <label style="font-size: 17px;">
-                                        {{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action')[$item->detection_action_id] : ''}}
+                                        {{isset($item->vc_category) && $item->vc_category != '' ? config('const.vc_names')[$item->vc_category] : ''}}
                                     </label>
-                                    <input type="color" readonly value="{{$item->color}}" style="min-height:20px;"/>
+                                    {{-- <input type="color" readonly value="{{$item->color}}" style="min-height:20px;"/> --}}
                                 </dd>
                             </dl>
                             <dl>
@@ -139,7 +139,7 @@
             </li>
             @endforeach
         </ul>
-        {{ $danger_detections->appends([
+        {{ $vc_detections->appends([
             'starttime'=> (isset($request) && $request->has('starttime'))?$request->starttime:date('Y-m-d', strtotime('-1 week')),
             'endtime'=> (isset($request) && $request->has('endtime'))?$request->endtime:date('Y-m-d'),
             'rule_ids' => isset($request) && $request->has('rule_ids')?$request->rule_ids:''
@@ -159,13 +159,6 @@
                         <option value=''></option>
                         @foreach ($rule_cameras as $id => $camera)
                             <option value={{$id}}>{{$camera['serial_no']}}</option>
-                        @endforeach
-                    </select>
-                    <label>アクション</label>
-                    <select id="select_action" onchange="changeAction(this)">
-                        <option value=''></option>
-                        @foreach ($rule_actions as $action_id)
-                            <option value={{$action_id}}>{{config('const.action')[$action_id]}}</option>
                         @endforeach
                     </select>
                     @endif
@@ -225,7 +218,7 @@
                         @endforeach
                         @if(count($rules) == 0)
                         <tr>
-                            <td colspan="10">登録された危険エリア侵入検知のルールがありません。ルールを設定してください</td>
+                            <td colspan="10">登録されたエリア侵入検知のルールがありません。ルールを設定してください</td>
                         </tr>
                         @endif
                     </tbody>
@@ -357,33 +350,13 @@
             }
         })
     }
-    function changeAction(e){
-        $.ajax({
-            url : '/admin/AjaxGetRules',
-            method: 'post',
-            data: {
-                type:'danger',
-                page:'list',
-                _token:$('meta[name="csrf-token"]').attr('content'),
-                camera_id:$('#select_camera').val(),
-                action_id:e.value,
-            },
-            error : function(){
-                console.log('failed');
-            },
-            success: function(result){
-                console.log('success', result);
-                $('.rules-tbody').html(result);
-            }
-        })
-    }
     $(document).ready(function() {
         setInterval(() => {
             $.ajax({
                 url : '/admin/CheckDetectData',
                 method: 'post',
                 data: {
-                    type:'danger',
+                    type:'vc',
                     endtime:formatDateLine(new Date($('#endtime').val())),
                     _token:$('meta[name="csrf-token"]').attr('content'),
                     last_record_id : "<?php echo $last_number;?>"

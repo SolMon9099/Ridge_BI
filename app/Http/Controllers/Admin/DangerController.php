@@ -10,6 +10,7 @@ use App\Service\SafieApiService;
 use App\Models\DangerAreaDetectionRule;
 use App\Models\CameraMappingDetail;
 use App\Models\SearchOption;
+use App\Models\VcDetection;
 use App\Service\CameraService;
 use App\Service\TopService;
 // use Illuminate\Support\Facades\Redirect;
@@ -245,6 +246,16 @@ class DangerController extends AdminController
             if ($map_data != null) {
                 $item->floor_number = $map_data->floor_number;
             }
+            $check_starttime = date('Y-m-d H:i:s', strtotime($item->starttime) - 60);
+            $check_endtime = date('Y-m-d H:i:s', strtotime($item->starttime) + 60);
+            $dup_vc_detect_data = VcDetection::select('id', 'starttime')
+                ->where('rule_id', $item->rule_id)
+                ->where('starttime', '>=', $check_starttime)
+                ->where('starttime', '<=', $check_endtime)
+                ->get()->first();
+            if ($dup_vc_detect_data != null) {
+                $item->detect_duplicate = true;
+            }
         }
         $rules = DangerService::getAllRules()->get()->all();
         $rule_cameras = [];
@@ -267,7 +278,7 @@ class DangerController extends AdminController
                     'device_id' => $rule->device_id,
                 ];
             }
-            foreach(json_decode($rule->action_id) as $action_code){
+            foreach (json_decode($rule->action_id) as $action_code) {
                 if (!in_array($action_code, $rule_actions)) {
                     $rule_actions[] = $action_code;
                 }
@@ -279,7 +290,7 @@ class DangerController extends AdminController
             'request' => $request,
             'rules' => $rules,
             'rule_cameras' => $rule_cameras,
-            'rule_actions'=>$rule_actions,
+            'rule_actions' => $rule_actions,
             'from_top' => $from_top,
             'last_number' => $last_record != null ? $last_record->id : null,
         ]);
@@ -455,13 +466,13 @@ class DangerController extends AdminController
                     'device_id' => $rule->device_id,
                 ];
             }
-            foreach(json_decode($rule->action_id) as $action_code){
+            foreach (json_decode($rule->action_id) as $action_code) {
                 if (!in_array($action_code, $rule_actions)) {
                     $rule_actions[] = $action_code;
                 }
             }
         }
-        if ($search_params['selected_rule'] > 0 && $selected_rule_object == null){
+        if ($search_params['selected_rule'] > 0 && $selected_rule_object == null) {
             $selected_rule_object = DangerService::doSearch(['selected_rule' => $search_params['selected_rule']])->get()->first();
         }
 
@@ -470,7 +481,7 @@ class DangerController extends AdminController
             'request_params' => (array) $search_params,
             'rules' => $rules,
             'rule_cameras' => $rule_cameras,
-            'rule_actions'=>$rule_actions,
+            'rule_actions' => $rule_actions,
             'selected_rule_object' => $selected_rule_object,
             'from_top' => $from_top,
             'last_number' => count($danger_detections) > 0 ? $danger_detections[0]->id : null,

@@ -10,6 +10,7 @@ use App\Models\DangerAreaDetection;
 use App\Models\ShelfDetection;
 use App\Models\PitDetection;
 use App\Models\ThiefDetection;
+use App\Models\VcDetection;
 use App\Service\CameraService;
 use Illuminate\Support\Facades\DB;
 
@@ -67,6 +68,13 @@ class AICommand extends Command
                                     $detection_model = new DangerAreaDetection();
                                     if (isset($file_content->detection_action_id)) {
                                         $detection_model->detection_action_id = (int) $file_content->detection_action_id;
+                                    }
+                                    break;
+                                case 'vc':
+                                    $folder_name = 'vc';
+                                    $detection_model = new VcDetection();
+                                    if (isset($file_content->vc_category)) {
+                                        $detection_model->vc_category = $file_content->vc_category;
                                     }
                                     break;
                                 case 'shelf':
@@ -146,6 +154,10 @@ class AICommand extends Command
                                 case 'danger_area':
                                     $folder_name = 'danger';
                                     $table_name = 'danger_area_detections';
+                                    break;
+                                case 'vc':
+                                    $folder_name = 'vc';
+                                    $table_name = 'vc_detections';
                                     break;
                                 case 'shelf':
                                     $folder_name = 'shelf';
@@ -275,6 +287,43 @@ class AICommand extends Command
             } else {
                 if ($request_id == 'http_code_404') {
                     DB::table('danger_area_detections')->where('id', $item->id)->delete();
+                }
+            }
+        }
+
+        $data = VcDetection::query()->where('video_file_path', '')->orderBy('starttime')->get()->all();
+        foreach ($data as $item) {
+            if (isset($camera_data[$item->camera_id])) {
+                continue;
+            }
+            Log::info('AI->BI用失敗したメディアファイル再作成要求------------車両エリア侵入検知');
+            $camera_item = CameraService::getCameraInfoById($item->camera_id);
+            if ($camera_item != null) {
+                $camera_data[$item->camera_id] = $camera_item;
+            }
+            $start_datetime_object = new \DateTime($item->starttime, new \DateTimeZone('GMT+9'));
+            $thumb_datetime_object = clone $start_datetime_object;
+            $start_datetime_object->sub(new \DateInterval('PT'.(string) $detection_video_length.'S'));
+            $end_datetime_object = new \DateTime($item->endtime, new \DateTimeZone('GMT+9'));
+            Log::info('retry start = '.$start_datetime_object->format('c'));
+            Log::info('retry end = '.$end_datetime_object->format('c'));
+            $safie_service = new SafieApiService($camera_data[$item->camera_id]->contract_no);
+            $request_id = $safie_service->makeMediaFile($camera_data[$item->camera_id]->camera_id, $start_datetime_object->format('c'), $end_datetime_object->format('c'), '車両エリア侵入検知', $camera_data[$item->camera_id]->reopened_at);
+            if ((int) $request_id > 0) {
+                $temp_save_data = [
+                    'starttime' => $thumb_datetime_object->format('Y-m-d H:i:s'),
+                    'device_id' => $camera_data[$item->camera_id]->camera_id,
+                    'camera_id' => $camera_data[$item->camera_id]->id,
+                    'contract_no' => $camera_data[$item->camera_id]->contract_no,
+                    'request_id' => $request_id,
+                    'table_id' => $item->id,
+                    'type' => 'vc',
+                    'starttime_format_for_image' => $thumb_datetime_object->format('Y-m-d\TH:i:sO'),
+                ];
+                Storage::disk('temp')->put('retry_video_request\\'.$camera_data[$item->camera_id]->camera_id.'_vc_'.$item->id.'.json', json_encode($temp_save_data));
+            } else {
+                if ($request_id == 'http_code_404') {
+                    DB::table('vc_detections')->where('id', $item->id)->delete();
                 }
             }
         }

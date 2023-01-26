@@ -70,7 +70,7 @@
                 } else {
                     $thumb_path = asset('assets/admin/img/samplepic.png');
                 }
-                $detection_name = isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action_statement')[$item->detection_action_id] : '';
+                $vc_name = isset($item->vc_category) && $item->vc_category !='' ? config('const.vc_names')[$item->vc_category] : '';
                 $video_enabled = false;
                 if (isset($item->thumb_img_path) && $item->thumb_img_path != '' && isset($item->video_file_path) && $item->video_file_path != ''){
                     $video_enabled = true;
@@ -79,7 +79,7 @@
             <li>
                 <div class="movie" video-path = '{{$video_path}}'>
                     @if($video_enabled)
-                        <a data-target="movie0000" onclick="videoPlay('{{$video_path}}', '{{$item->points}}', '{{$item->color}}', '{{$detection_name}}')"
+                        <a data-target="movie0000" onclick="videoPlay('{{$video_path}}', '{{$item->points}}', '{{$item->color}}', '{{$vc_name}}')"
                             class="modal-open setting2 play">
                             <img src="{{$thumb_path}}"/>
                         </a>
@@ -172,7 +172,6 @@
                         <th>設置エリア</th>
                         <th>設置フロア</th>
                         <th>設置場所</th>
-                        <th>アクション</th>
                         <th>カラー</th>
                         <th>ルールの設定期間</th>
                         <th>カメラ画像確認</th>
@@ -205,11 +204,6 @@
                             <td>{{$rule->location_name}}</td>
                             <td>{{$rule->floor_number}}</td>
                             <td>{{$rule->installation_position}}</td>
-                            <td>
-                                @foreach (json_decode($rule->action_id) as $action_code)
-                                    <div>{{config('const.action')[$action_code]}}</div>
-                                @endforeach
-                            </td>
                             <td><input disabled type="color" value = "{{$rule->color}}"></td>
                             <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
                             <td><img width="100px" src="{{asset('storage/thumb').'/'.$rule->img_path}}"/></td>
@@ -277,7 +271,7 @@
         $('#form1').submit();
     }
 
-    function videoPlay(path, points, color, detection_name){
+    function videoPlay(path, points, color, vc_name){
         var video = document.getElementById('video-container');
         video.pause();
         $('#video-container').attr('src', path);
@@ -320,7 +314,7 @@
             }
 
             drawFigure(points, color, ratio);
-            $('.detect-content').html(detection_name);
+            $('.detect-content').html(vc_name);
         }, 1000);
     }
     function addDashboard(block_type){
@@ -339,7 +333,7 @@
                 page:'list',
                 _token:$('meta[name="csrf-token"]').attr('content'),
                 camera_id:e.value,
-                action_id:$('#select_action').val(),
+                // action_id:$('#select_action').val(),
             },
             error : function(){
                 console.log('failed');

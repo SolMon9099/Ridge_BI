@@ -10,7 +10,7 @@
     $selected_rule_id = old('selected_rule', isset($request_params) && isset($request_params['selected_rule'])?$request_params['selected_rule']:null);
     $selected_rule_ids = old('selected_rules', isset($request_params) && isset($request_params['selected_rules'])?$request_params['selected_rules']:[]);
     $selected_camera_ids = old('selected_cameras', isset($request_params) && isset($request_params['selected_cameras'])?$request_params['selected_cameras']:[]);
-    $selected_action_ids = old('selected_actions', isset($request_params) && isset($request_params['selected_actions'])?$request_params['selected_actions']:[]);
+    // $selected_action_ids = old('selected_actions', isset($request_params) && isset($request_params['selected_actions'])?$request_params['selected_actions']:[]);
 ?>
 <form action="{{route('admin.vc.past_analysis')}}" method="get" name="form1" id="form1">
 @csrf
@@ -154,7 +154,6 @@
                             <th>設置エリア</th>
                             <th>設置フロア</th>
                             <th>設置場所</th>
-                            <th>アクション</th>
                             <th>カラー</th>
                             <th>ルールの設定期間</th>
                             <th>カメラ画像確認</th>
@@ -179,11 +178,6 @@
                                 <td>{{$rule->location_name}}</td>
                                 <td>{{$rule->floor_number}}</td>
                                 <td>{{$rule->installation_position}}</td>
-                                <td>
-                                    @foreach (json_decode($rule->action_id) as $action_code)
-                                        <div>{{config('const.action')[$action_code]}}</div>
-                                    @endforeach
-                                </td>
                                 <td><input disabled type="color" value = "{{$rule->color}}"></td>
                                 <td>{{date('Y-m-d', strtotime($rule->created_at)).'～'.($rule->deleted_at != null ? date('Y-m-d', strtotime($rule->deleted_at)) : '')}}</td>
                                 <td><img width="100px" src="{{asset('storage/thumb').'/'.$rule->img_path}}"/></td>
@@ -268,10 +262,9 @@
     var ctx = document.getElementById("myLineChart1");
     var myLineChart = null;
     var color_set = {
-        1:'red',
-        2:'#42b688',
-        3:'#42539a',
-        4:'black',
+        'forklift':'red',
+        'truck':'#42b688',
+        'wheel loader':'#42539a',
     }
     var search_period = "<?php echo $search_period;?>";
 
@@ -389,10 +382,9 @@
 
     var selected_rule = "<?php echo $selected_rule_id;?>";
     var all_data = <?php echo $all_data;?>;
-    var actions = <?php echo json_encode(config('const.action'));?>;
+    var vc_names = <?php echo json_encode(config('const.vc_names'));?>;
     var selected_rules = <?php echo json_encode($selected_rule_ids);?>;
     var selected_cameras = <?php echo json_encode($selected_camera_ids);?>;
-    var selected_actions = <?php echo json_encode($selected_action_ids);?>;
 
     function moveXRange(increament = 1){
         if (!isNaN(parseInt(grpah_init_type))) grpah_init_type = parseInt(grpah_init_type);
@@ -511,11 +503,11 @@
                 Object.keys(data).map(date_time => {
                     var date = formatDateLine(date_time);
                     if (temp[date] == undefined) temp[date] = {};
-                    Object.keys(actions).map(id => {
+                    Object.keys(vc_names).map(id => {
                         if (temp[date][id] == undefined) temp[date][id] = 0;
                     })
-                    Object.keys(data[date_time]).map(action_id => {
-                        temp[date][action_id] += data[date_time][action_id].length;
+                    Object.keys(data[date_time]).map(category_id => {
+                        temp[date][category_id] += data[date_time][category_id].length;
                     })
                 })
                 break;
@@ -523,11 +515,11 @@
                 Object.keys(data).map(date_time => {
                     var date = formatYearWeekNum(date_time);
                     if (temp[date] == undefined) temp[date] = {};
-                    Object.keys(actions).map(id => {
+                    Object.keys(vc_names).map(id => {
                         if (temp[date][id] == undefined) temp[date][id] = 0;
                     })
-                    Object.keys(data[date_time]).map(action_id => {
-                        temp[date][action_id] += data[date_time][action_id].length;
+                    Object.keys(data[date_time]).map(category_id => {
+                        temp[date][category_id] += data[date_time][category_id].length;
                     })
                 })
                 break;
@@ -535,22 +527,22 @@
                 Object.keys(data).map(date_time => {
                     var date = formatYearMonth(date_time);
                     if (temp[date] == undefined) temp[date] = {};
-                    Object.keys(actions).map(id => {
+                    Object.keys(vc_names).map(id => {
                         if (temp[date][id] == undefined) temp[date][id] = 0;
                     })
-                    Object.keys(data[date_time]).map(action_id => {
-                        temp[date][action_id] += data[date_time][action_id].length;
+                    Object.keys(data[date_time]).map(category_id => {
+                        temp[date][category_id] += data[date_time][category_id].length;
                     })
                 })
                 break;
             default:
                 Object.keys(data).map(date_time => {
                     if (temp[date_time] == undefined) temp[date_time] = {};
-                    Object.keys(actions).map(id => {
+                    Object.keys(vc_names).map(id => {
                         if (temp[date_time][id] == undefined) temp[date_time][id] = 0;
                     })
-                    Object.keys(data[date_time]).map(action_id => {
-                        temp[date_time][action_id] += data[date_time][action_id].length;
+                    Object.keys(data[date_time]).map(category_id => {
+                        temp[date_time][category_id] += data[date_time][category_id].length;
                     })
                 })
         }
@@ -567,7 +559,7 @@
         }
         var date_labels = [];
         var totals_by_action = {};
-        Object.keys(actions).map(id => {
+        Object.keys(vc_names).map(id => {
             totals_by_action[id] = [];
         });
         if (e != null){
@@ -602,11 +594,11 @@
                 if (time_period == 'week') date_key = formatYearWeekNum(cur_time);
                 if (time_period == 'month') date_key = formatYearMonth(cur_time);
                 if (graph_data[date_key] == undefined){
-                    Object.keys(actions).map(id => {
+                    Object.keys(vc_names).map(id => {
                         totals_by_action[id].push(0);
                     })
                 } else {
-                    Object.keys(actions).map(id => {
+                    Object.keys(vc_names).map(id => {
                         totals_by_action[id].push(graph_data[date_key][id]);
                         if (max_y < graph_data[date_key][id]) max_y = graph_data[date_key][id];
                     })
@@ -615,45 +607,23 @@
             } else {
                 var y_add_flag = false;
                 var y_value = {};
-                Object.keys(actions).map(id => {
+                Object.keys(vc_names).map(id => {
                     y_value[id] = 0;
                 })
                 Object.keys(graph_data).map((detect_time, index) => {
                     var detect_time_object = new Date(detect_time);
                     if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000 && detect_time_object.getTime() <= max_time.getTime()){
-                        // if (index == 0){
-                        //     y_add_flag = true;
-                        //     if  (detect_time_object.getTime() != cur_time.getTime()){
-                        //         date_labels.push(detect_time_object);
-                        //         Object.keys(actions).map(id => {
-                        //             totals_by_action[id].push(0);
-                        //         })
-                        //     }
-                        // } else {
-                        //     date_labels.push(detect_time_object);
-                        // }
-                        Object.keys(actions).map(id => {
-                        //     if (graph_data[detect_time][id] != undefined){
-                        //         totals_by_action[id].push(graph_data[detect_time][id]);
-                        //         if (graph_data[detect_time][id] > max_y) max_y = graph_data[detect_time][id];
-                        //     } else {
-                        //         totals_by_action[id].push(0);
-                        //     }
+                        Object.keys(vc_names).map(id => {
                             if (graph_data[detect_time][id] != undefined){
                                 y_value[id] += graph_data[detect_time][id];
                             }
                         })
                     }
                 })
-                Object.keys(actions).map(id => {
+                Object.keys(vc_names).map(id => {
                     if (max_y < y_value[id]) max_y = y_value[id];
                     totals_by_action[id].push(y_value[id]);
                 });
-                // if (y_add_flag == false){
-                //     Object.keys(actions).map(id => {
-                //         totals_by_action[id].push(0);
-                //     })
-                // }
             }
             switch(time_period){
                 case 'time':
@@ -675,12 +645,11 @@
         }
 
         var datasets = [];
-        Object.keys(totals_by_action).map(action_id => {
+        Object.keys(totals_by_action).map(category_id => {
             datasets.push({
-                // label:actions[action_id],
-                label:'',
-                data:totals_by_action[action_id],
-                // borderColor:color_set[action_id],
+                label:vc_names[category_id],
+                data:totals_by_action[category_id],
+                borderColor:color_set[category_id],
                 backgroundColor:'white',
                 lineTension:0,
             })
@@ -741,7 +710,7 @@
             selected_rule:parseInt(selected_rule) > 0 ? parseInt(selected_rule) : null,
             selected_rules:selected_rules.length == 0?{}:selected_rules,
             selected_cameras:selected_cameras.length == 0?{}:selected_cameras,
-            selected_actions:selected_actions.length == 0?{}:selected_actions,
+            // selected_actions:selected_actions.length == 0?{}:selected_actions,
             // selected_search_option:parseInt(selected_search_option)
         };
         saveSearchOptions('admin.vc.past_analysis', search_params);
@@ -755,7 +724,7 @@
             selected_rule:parseInt(selected_rule) > 0 ? parseInt(selected_rule) : null,
             selected_rules:selected_rules.length == 0?{}:selected_rules,
             selected_cameras:selected_cameras.length == 0?{}:selected_cameras,
-            selected_actions:selected_actions.length == 0?{}:selected_actions,
+            // selected_actions:selected_actions.length == 0?{}:selected_actions,
             // selected_search_option:parseInt(selected_search_option)
         };
         addToToppage(block_type, options);
@@ -770,7 +739,7 @@
                 page:'past',
                 _token:$('meta[name="csrf-token"]').attr('content'),
                 camera_id:e.value,
-                action_id:$('#select_action').val(),
+                // action_id:$('#select_action').val(),
                 selected_rule_id:$('input[name=selected_rule]:checked').val()
             },
             error : function(){

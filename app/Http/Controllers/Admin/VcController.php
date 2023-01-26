@@ -62,8 +62,8 @@ class VcController extends AdminController
         $vc_detections = DangerService::searchVCDetections($request)->get()->all();
         $all_data = [];
         foreach ($vc_detections as $item) {
-            if ($item->detection_action_id > 0) {
-                $all_data[date('H:i', strtotime($item->starttime))][$item->detection_action_id][] = $item;
+            if ($item->vc_category != '') {
+                $all_data[date('H:i', strtotime($item->starttime))][$item->vc_category][] = $item;
             }
         }
         $access_token = '';
@@ -222,8 +222,8 @@ class VcController extends AdminController
         $vc_detections = DangerService::searchVCDetections($request)->get()->all();
         $all_data = [];
         foreach ($vc_detections as $item) {
-            if ($item->detection_action_id > 0) {
-                $all_data[date('Y-m-d H:i', strtotime($item->starttime))][$item->detection_action_id][] = $item;
+            if ($item->vc_category != '') {
+                $all_data[date('Y-m-d H:i', strtotime($item->starttime))][$item->vc_category][] = $item;
             }
         }
 

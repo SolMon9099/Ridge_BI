@@ -145,7 +145,7 @@
                             <li>
                                 <h2 style="cursor: pointer" class="icon-content" onclick="location.href='{{route('admin.danger.edit', ['danger' => $item->rule_id])}}'">ルール</h2>
                                 <dl>
-                                    <dd style="padding-top: 3px;">{{isset($item->detection_action_id) && $item->detection_action_id > 0 ? config('const.action')[$item->detection_action_id] : ''}}</dd>
+                                    <dd style="padding-top: 3px;">{{isset($item->vc_category) && $item->vc_category != '' ? config('const.vc_names')[$item->vc_category] : ''}}</dd>
                                     <dd><input type="color" readonly value="{{$item->color}}"/></dd>
                                 </dl>
                             </li>
@@ -295,10 +295,9 @@
     }
 
     var color_set = {
-        1:'red',
-        2:'#42b688',
-        3:'#42539a',
-        4:'black',
+        'forklift':'red',
+        'truck':'#42b688',
+        'wheel loader':'#42539a',
     }
     var ctx = document.getElementById("myLineChart1");
     var myLineChart = null;
@@ -307,7 +306,8 @@
     var grid_unit = 15;
 
     var all_data = <?php echo $all_data;?>;
-    var actions = <?php echo json_encode(config('const.action'));?>;
+    console.log('all', all_data);
+    var vc_categories = <?php echo json_encode(config('const.vc_names'));?>;
 
     function displayGraphData(e = null, x_range = '3'){
         if (e != null){
@@ -350,10 +350,10 @@
 
         var date_labels = [];
 
-        var totals_by_action = {};
+        var totals_by_category = {};
 
-        Object.keys(actions).map(id => {
-            totals_by_action[id] = [];
+        Object.keys(vc_categories).map(id => {
+            totals_by_category[id] = [];
         })
         var max_y = 0;
 
@@ -361,7 +361,7 @@
             date_labels.push(new Date(cur_time));
             var y_add_flag = false;
             var y_value = {};
-            Object.keys(actions).map(id => {
+            Object.keys(vc_categories).map(id => {
                 y_value[id] = 0;
             })
             Object.keys(all_data).map((detect_time, index) => {
@@ -371,52 +371,31 @@
                 detect_time_object.setHours(parseInt(detect_hour));
                 detect_time_object.setMinutes(parseInt(detect_mins));
                 if (detect_time_object.getTime() >= cur_time.getTime() && detect_time_object.getTime() < cur_time.getTime() + grid_unit * 60 * 1000 && detect_time_object.getTime() <= max_time.getTime()){
-                    // if (index == 0){
-                    //     y_add_flag = true;
-                    //     if  (detect_time_object.getTime() != cur_time.getTime()){
-                    //         date_labels.push(detect_time_object);
-                    //         Object.keys(actions).map(id => {
-                    //             totals_by_action[id].push(0);
-                    //         })
-                    //     }
-                    // } else {
-                    //     date_labels.push(detect_time_object);
-                    // }
-                    Object.keys(actions).map(id => {
-                        // if (all_data[detect_time][id] != undefined){
-                        //     totals_by_action[id].push(all_data[detect_time][id].length);
-                        //     if (all_data[detect_time][id].length > max_y) max_y = all_data[detect_time][id].length;
-                        // } else {
-                        //     totals_by_action[id].push(0);
-                        // }
+                    Object.keys(vc_categories).map(id => {
                         if (all_data[detect_time][id] != undefined){
                             y_value[id] += all_data[detect_time][id].length;
                         }
                     })
                 }
             })
-            Object.keys(actions).map(id => {
+            Object.keys(vc_categories).map(id => {
                 if (max_y < y_value[id]) max_y = y_value[id];
-                totals_by_action[id].push(y_value[id]);
+                totals_by_category[id].push(y_value[id]);
             })
             cur_time.setMinutes(cur_time.getMinutes() + grid_unit);
-            // if (y_add_flag == false){
-            //     Object.keys(actions).map(id => {
-            //         totals_by_action[id].push(0);
-            //     })
-            // }
         }
         var datasets = [];
-        Object.keys(totals_by_action).map(action_id => {
+        Object.keys(totals_by_category).map(category_id => {
             datasets.push({
-                // label:actions[action_id],
-                label:'',
-                data:totals_by_action[action_id],
-                // borderColor:color_set[action_id],
+                label:vc_categories[category_id],
+                data:totals_by_category[category_id],
+                borderColor:color_set[category_id],
                 backgroundColor:'white',
                 lineTension:0,
             })
         });
+        console.log('dataset', datasets);
+        console.log('max y', max_y);
         ctx.innerHTML = '';
         if (myLineChart != null){
             myLineChart.destroy();

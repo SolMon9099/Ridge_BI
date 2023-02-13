@@ -528,9 +528,9 @@ class SafieApiService
     }
 
     //デバイス一覧取得
-    public function getAllDevices()
+    public function getAllDevices($offset = 0)
     {
-        $url = sprintf('https://openapi.safie.link/v1/devices?limit=100');
+        $url = sprintf('https://openapi.safie.link/v1/devices?limit=100&offset=%s', $offset);
         $header = [
             'Authorization: Bearer '.$this->access_token,
             'Content-Type: application/json',

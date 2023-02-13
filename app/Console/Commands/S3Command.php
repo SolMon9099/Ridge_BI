@@ -54,6 +54,7 @@ class S3Command extends Command
             if ($camera->contract_no == null) {
                 continue;
             }
+
             $safie_service = new SafieApiService($camera->contract_no);
 
             //メディアファイル 作成要求削除(s3に保存されたもの)
@@ -144,63 +145,71 @@ class S3Command extends Command
 
         //-----------------------------------
 
-        //--------retry vehicle request BI->AI 9:00-9:52-----------
-        if (Storage::disk('temp')->exists('retry_vehicle_send.json')) {
-            $id = Storage::disk('temp')->get('retry_vehicle_send.json');
+        //--------retry vehicle request BI->AI 1/18-1/19-----------
+        if (Storage::disk('temp')->exists('retry_18_19_videos.json')) {
+            $id = Storage::disk('temp')->get('retry_18_19_videos.json');
             $id = (int) $id;
-            $record_data = S3VideoHistory::query()->where('start_time', '>=', '2023-01-19 09:00:00')
-                ->where('start_time', '<=', '2023-01-19 09:52:00')
+            $record_data = S3VideoHistory::query()->where('start_time', '>=', '2023-01-18 09:00:00')
+                ->where('start_time', '<=', '2023-01-19 22:00:00')
                 ->where('id', '>=', $id)
-                ->where(function ($q) {
-                    $q->orWhere('device_id', 'SVoFo9ZVzPvmw2YT4RcQ');
-                    $q->orWhere('device_id', 'OTa23swiT3kwf7iKWoTr');
-                })->orderBy('id')->limit(2)->get()->all();
+                // ->where(function ($q) {
+                //     $q->orWhere('device_id', 'SVoFo9ZVzPvmw2YT4RcQ');
+                //     $q->orWhere('device_id', 'OTa23swiT3kwf7iKWoTr');
+                // })
+                ->orderBy('id')->limit(2)->get()->all();
             if (count($record_data) > 0) {
                 if (count($record_data) > 1) {
-                    Storage::disk('temp')->put('retry_vehicle_send.json', $record_data[1]->id);
+                    Storage::disk('temp')->put('retry_18_19_videos.json', $record_data[1]->id);
                 } else {
-                    Storage::disk('temp')->put('retry_vehicle_send.json', $record_data[0]->id + 1);
+                    Storage::disk('temp')->put('retry_18_19_videos.json', $record_data[0]->id + 1);
                 }
-                $params = [];
-                $header = [
-                    'Content-Type: application/json',
-                ];
-                if (!isset($params['camera_info'])) {
-                    $params['camera_info'] = [];
-                }
-                $params['camera_info']['camera_id'] = $record_data[0]->device_id;
-                if (!isset($params['movie_info'])) {
-                    $params['movie_info'] = [];
-                }
-                $params['movie_info']['movie_path'] = config('const.aws_url').$record_data[0]->file_path;
-                if (!isset($params['rect_info'])) {
-                    $params['rect_info'] = [];
-                }
+                $camera_item = Camera::query()->where('camera_id', $record_data[0]->device_id)->get()->first();
+                Log::info('start two days api-send ='.$record_data[0]->id);
+                Log::info('camera data ='.$camera_item->device_id.'  id = '.$camera_item->id);
+                $this->reqeuestToAI($record_data[0]->device_id, $camera_item->id, config('const.aws_url').$record_data[0]->file_path, 1);
+                Log::info('end two days api-send');
+                // $params = [];
+                // $header = [
+                //     'Content-Type: application/json',
+                // ];
+                // if (!isset($params['camera_info'])) {
+                //     $params['camera_info'] = [];
+                // }
+                // $params['camera_info']['camera_id'] = $record_data[0]->device_id;
+                // if (!isset($params['movie_info'])) {
+                //     $params['movie_info'] = [];
+                // }
+                // $params['movie_info']['movie_path'] = config('const.aws_url').$record_data[0]->file_path;
+                // if (!isset($params['rect_info'])) {
+                //     $params['rect_info'] = [];
+                // }
 
-                $params['rect_info']['rect_id'] = (string) 189;
-                if ($record_data[0]->device_id == 'SVoFo9ZVzPvmw2YT4RcQ') {
-                    $params['rect_info']['rect_id'] = (string) 191;
-                }
-                $rule_data = DB::table('danger_area_detection_rules')->where('id', (int) $params['rect_info']['rect_id'])->get()->first();
-                $params['rect_info']['rect_point_array'] = json_decode($rule_data->points);
+                // $params['rect_info']['rect_id'] = (string) 189;
+                // if ($record_data[0]->device_id == 'SVoFo9ZVzPvmw2YT4RcQ') {
+                //     $params['rect_info']['rect_id'] = (string) 191;
+                // }
+                // $rule_data = DB::table('danger_area_detection_rules')->where('id', (int) $params['rect_info']['rect_id'])->get()->first();
+                // $params['rect_info']['rect_point_array'] = json_decode($rule_data->points);
 
-                $params['priority'] = 1;
-                $params['request_type'] = 2;
-                $params['rect_info']['action_id'] = [4];
-                Log::info('車両エリア侵入検知解析リクエスト（BI→AI）開始ーーadditionalーー');
-                $url = config('const.ai_server').'vc-incursion/register-camera';
+                // $params['priority'] = 1;
+                // $params['request_type'] = 2;
+                // $params['rect_info']['action_id'] = [4];
+                // Log::info('車両エリア侵入検知解析リクエスト（BI→AI）開始ーーadditionalーー');
+                // $url = config('const.ai_server').'vc-incursion/register-camera';
 
-                $this->sendPostApi($url, $header, $params, 'json');
-                Log::info('end api id = '.$record_data[0]->id);
+                // $this->sendPostApi($url, $header, $params, 'json');
+                // Log::info('end api id = '.$record_data[0]->id);
             }
         } else {
-            $record_data = S3VideoHistory::query()->where('start_time', '>=', '2023-01-19 09:00:00')->where('start_time', '<=', '2023-01-19 09:52:00')
-                ->where(function ($q) {
-                    $q->orWhere('device_id', 'SVoFo9ZVzPvmw2YT4RcQ');
-                    $q->orWhere('device_id', 'OTa23swiT3kwf7iKWoTr');
-                })->orderBy('id')->get()->first();
+            $record_data = S3VideoHistory::query()->where('start_time', '>=', '2023-01-18 09:00:00')
+                ->where('start_time', '<=', '2023-01-19 22:00:00')
+                // ->where(function ($q) {
+                //     $q->orWhere('device_id', 'SVoFo9ZVzPvmw2YT4RcQ');
+                //     $q->orWhere('device_id', 'OTa23swiT3kwf7iKWoTr');
+                // })
+                ->orderBy('id')->get()->first();
             if ($record_data != null) {
-                Storage::disk('temp')->put('retry_vehicle_send.json', $record_data->id);
+                Storage::disk('temp')->put('retry_18_19_videos.json', $record_data->id);
             }
         }
         //---------------------------------------------------------
@@ -318,7 +327,14 @@ class S3Command extends Command
                             $movie_path = $aws_url.$device_id.'/'.$start_date.'/'.$file_name;
                             $is_night = 1;  //no night
                             if (strtotime($now_date.' '.$camera_start_on_time) + ($request_interval + 3) * 60 <= strtotime($now) && ($request_interval + 3) * 60 + strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
-                                $this->reqeuestToAI($device_id, $camera_item->id, $movie_path, $is_night);
+
+                                //20230213 2つのカメラの送信APIを新しいAIインスタンスに向けたいだけ------------
+                                if ($device_id == 'SVoFo9ZVzPvmw2YT4RcQ' || $device_id == 'OTa23swiT3kwf7iKWoTr') {
+                                    $this->reqeuestToAI($device_id, $camera_item->id, $movie_path, $is_night);
+                                }
+                                //-------------------------------------------------------------------------
+
+                                // $this->reqeuestToAI($device_id, $camera_item->id, $movie_path, $is_night);
                             }
                             //-------------------------------
                         }

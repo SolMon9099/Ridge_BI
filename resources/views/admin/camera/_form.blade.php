@@ -12,15 +12,15 @@
                     @if (!isset($camera))
                         <select name="camera_id" id="camera_id" onchange="selectCamera(this)">
                             <option value="">カメラを選択する</option>
-                            @if(isset($devices) && isset($devices['list']) && count($devices['list']) > 0)
-                            @foreach ($devices['list'] as $camera_item)
-                                @if ($camera_item['device_id'] == old('camera_id', isset($camera->camera_id)?$camera->camera_id:''))
+                            @if(isset($all_devices) && count($all_devices) > 0)
+                            @foreach ($all_devices as $camera_item)
+                                {{-- @if ($camera_item['device_id'] == old('camera_id', isset($camera->camera_id)?$camera->camera_id:'')) --}}
                                     {{-- <option value="{{$camera_item['device_id']}}" selected>{{$camera_item['serial'].'('.$camera_item['setting']['name'].')'}}</option> --}}
-                                    <option value="{{$camera_item['device_id']}}" selected>{{$camera_item['serial']}}</option>
-                                @else
+                                    {{-- <option value="{{$camera_item['device_id']}}" selected>{{$camera_item['serial']}}</option> --}}
+                                {{-- @else --}}
                                     {{-- <option value="{{$camera_item['device_id']}}">{{$camera_item['serial'].'('.$camera_item['setting']['name'].')'}}</option> --}}
                                     <option value="{{$camera_item['device_id']}}">{{$camera_item['serial']}}</option>
-                                @endif
+                                {{-- @endif --}}
                             @endforeach
                             @endif
                         </select>
@@ -145,10 +145,14 @@
         margin-bottom: 15px;
         color:darkgray;
     }
+    .selectize-control.multi .selectize-input.has-items{
+        display: none;
+    }
 </style>
 <link href="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.css') }}" rel="stylesheet">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.6/css/selectize.bootstrap3.min.css" integrity="sha256-ze/OEYGcFbPRmvCnrSeKbRTtjG4vGLHXgOqsyLFTRjg=" crossorigin="anonymous" />
 <script src="{{ asset('assets/vendor/jquery-ui/jquery-ui.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.6/js/standalone/selectize.min.js" integrity="sha256-+C0A5Ilqmu4QcSPxrlGpaZxJ04VjsRjKu+G82kl5UJk=" crossorigin="anonymous"></script>
 <script src="{{ asset('assets/admin/js/helper.js?2') }}"></script>
 <script src="{{ asset('assets/admin/js/konva.js?2') }}"></script>
 
@@ -163,7 +167,9 @@
     drawing_height = parseInt(drawing_height);
     var file_url = "<?php echo $file_url;?>";
     var radius = "<?php echo config('const.camera_mark_radius');?>";
+    var selected_camera_device_id = "<?php echo old('camera_id', isset($camera->camera_id)?$camera->camera_id:'');?>";
     var drawing_data = <?php echo json_encode($drawing_data);?>;
+
 
     function clearCameraPoint(){
         if (selected_camera_id == null || selected_camera_id == '') return;
@@ -310,8 +316,14 @@
 
         $('.clear-img').click(function(){
             clearCameraPoint();
-        })
-
+        });
+        var selectize_item = $('#camera_id').selectize({
+            sortField: 'text',
+        });
+        var selectize_item = selectize_item[0].selectize;
+        if (selected_camera_device_id != ''){
+            selectize_item.setValue(selected_camera_device_id);
+        }
         // $(".delete_drawings").click(function(e){
         //     e.preventDefault();
         //     delete_id = $(this).attr('delete_index');

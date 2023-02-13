@@ -76,11 +76,18 @@ class CameraController extends AdminController
         $locations = LocationService::getAllLocationNames();
         $drawing_data = LocationDrawingService::getDrawingDataObject($locations);
         $safie_service = new SafieApiService(Auth::guard('admin')->user()->contract_no);
-        $devices = $safie_service->getAllDevices();
+        $offset = 0;
+        $all_devices = [];
+        do {
+            $device_data = $safie_service->getAllDevices($offset);
+            $all_devices = array_merge($all_devices, $device_data['list']);
+            $offset += $device_data['count'];
+        } while (isset($device_data['has_next']) && $device_data['has_next'] == true);
+        $all_devices = array_merge($all_devices, $device_data['list']);
 
         return view('admin.camera.create')->with([
             'locations' => $locations,
-            'devices' => $devices,
+            'all_devices' => $all_devices,
             'drawing_data' => $drawing_data,
         ]);
     }

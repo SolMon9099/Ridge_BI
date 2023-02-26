@@ -70,9 +70,9 @@ class PitController extends AdminController
 
     public function cameras_for_rule(Request $request)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
         $pit_rules = PitService::doSearch()->get()->all();
         $temp = [];
         foreach ($pit_rules as $rule) {
@@ -104,9 +104,9 @@ class PitController extends AdminController
 
     public function create_rule(PitRequest $request)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
 
         $pit_rules = PitService::getRulesByCameraID($request['selected_camera']);
         $camera_data = CameraService::getCameraInfoById($request['selected_camera']);
@@ -179,9 +179,9 @@ class PitController extends AdminController
 
     public function store(PitRequest $request)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
         $operation_type = '変更';
         if (isset($request['operation_type']) && $request['operation_type'] == 'register') {
             $operation_type = '追加';

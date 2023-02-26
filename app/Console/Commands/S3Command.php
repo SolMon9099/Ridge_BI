@@ -327,14 +327,13 @@ class S3Command extends Command
                             $movie_path = $aws_url.$device_id.'/'.$start_date.'/'.$file_name;
                             $is_night = 1;  //no night
                             if (strtotime($now_date.' '.$camera_start_on_time) + ($request_interval + 3) * 60 <= strtotime($now) && ($request_interval + 3) * 60 + strtotime($now_date.' '.$camera_end_off_time) >= strtotime($now)) {
-
                                 //20230213 2つのカメラの送信APIを新しいAIインスタンスに向けたいだけ------------
-                                if ($device_id == 'SVoFo9ZVzPvmw2YT4RcQ' || $device_id == 'OTa23swiT3kwf7iKWoTr') {
-                                    $this->reqeuestToAI($device_id, $camera_item->id, $movie_path, $is_night);
-                                }
+                                // if ($device_id == 'SVoFo9ZVzPvmw2YT4RcQ' || $device_id == 'OTa23swiT3kwf7iKWoTr') {
+                                //     $this->reqeuestToAI($device_id, $camera_item->id, $movie_path, $is_night);
+                                // }
                                 //-------------------------------------------------------------------------
 
-                                // $this->reqeuestToAI($device_id, $camera_item->id, $movie_path, $is_night);
+                                $this->reqeuestToAI($device_id, $camera_item->id, $movie_path, $is_night);
                             }
                             //-------------------------------
                         }
@@ -363,77 +362,141 @@ class S3Command extends Command
         $rules = DangerService::getRulesByCameraID($id_camera);
         if (count($rules) > 0) {
             $params = [];
+            if (!isset($params['camera_info'])) {
+                $params['camera_info'] = [];
+            }
+            $params['camera_info']['camera_id'] = $device_id;
+            if (!isset($params['movie_info'])) {
+                $params['movie_info'] = [];
+            }
+            $params['movie_info']['movie_path'] = $movie_path;
+            if (!isset($params['rect_info'])) {
+                $params['rect_info'] = [];
+            }
+            $params['priority'] = 1;
+            $params['request_type'] = $is_night;
             foreach ($rules as $rule) {
-                if (!isset($params['camera_info'])) {
-                    $params['camera_info'] = [];
-                }
-                $params['camera_info']['camera_id'] = $device_id;
-                if (!isset($params['movie_info'])) {
-                    $params['movie_info'] = [];
-                }
-                $params['movie_info']['movie_path'] = $movie_path;
-                if (!isset($params['rect_info'])) {
-                    $params['rect_info'] = [];
-                }
-
-                $params['rect_info']['rect_id'] = (string) $rule->id;
-                $params['rect_info']['rect_point_array'] = json_decode($rule->points);
+                // if (!isset($params['camera_info'])) {
+                //     $params['camera_info'] = [];
+                // }
+                // $params['camera_info']['camera_id'] = $device_id;
+                // if (!isset($params['movie_info'])) {
+                //     $params['movie_info'] = [];
+                // }
+                // $params['movie_info']['movie_path'] = $movie_path;
+                // if (!isset($params['rect_info'])) {
+                //     $params['rect_info'] = [];
+                // }
                 $action_data = [];
                 foreach (json_decode($rule->action_id) as $action_code) {
                     $action_data[] = (int) $action_code;
                 }
-                $params['rect_info']['action_id'] = $action_data;
-                $params['priority'] = 1;
-                $params['request_type'] = $is_night;
-                Log::info('危険エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
-                $url = config('const.ai_server').'danger-zone/register-camera';
+                $params['rect_info'][] = [
+                    'rect_id' => (string) $rule->id,
+                    'rect_point_array' => json_decode($rule->points),
+                    'action_id' => $action_data,
+                ];
+                // $params['rect_info']['rect_id'] = (string) $rule->id;
+                // $params['rect_info']['rect_point_array'] = json_decode($rule->points);
+                // $params['rect_info']['action_id'] = $action_data;
+                // $params['priority'] = 1;
+                // $params['request_type'] = $is_night;
+                // Log::info('危険エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
+                // $url = config('const.ai_server').'danger-zone/register-camera';
 
-                $ai_res = $this->sendPostApi($url, $header, $params, 'json');
-                //save unsuccess api to AI------------------------
-                if ($ai_res != 200) {
-                    if ($ai_res == 503 || $ai_res == 530) {
-                        Log::info('解析を止める用API（BI→AI）開始--------');
-                        $stop_url = config('const.ai_server').'stop-analysis';
-                        $stop_params = [];
-                        $stop_params['camera_info'] = [];
-                        $stop_params['camera_info']['camera_id'] = $device_id;
-                        $stop_params['camera_info']['rule_name'] = 'danger_zone';
-                        $stop_params['priority'] = 1;
-                        $stop_params['request_type'] = $is_night;
-                        $this->sendPostApi($stop_url, $header, $stop_params, 'json');
-                        Log::info('解析を止める用API（BI→AI）中止--------');
-                    }
-                    $params['request_type'] = 2;
-                    $temp_save_data = [
-                        'url' => $url,
-                        'params' => $params,
-                        'type' => 'danger',
-                        'device_id' => $device_id,
-                    ];
-                    Storage::disk('temp')->put('retry_ai_request\\'.'danger_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
-                }
-                //-------------------------------------------------
+                // $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+                // //save unsuccess api to AI------------------------
+                // if ($ai_res != 200) {
+                //     if ($ai_res == 503 || $ai_res == 530) {
+                //         Log::info('解析を止める用API（BI→AI）開始--------');
+                //         $stop_url = config('const.ai_server').'stop-analysis';
+                //         $stop_params = [];
+                //         $stop_params['camera_info'] = [];
+                //         $stop_params['camera_info']['camera_id'] = $device_id;
+                //         $stop_params['camera_info']['rule_name'] = 'danger_zone';
+                //         $stop_params['priority'] = 1;
+                //         $stop_params['request_type'] = $is_night;
+                //         $this->sendPostApi($stop_url, $header, $stop_params, 'json');
+                //         Log::info('解析を止める用API（BI→AI）中止--------');
+                //     }
+                //     $params['request_type'] = 2;
+                //     $temp_save_data = [
+                //         'url' => $url,
+                //         'params' => $params,
+                //         'type' => 'danger',
+                //         'device_id' => $device_id,
+                //     ];
+                //     Storage::disk('temp')->put('retry_ai_request\\'.'danger_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+                // }
+                // //-------------------------------------------------
 
-                //車両--------------------------------------
-                $params['request_type'] = $is_night;
-                Log::info('車両エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
-                $url = config('const.ai_server').'vc-incursion/register-camera';
+                // //車両--------------------------------------
+                // $params['request_type'] = $is_night;
+                // Log::info('車両エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
+                // $url = config('const.ai_server').'vc-incursion/register-camera';
 
-                $ai_res = $this->sendPostApi($url, $header, $params, 'json');
-                //save unsuccess api to AI------------------------
-                if ($ai_res != 200) {
-                    $params['request_type'] = 2;
-                    $temp_save_data = [
-                        'url' => $url,
-                        'params' => $params,
-                        'type' => 'vc',
-                        'device_id' => $device_id,
-                    ];
-                    Storage::disk('temp')->put('retry_ai_request\\'.'vc_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
-                }
+                // $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+                // //save unsuccess api to AI------------------------
+                // if ($ai_res != 200) {
+                //     $params['request_type'] = 2;
+                //     $temp_save_data = [
+                //         'url' => $url,
+                //         'params' => $params,
+                //         'type' => 'vc',
+                //         'device_id' => $device_id,
+                //     ];
+                //     Storage::disk('temp')->put('retry_ai_request\\'.'vc_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+                // }
                 //------------------------------------------
                 //------------------------------------------
             }
+            Log::info('危険エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
+            $url = config('const.ai_server').'danger-zone/register-camera';
+
+            $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+            //save unsuccess api to AI------------------------
+            // if ($ai_res != 200) {
+            //     if ($ai_res == 503 || $ai_res == 530) {
+            //         Log::info('解析を止める用API（BI→AI）開始--------');
+            //         $stop_url = config('const.ai_server').'stop-analysis';
+            //         $stop_params = [];
+            //         $stop_params['camera_info'] = [];
+            //         $stop_params['camera_info']['camera_id'] = $device_id;
+            //         $stop_params['camera_info']['rule_name'] = 'danger_zone';
+            //         $stop_params['priority'] = 1;
+            //         $stop_params['request_type'] = $is_night;
+            //         $this->sendPostApi($stop_url, $header, $stop_params, 'json');
+            //         Log::info('解析を止める用API（BI→AI）中止--------');
+            //     }
+            //     $params['request_type'] = 2;
+            //     $temp_save_data = [
+            //         'url' => $url,
+            //         'params' => $params,
+            //         'type' => 'danger',
+            //         'device_id' => $device_id,
+            //     ];
+            //     Storage::disk('temp')->put('retry_ai_request\\'.'danger_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+            // }
+            //-------------------------------------------------
+
+            //車両--------------------------------------
+            $params['request_type'] = $is_night;
+            Log::info('車両エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
+            $url = config('const.ai_server').'vc-incursion/register-camera';
+
+            $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+            //save unsuccess api to AI------------------------
+            // if ($ai_res != 200) {
+            //     $params['request_type'] = 2;
+            //     $temp_save_data = [
+            //         'url' => $url,
+            //         'params' => $params,
+            //         'type' => 'vc',
+            //         'device_id' => $device_id,
+            //     ];
+            //     Storage::disk('temp')->put('retry_ai_request\\'.'vc_'.$device_id.'_'.date('YmdHis').'.json', json_encode($temp_save_data));
+            // }
+            //------------------------------------------
         }
         //--------------------------------------
 

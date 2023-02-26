@@ -21,16 +21,16 @@ class ShelfSortedCommand extends Command
 
     public function handle()
     {
-        // ini_set('memory_limit', '4096M');
+        ini_set('memory_limit', '4096M');
         // $s3_files = Storage::disk('s3')->files('test_movie');
         // foreach ($s3_files as $s3file) {
         //     Storage::disk('s3')->delete($s3file);
         // }
-        // $files = Storage::disk('video')->files('test_movie/エリア侵入検知');
-        // foreach ($files as $file_name) {
-        //     $file_content = Storage::disk('video')->get($file_name);
-        //     Storage::disk('s3')->put($file_name, $file_content);
-        // }
+        $files = Storage::disk('video')->files('test_movie');
+        foreach ($files as $file_name) {
+            $file_content = Storage::disk('video')->get($file_name);
+            Storage::disk('s3')->put($file_name, $file_content);
+        }
         // $files = Storage::disk('video')->files('test_movie/ピット入退場検知');
         // foreach ($files as $file_name) {
         //     $file_content = Storage::disk('video')->get($file_name);

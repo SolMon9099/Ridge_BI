@@ -115,11 +115,11 @@
             </div>
         </div>
 
-        @if(!$super_admin_flag)
+        {{-- @if(!$super_admin_flag) --}}
             <div class="btns" id="direction">
                 <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
             </div>
-        @endif
+        {{-- @endif --}}
 
     </div>
     <input type="hidden" value="" name="rule_data" id = 'rule_data'/>

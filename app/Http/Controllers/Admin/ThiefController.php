@@ -80,9 +80,9 @@ class ThiefController extends AdminController
 
     public function cameras_for_rule(Request $request)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
         $from_add_button = false;
         if (isset($request['add_button']) && $request['add_button']) {
             $from_add_button = $request['add_button'];
@@ -119,9 +119,9 @@ class ThiefController extends AdminController
 
     public function create_rule(ThiefRequest $request)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
         $camera_data = CameraService::getCameraInfoById($request['selected_camera']);
         $safie_service = new SafieApiService($camera_data->contract_no);
         $camera_image_data = $safie_service->getDeviceImage($camera_data->camera_id);
@@ -176,9 +176,9 @@ class ThiefController extends AdminController
 
     public function store(ThiefRequest $request)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
         $operation_type = '変更';
         if (isset($request['operation_type']) && $request['operation_type'] == 'register') {
             $operation_type = '追加';

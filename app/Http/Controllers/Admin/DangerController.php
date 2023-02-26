@@ -84,9 +84,9 @@ class DangerController extends AdminController
         if (isset($request['add_button']) && $request['add_button']) {
             $from_add_button = $request['add_button'];
         }
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
         $danger_rules = DangerService::doSearch()->get()->all();
         $temp = [];
         foreach ($danger_rules as $rule) {
@@ -119,9 +119,9 @@ class DangerController extends AdminController
 
     public function create_rule(DangerRequest $request)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
 
         $danger_rules = DangerService::getRulesByCameraID($request['selected_camera']);
         $camera_data = CameraService::getCameraInfoById($request['selected_camera']);
@@ -194,9 +194,9 @@ class DangerController extends AdminController
 
     public function store(DangerRequest $request)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
         $operation_type = '変更';
         if (isset($request['operation_type']) && $request['operation_type'] == 'register') {
             $operation_type = '追加';

@@ -131,11 +131,11 @@
                 <div id="image-container" class="camera-image" style="background: url('{{$camera_image_data}}') no-repeat;"></div>
                 <p class="error-message area" style="display: none">エリアを選択してください。</p>
                 <div class="description">点をドラッグすることでサイズを変更することが出来ます。<div id="debug"></div></div>
-                @if(!$super_admin_flag)
+                {{-- @if(!$super_admin_flag) --}}
                     <div class="btns" id="direction">
                         <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
                     </div>
-                @endif
+                {{-- @endif --}}
             </div>
         </div>
     </div>

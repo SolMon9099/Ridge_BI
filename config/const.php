@@ -226,10 +226,10 @@ return [
     ],
 
     'super_admin_not_allowed_pages' => [
-        7 => 'admin.pit.cameras_for_rule',
-        10 => 'admin.danger.cameras_for_rule',
-        13 => 'admin.shelf.cameras_for_rule',
-        19 => 'admin.thief.cameras_for_rule',
+        // 7 => 'admin.pit.cameras_for_rule',
+        // 10 => 'admin.danger.cameras_for_rule',
+        // 13 => 'admin.shelf.cameras_for_rule',
+        // 19 => 'admin.thief.cameras_for_rule',
     ],
 
     'camera_start_time' => '09:00:00',

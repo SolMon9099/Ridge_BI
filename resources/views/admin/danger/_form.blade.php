@@ -141,7 +141,7 @@
                 <div id="image-container" class="camera-image" style="background: url('{{asset('storage/').'/'.$camera_image_path}}') no-repeat;"></div>
                 <p class="error-message area" style="display: none">エリアを選択してください。</p>
                 <div id="debug"></div>
-                @if(!$super_admin_flag && !isset($view_only))
+                @if(!isset($view_only))
                     <div class="btns" id="direction">
                         <button type="button" onclick="saveRule()" class="ok save-btn">決定</button>
                     </div>

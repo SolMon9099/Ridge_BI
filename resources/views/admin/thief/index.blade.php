@@ -16,7 +16,7 @@
     <div id="r-content">
         <div class="title-wrap">
             <h2 class="title">ルール一覧・編集</h2>
-            @if(!$super_admin_flag)
+            {{-- @if(!$super_admin_flag) --}}
             <div class="new-btn">
                 <a href="{{route('admin.thief.cameras_for_rule').'?add_button=true'}}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255,255,255, 1);transform: ;msFilter:;">
@@ -26,7 +26,7 @@
                 追加登録
                 </a>
             </div>
-            @endif
+            {{-- @endif --}}
         </div>
         <form action="{{route('admin.thief')}}" method="get" name="form1" id="form1">
         @csrf
@@ -144,13 +144,13 @@
                                 @endif
                             </td>
                             <td>
-                                @if (!$super_admin_flag)
+                                {{-- @if (!$super_admin_flag) --}}
                                     <button type="button" class="delete_thief_rules history" delete_index="{{ $thief->id }}">削除</button>
                                     <form id="frm_delete_{{ $thief->id }}" action="{{ route('admin.thief.delete', ['thief'=> $thief->id]) }}" method="POST" style="display: none;">
                                         @csrf
                                         @method('delete')
                                     </form>
-                                @endif
+                                {{-- @endif --}}
                             </td>
                         </tr>
                     @endforeach

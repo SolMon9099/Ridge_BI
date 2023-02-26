@@ -102,9 +102,9 @@ class ShelfController extends AdminController
 
     public function store(ShelfRequest $request)
     {
-        if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
-            return redirect()->route('admin.top');
-        }
+        // if (Auth::guard('admin')->user()->authority_id == config('const.super_admin_code')) {
+        //     return redirect()->route('admin.top');
+        // }
         $operation_type = '変更';
         if (isset($request['operation_type']) && $request['operation_type'] == 'register') {
             $operation_type = '追加';

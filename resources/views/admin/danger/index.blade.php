@@ -16,7 +16,7 @@
         <div id="r-content">
             <div class="title-wrap">
                 <h2 class="title">ルール一覧・編集</h2>
-                @if(!$super_admin_flag)
+                {{-- @if(!$super_admin_flag) --}}
                 <div class="new-btn">
                     <a href="{{route('admin.danger.cameras_for_rule').'?add_button=true'}}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255,255,255, 1);transform: ;msFilter:;">
@@ -25,7 +25,7 @@
                         </svg>
                     追加登録</a>
                 </div>
-                @endif
+                {{-- @endif --}}
             </div>
             <div class="notice-area">こちらの画面では、カメラ毎に通知ルールの新規登録・既存の通知ルールの編集・削除が行えます。</div>
             <form action="{{route('admin.danger')}}" method="get" name="form1" id="form1">
@@ -152,13 +152,13 @@
                                 @endif
                             </td>
                             <td>
-                                @if (!$super_admin_flag)
+                                {{-- @if (!$super_admin_flag) --}}
                                     <button type="button" class="delete_danger_rules history" delete_index="{{ $danger->id }}">削除</button>
                                     <form id="frm_delete_{{ $danger->id }}" action="{{ route('admin.danger.delete', ['danger'=> $danger->id]) }}" method="POST" style="display: none;">
                                         @csrf
                                         @method('delete')
                                     </form>
-                                @endif
+                                {{-- @endif --}}
                             </td>
                         </tr>
                     @endforeach

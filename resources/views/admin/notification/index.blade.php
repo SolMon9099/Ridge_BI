@@ -17,7 +17,7 @@
           <li class="{{(!isset($active_tab)) ? 'active' : ''}}"><a href="#tab1">送信先</a></li>
           <li class="{{(isset($active_tab) && $active_tab == 'tab2') ? 'active' : ''}}"><a href="#tab2">通知メッセージ</a></li>
         </ul>
-    
+
         <div class="list">
         @include('admin.layouts.flash-message')
           <div class="inner {{(!isset($active_tab)) ? 'active' : ''}}">
@@ -46,7 +46,7 @@
                   <tr>
                     <td><button type="button" class="edit" onclick="location.href='{{route('admin.notification.edit', ['group' => $group->id])}}'">編集</button></td>
                     <td>{{$group->name}}</td>
-                    <td>{!! implode("<br/>", explode(",", $group->emails)) !!}</td>
+                    <td style="text-align:left!important">{!! implode("<br/>", explode(",", $group->emails)) !!}</td>
                     <td><button type="button" class="delete_groups history" delete_index="{{ $group->id }}">削除</button></td>
                     <form id="frm_delete_{{ $group->id }}" action="{{ route('admin.notification.delete', ['group'=> $group->id]) }}" method="POST" style="display: none;">
                       @csrf
@@ -60,7 +60,7 @@
         {{ $groups->appends([])->links('vendor.pagination.admin-pagination') }}
           </div>
           <!-- .inner end -->
-          
+
           <div class="inner {{(isset($active_tab) && $active_tab == 'tab2') ? 'active' : ''}}">
           <div class="title-wrap">
           <h2></h2>
@@ -100,16 +100,16 @@
             </div>
             {{ $msgs->appends([])->links('vendor.pagination.admin-pagination') }}
           </div>
-          <!-- .inner end --> 
+          <!-- .inner end -->
         </div>
-        <!-- .list end --> 
-        
+        <!-- .list end -->
+
         <!--
         <div class="tour-content mt25">
           <div class="float-l pager"><a href="">＜</a><span class="current">1</span><a href="">2</a><a href="">3</a><a href="">4</a><a href="">5</a><a href="">＞</a></div>
         </div>
 -->
-        
+
     </div>
   </div>
 

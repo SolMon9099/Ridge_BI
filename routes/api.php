@@ -36,5 +36,11 @@ Route::group(['prefix' => 'detection'], function () {
     Route::post('/heatmap', 'DetectionController@saveHeatmap')->name('api.detection.heatmap');
 });
 
+Route::group(['prefix' => 'mail'], function () {
+    Route::get('/sendbasicemail', 'MailController@basic_email')->name('api.mail.sendbasicemail');
+    Route::get('/sendhtmlemail', 'MailController@html_email')->name('api.mail.sendhtmlemail');
+    Route::get('/sendInavasionMail', 'MailController@sendInavasionMail')->name('api.mail.sendInavasionMail');
+});
+
 Route::middleware('auth:api')->group(function () {
 });

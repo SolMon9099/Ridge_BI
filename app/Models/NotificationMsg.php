@@ -13,8 +13,9 @@ class NotificationMsg extends Model
     protected $fillable = [
         'title',
         'content',
+        'contract_no',
         'created_by',
         'updated_by',
-        'deleted_by'
+        'deleted_by',
     ];
 }

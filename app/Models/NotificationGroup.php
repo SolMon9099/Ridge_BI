@@ -13,8 +13,9 @@ class NotificationGroup extends Model
     protected $fillable = [
         'name',
         'emails',
+        'contract_no',
         'created_by',
         'updated_by',
-        'deleted_by'
+        'deleted_by',
     ];
 }

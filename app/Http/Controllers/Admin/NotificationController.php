@@ -9,13 +9,20 @@ use App\Service\NotificationGroupService;
 use App\Service\NotificationMsgService;
 use App\Models\NotificationGroup;
 use App\Models\NotificationMsg;
+use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends AdminController
 {
     public function index(Request $request)
     {
-        $groups = NotificationGroup::paginate($this->per_page);
-        $msgs = NotificationMsg::paginate($this->per_page);
+        $login_user = Auth::guard('admin')->user();
+        if ($login_user->authority_id == config('const.super_admin_code')) {
+            $groups = NotificationGroup::paginate($this->per_page);
+            $msgs = NotificationMsg::paginate($this->per_page);
+        } else {
+            $groups = NotificationGroup::query()->where('contract_no', $login_user->contract_no)->paginate($this->per_page);
+            $msgs = NotificationMsg::query()->where('contract_no', $login_user->contract_no)->paginate($this->per_page);
+        }
 
         return view('admin.notification.index')->with([
             'groups' => $groups,

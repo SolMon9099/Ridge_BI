@@ -64,6 +64,9 @@ class DetectionController extends Controller
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
             return response()->json(['error' => 'デバイスがありません。'], 500);
         }
+        //send alert mails---------------
+        $this->sendAlertMail($camera_data->serial_no, 'danger');
+        //-------------------------------
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
         $exist_record = DangerAreaDetection::query()->where('camera_id', $camera_data->id)
@@ -308,6 +311,9 @@ class DetectionController extends Controller
         if (isset($request['analyze_result']['nb_exit']) && $request['analyze_result']['nb_exit'] > 0) {
             $nb_exit = $request['analyze_result']['nb_exit'];
         }
+        //send alert mails---------------
+        $this->sendAlertMail($camera_data->serial_no, 'pit');
+        //-------------------------------
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
         Log::info('start datetime = '.$start_datetime);
@@ -657,6 +663,9 @@ class DetectionController extends Controller
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
             return response()->json(['error' => 'デバイスがありません。'], 500);
         }
+        //send alert mails---------------
+        $this->sendAlertMail($camera_data->serial_no, 'vc');
+        //-------------------------------
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
         $exist_record = VcDetection::query()->where('camera_id', $camera_data->id)
@@ -750,6 +759,38 @@ class DetectionController extends Controller
             Log::info('車両エリア侵入検知解析結果送受信API（AI→BI）終了');
 
             return response()->json(['error' => 'カメラメディアファイル作成失敗'], 200);
+        }
+    }
+
+    public function sendAlertMail($camera_serail_no, $detect_type)
+    {
+        if ($camera_serail_no != 'B8A44F02E0B4') return true;
+        $host = request()->getSchemeAndHttpHost();
+        $url = $host.'/api/mail/sendInavasionMail?serial_no='.$camera_serail_no.'&detect_type='.$detect_type;
+        $this->sendGetApi($url);
+    }
+
+    public function sendGetApi($url)
+    {
+        Log::info('【Start Get Api】url_for_alert_mail:'.$url);
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+        // curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('httpcode = '.$httpcode);
+        curl_close($curl);
+
+        if ($httpcode == 200) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

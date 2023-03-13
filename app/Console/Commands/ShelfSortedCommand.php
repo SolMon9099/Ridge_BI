@@ -7,6 +7,8 @@ use App\Service\SafieApiService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\ShelfDetectionRule;
+use App\Models\Camera;
+use App\Models\Token;
 
 class ShelfSortedCommand extends Command
 {
@@ -21,40 +23,16 @@ class ShelfSortedCommand extends Command
 
     public function handle()
     {
-        ini_set('memory_limit', '4096M');
+        // ini_set('memory_limit', '4096M');
         // $s3_files = Storage::disk('s3')->files('test_movie');
         // foreach ($s3_files as $s3file) {
         //     Storage::disk('s3')->delete($s3file);
         // }
-        $files = Storage::disk('video')->files('test_movie');
-        foreach ($files as $file_name) {
-            $file_content = Storage::disk('video')->get($file_name);
-            Storage::disk('s3')->put($file_name, $file_content);
-        }
-        // $files = Storage::disk('video')->files('test_movie/ピット入退場検知');
+        // $files = Storage::disk('video')->files('test_movie');
         // foreach ($files as $file_name) {
         //     $file_content = Storage::disk('video')->get($file_name);
         //     Storage::disk('s3')->put($file_name, $file_content);
         // }
-        // $files = Storage::disk('video')->files('test_movie/new_test');
-        // foreach ($files as $file_name) {
-        //     $file_content = Storage::disk('video')->get($file_name);
-        //     Storage::disk('s3')->put($file_name, $file_content);
-        // }
-        // Storage::disk('s3')->put('test_hanger/20220922/2022-09-22_15-00-00.mp4', $file);
-        // $danger_file_1 = Storage::disk('video')->get('hanger_2022-10-12_17-00-00.mp4');
-        // $danger_file_2 = Storage::disk('video')->get('hanger_2022-10-12_18-00-00.mp4');
-        // $danger_file_3 = Storage::disk('video')->get('hanger_2022-10-12_19-00-00.mp4');
-        // $danger_file_4 = Storage::disk('video')->get('hanger_2022-10-12_20-00-00.mp4');
-        // $shelf_file = Storage::disk('video')->get('shelf_2022-09-22_16-00-00.mp4');
-        // $thief_file = Storage::disk('video')->get('hanger_2022-09-22_15-00-00.mp4');
-        // Storage::disk('s3')->put('test_hanger/20220922/2022-09-22_15-00-00.mp4', $thief_file);
-        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_16-00-00.mp4', $danger_file);
-        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_17-00-00.mp4', $danger_file_1);
-        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_18-00-00.mp4', $danger_file_2);
-        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_19-00-00.mp4', $danger_file_3);
-        // Storage::disk('s3')->put('test_hanger/hanger_2022-10-12_20-00-00.mp4', $danger_file_4);
-        // Storage::disk('s3')->put('test_shelf/20220922/2022-09-22_15-00-00.mp4', $shelf_file);
 
         Log::info('定時撮影チェック開始ーーーーーー');
         $shelf_detection_rules = ShelfDetectionRule::select('shelf_detection_rules.*', 'cameras.camera_id as device_id', 'cameras.contract_no')
@@ -82,6 +60,76 @@ class ShelfSortedCommand extends Command
         }
         Log::info('定時撮影チェック終了ーーーーーー');
 
+        //------------------------------------------------------------------------------------
+        Log::info('カメラトークン送信開始ーーーーーー');
+        $cameras = Camera::query()->get()->all();
+        if (count($cameras) == 0) {
+            return 0;
+        }
+        $send_url = 'http://3.114.15.58/api/v1/camera_token/send';
+        $send_params['camera_token_info'] = [];
+        $token_data = [];
+        foreach ($cameras as $camera) {
+            $one_data = [];
+            $one_data['camera_id'] = $camera->camera_id;
+            $one_data['serial_no'] = $camera->serial_no;
+            if (!isset($token_data[$camera->contract_no])) {
+                $token_record = Token::query()->where('contract_no', $camera->contract_no)->get()->first();
+                if ($token_record != null) {
+                    $token_data[$camera->contract_no] = $token_record->access_token;
+                }
+            }
+            if (isset($token_data[$camera->contract_no])) {
+                $one_data['access_token'] = $token_data[$camera->contract_no];
+                $send_params['camera_token_info'][] = $one_data;
+            }
+        }
+        $header = [
+            'Content-Type: application/json',
+        ];
+        if (count($send_params['camera_token_info']) > 0) {
+            $ai_res = $this->sendPostApi($send_url, $header, $send_params, 'json');
+        }
+        Log::info('カメラトークン送信終了ーーーーーー');
+
         return 0;
+    }
+
+    public function sendPostApi($url, $header = null, $data = null, $request_type = 'query')
+    {
+        Log::info('【Start Post Api for AI】url:'.$url);
+
+        $curl = curl_init($url);
+        //POSTで送信
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_HEADER, true);
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+        if ($header) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+        }
+
+        if ($data) {
+            switch ($request_type) {
+                case 'query':
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+                    break;
+                case 'json':
+                    Log::info('post param data ='.json_encode($data));
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                    break;
+            }
+        }
+
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        Log::info('httpcode = '.$httpcode);
+        curl_close($curl);
+
+        return $httpcode;
     }
 }

@@ -66,13 +66,20 @@ class ShelfSortedCommand extends Command
         if (count($cameras) == 0) {
             return 0;
         }
-        $send_url = 'http://3.114.15.58/api/v1/camera_token/send';
+        $send_url = 'http://43.206.48.25/api/v1/camera_token/send';
         $send_params['camera_token_info'] = [];
         $token_data = [];
         foreach ($cameras as $camera) {
             $one_data = [];
-            $one_data['camera_id'] = $camera->camera_id;
-            $one_data['serial_no'] = $camera->serial_no;
+            if ($camera->camera_id != 'FvY6rnGWP12obPgFUj0a') {
+                $one_data['camera_id'] = $camera->camera_id;
+                $one_data['serial_no'] = $camera->serial_no;
+            } else {
+                $spec_one_data = [];
+                $spec_one_data['camera_id'] = $camera->camera_id;
+                $spec_one_data['serial_no'] = $camera->serial_no;
+            }
+
             if (!isset($token_data[$camera->contract_no])) {
                 $token_record = Token::query()->where('contract_no', $camera->contract_no)->get()->first();
                 if ($token_record != null) {
@@ -80,14 +87,24 @@ class ShelfSortedCommand extends Command
                 }
             }
             if (isset($token_data[$camera->contract_no])) {
-                $one_data['access_token'] = $token_data[$camera->contract_no];
-                $send_params['camera_token_info'][] = $one_data;
+                if ($camera->camera_id != 'FvY6rnGWP12obPgFUj0a') {
+                    $one_data['access_token'] = $token_data[$camera->contract_no];
+                    $send_params['camera_token_info'][] = $one_data;
+                } else {
+                    $spec_one_data['access_token'] = $token_data[$camera->contract_no];
+                }
             }
         }
         $header = [
             'Content-Type: application/json',
         ];
         if (count($send_params['camera_token_info']) > 0) {
+            $ai_res = $this->sendPostApi($send_url, $header, $send_params, 'json');
+        }
+        if (isset($spec_one_data) && isset($spec_one_data['camera_id'])) {
+            $send_params['camera_token_info'] = [];
+            $send_params['camera_token_info'][] = $spec_one_data;
+            $send_url = 'http://3.114.15.58/api/v1/camera_token/send';
             $ai_res = $this->sendPostApi($send_url, $header, $send_params, 'json');
         }
         Log::info('カメラトークン送信終了ーーーーーー');

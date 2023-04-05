@@ -213,10 +213,10 @@ class AICommand extends Command
             $try_limit = 0;
             $re_request_files = Storage::disk('temp')->files('retry_ai_request');
             if (count($re_request_files) > 0) {
-                Log::info('失敗したBI->AIリクエストjsonチェック開始!!!!!!!');
+                Log::info('失敗したBI->AIリクエストjsonチェック開始!!!!!!! = '.count($re_request_files));
                 foreach ($re_request_files as $file) {
-                    if ($try_limit > 6) {
-                        continue;
+                    if ($try_limit > 0) {
+                        break;
                     }
                     $file_content = Storage::disk('temp')->get($file);
                     if ($file_content != null) {
@@ -227,10 +227,11 @@ class AICommand extends Command
                     $header = [
                         'Content-Type: application/json',
                     ];
+                    Log::info('retry_post = '.$try_limit);
                     $ai_res = $this->sendPostApi($url, $header, $params, 'json');
+                    Log::info('失敗したBI->AIリクエスト Retry--response = '.$ai_res);
                     if ($ai_res == 200) {
                         Storage::disk('temp')->delete($file);
-                        ++$try_limit;
                     } else {
                         if ($ai_res == 503 || $ai_res == 530) {
                             Log::info('解析を止める用API（BI→AI）開始--------');
@@ -245,6 +246,7 @@ class AICommand extends Command
                             Log::info('解析を止める用API（BI→AI）中止--------');
                         }
                     }
+                    ++$try_limit;
                 }
                 Log::info('失敗したBI->AIリクエストjsonチェック終了!!!!!!!');
             }
@@ -466,7 +468,7 @@ class AICommand extends Command
                     curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
                     break;
                 case 'json':
-                    Log::info('post param data ='.json_encode($data));
+                    Log::info('failed BI->AI post param data ='.json_encode($data));
                     curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
                     break;
             }

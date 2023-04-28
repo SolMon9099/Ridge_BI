@@ -236,6 +236,9 @@ class AICommand extends Command
                         if ($ai_res == 503 || $ai_res == 530) {
                             Log::info('解析を止める用API（BI→AI）開始--------');
                             $stop_url = config('const.ai_server').'stop-analysis';
+                            if ($file_content->device_id == 'FvY6rnGWP12obPgFUj0a') {
+                                $stop_url = 'http://3.114.15.58/api/v1/'.'stop-analysis';
+                            }
                             $stop_params = [];
                             $stop_params['camera_info'] = [];
                             $stop_params['camera_info']['camera_id'] = $file_content->device_id;

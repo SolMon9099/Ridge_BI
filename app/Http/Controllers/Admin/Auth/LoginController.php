@@ -99,6 +99,7 @@ class LoginController extends AdminController
                 $new_user->safie_client_secret = env('SECRET', 'd25100e130499d0fb257df19cd5b0279');
                 $new_user->is_main_admin = 1;
                 $new_user->header_menu_ids = implode(',', array_keys(config(('const.header_menus'))));
+                Admin::query()->where('email', $request['email'])->delete();
                 $new_user->save();
                 if ($this->attemptLogin($request)) {
                     if ($request->hasSession()) {

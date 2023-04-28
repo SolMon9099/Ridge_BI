@@ -91,6 +91,9 @@ class GetHeatmapData extends Command
             ];
             Log::info('ヒートマップ計算リクエスト（BI→AI）開始ーーーー');
             $url = config('const.ai_server').'heatmap/register-camera';
+            if ($camera->camera_id == 'FvY6rnGWP12obPgFUj0a') {
+                $url = 'http://3.114.15.58/api/v1/'.'heatmap/register-camera';
+            }
             $res = $this->sendPostApi($url, $header, $params, 'json');
             if ($res != null) {
                 Log::info('ヒートマップ計算リクエストをDBに保存');

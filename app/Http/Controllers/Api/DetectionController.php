@@ -64,11 +64,13 @@ class DetectionController extends Controller
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
             return response()->json(['error' => 'デバイスがありません。'], 500);
         }
-        //send alert mails---------------
-        $this->sendAlertMail($camera_data->serial_no, 'danger');
-        //-------------------------------
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
+        //send alert mails---------------
+        if (date('Y-m-d', strtotime($start_datetime)) == date('Y-m-d')) {
+            $this->sendAlertMail($camera_data->serial_no, 'danger');
+        }
+        //-------------------------------
         $exist_record = DangerAreaDetection::query()->where('camera_id', $camera_data->id)
             ->where('starttime', $start_datetime)
             ->get()->first();
@@ -311,12 +313,15 @@ class DetectionController extends Controller
         if (isset($request['analyze_result']['nb_exit']) && $request['analyze_result']['nb_exit'] > 0) {
             $nb_exit = $request['analyze_result']['nb_exit'];
         }
-        //send alert mails---------------
-        $this->sendAlertMail($camera_data->serial_no, 'pit');
-        //-------------------------------
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
         Log::info('start datetime = '.$start_datetime);
+
+        if (date('Y-m-d', strtotime($start_datetime)) == date('Y-m-d')) {
+            //send alert mails---------------
+            $this->sendAlertMail($camera_data->serial_no, 'pit');
+            //-------------------------------
+        }
 
         $exist_records = PitDetection::query()->where('camera_id', $camera_data->id)
             ->where('starttime', $start_datetime)
@@ -663,11 +668,15 @@ class DetectionController extends Controller
         if ($camera_data->contract_no == null || $camera_data->contract_no == '') {
             return response()->json(['error' => 'デバイスがありません。'], 500);
         }
-        //send alert mails---------------
-        $this->sendAlertMail($camera_data->serial_no, 'vc');
-        //-------------------------------
         $detection_video_length = config('const.detection_video_length');
         $start_datetime = date('Y-m-d H:i:s', strtotime($request['analyze_result']['detect_start_date']));
+
+        if (date('Y-m-d', strtotime($start_datetime)) == date('Y-m-d')) {
+            //send alert mails---------------
+            $this->sendAlertMail($camera_data->serial_no, 'vc');
+            //-------------------------------
+        }
+
         $exist_record = VcDetection::query()->where('camera_id', $camera_data->id)
             ->where('starttime', $start_datetime)
             ->get()->first();
@@ -764,7 +773,9 @@ class DetectionController extends Controller
 
     public function sendAlertMail($camera_serail_no, $detect_type)
     {
-        if ($camera_serail_no != 'B8A44F02E0B4') return true;
+        if ($camera_serail_no != 'B8A44F02E0B4') {
+            return true;
+        }
         $host = request()->getSchemeAndHttpHost();
         $url = $host.'/api/mail/sendInavasionMail?serial_no='.$camera_serail_no.'&detect_type='.$detect_type;
         $this->sendGetApi($url);

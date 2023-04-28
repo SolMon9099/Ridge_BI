@@ -1,64 +1,57 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+## ソースコード修正後デプロイ方法
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+変更したソースをgitにプッシュし、ssh接続して以下のコマンドを実行します
 
-## About Laravel
+- cd ridgeBI/
+- git pull origin main
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+username, passwordは[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]() です。
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+キャッシュクリア、db migrationなどのためには以下のコマンドを実行する。
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- sh deploy.sh
 
-## Learning Laravel
+## ソースコードのディレクトリ構成
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### BI-->AIリクエスト送信
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+BI-->AIリクエストはcronで自動送信しています。
+[app\Console](https://github.com/polsjapan/ridgeBI/tree/main/app/Console)ディレクトリにcronによって自動実行されるモジュールがあります。
 
-## Laravel Sponsors
+- **[app\Console\Kernel.php](https://github.com/polsjapan/ridgeBI/blob/main/app/Console/Kernel.php)**<br>
+cronモジュールを総合的に定義したファイルです。
+- **[app\Console\Commands\S3Command.php](https://github.com/polsjapan/ridgeBI/blob/main/app/Console/Commands/S3Command.php)**<br>
+BI-->AIリクエスト送信モジュールです。 S3にカメラの動画を定期的に保存しながらBI-->AIリクエストを送信します。
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+### AI-->BIリクエスト受信
 
-### Premium Partners
+[app\Http\Controllers\Api](https://github.com/polsjapan/ridgeBI/tree/main/app/Http/Controllers/Api)ディレクトリには外部と連動するapiモジュールがあります。
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+- **[app\Http\Controllers\Api\DetectionController.php](https://github.com/polsjapan/ridgeBI/blob/main/app/Http/Controllers/Api/DetectionController.php)**<br>
+危険エリア侵入、ピット入退場などの検知結果を受信するモジュールです。検知結果受信後sendAlertMail関数を使ってメール通信をする。<br/>[app\Http\Controllers\Api\MailController.php](https://github.com/polsjapan/ridgeBI/blob/main/app/Http/Controllers/Api/MailController.php)メール通信モジュールです。sendAlertMail関数がMailControllerのsendInavasionMail関数と連動する。
 
-## Contributing
+### 定数
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- **[config\const.php](https://github.com/polsjapan/ridgeBI/blob/main/config/const.php)**<br>
+Rinocaシステムに利用する全て定数が定義されています。
 
-## Code of Conduct
+### Route & Controller & View
+- **[routes\admin.php](https://github.com/polsjapan/ridgeBI/blob/main/routes/admin.php)**<br>
+Rinocaシステムのルーチンファイルです。URLからそのControllerを見つけることができます。<br>
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **[app\Http\Controllers\Admin](https://github.com/polsjapan/ridgeBI/tree/main/app/Http/Controllers/Admin)**<br>
+Rinocaシステムに利用するControllerが定義されています。<br>
 
-## Security Vulnerabilities
+- **[resources\views\admin](https://github.com/polsjapan/ridgeBI/tree/main/resources/views/admin)**<br>
+Rinocaシステムのフロントです。<br>
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+> 例：危険エリア侵入の検知リストページについて<br>
+>> URL：/admin/danger/list<br>
+ルーチン：Route::get('/list', 'DangerController@list')->name('admin.danger.list');<br>
+Controller：[app\Http\Controllers\Admin\DangerController.php](https://github.com/polsjapan/ridgeBI/blob/main/app/Http/Controllers/Admin/DangerController.php)のlist関数<br>
+View：[resources\views\admin\danger\list.blade.php](https://github.com/polsjapan/ridgeBI/blob/main/resources/views/admin/danger/list.blade.php)<br>
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### エリア設定
+危険エリア侵入エリア設定 -> [resources\views\admin\danger\_form.blade.php](#)<br>
+ピット入退場エリア設定 -> [resources\views\admin\pit\_form.blade.php](#)

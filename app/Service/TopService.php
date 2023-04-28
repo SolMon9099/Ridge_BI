@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\TopBlock;
 use App\Models\SearchOption;
 use Illuminate\Support\Facades\Log;
+
 class TopService
 {
     public static function search()
@@ -134,7 +135,8 @@ class TopService
         }
     }
 
-    public static function requestStoptoAI($deleted_rules, $type = 'danger', $camera_id){
+    public static function requestStoptoAI($deleted_rules, $type = 'danger', $camera_id)
+    {
         $url = config('const.ai_server').'stop-analysis';
         $header = [
             'Content-Type: application/json',
@@ -142,19 +144,21 @@ class TopService
 
         $params['camera_info'] = [];
         $camera_data = DB::table('cameras')->where('id', $camera_id)->get()->first();
-        if ($camera_data != null){
-
+        if ($camera_data != null) {
+            if ($camera_data->camera_id == 'FvY6rnGWP12obPgFUj0a') {
+                $url = 'http://3.114.15.58/api/v1/'.'stop-analysis';
+            }
+            $params['camera_info']['camera_id'] = $camera_data->camera_id;
+            $params['camera_info']['rule_name'] = $type;
+            $params['priority'] = 1;
+            foreach ($deleted_rules as $rule) {
+                $params['camera_info']['rule_id'] = $rule->id;
+                Log::info('解析を止める用API（BI→AI）開始ーーーー');
+                Log::info($params);
+                self::sendPostApi($url, $header, $params, 'json');
+            }
+            Log::info('解析を止める用API（BI→AI）終了ーーーー');
         }
-        $params['camera_info']['camera_id'] = $camera_data->camera_id;
-        $params['camera_info']['rule_name'] = $type;
-        $params['priority'] = 1;
-        foreach($deleted_rules as $rule){
-            $params['camera_info']['rule_id'] = $rule->id;
-            Log::info('解析を止める用API（BI→AI）開始ーーーー');
-            Log::info($params);
-            self::sendPostApi($url, $header, $params, 'json');
-        }
-        Log::info('解析を止める用API（BI→AI）終了ーーーー');
     }
 
     public static function sendPostApi($url, $header = null, $data = null, $request_type = 'query')

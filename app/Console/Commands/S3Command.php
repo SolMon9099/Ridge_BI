@@ -452,6 +452,9 @@ class S3Command extends Command
             }
             Log::info('危険エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
             $url = config('const.ai_server').'danger-zone/register-camera';
+            if ($device_id == 'FvY6rnGWP12obPgFUj0a') {
+                $url = 'http://3.114.15.58/api/v1/'.'danger-zone/register-camera';
+            }
 
             $ai_res = $this->sendPostApi($url, $header, $params, 'json');
             //save unsuccess api to AI------------------------
@@ -483,7 +486,9 @@ class S3Command extends Command
             $params['request_type'] = $is_night;
             Log::info('車両エリア侵入検知解析リクエスト（BI→AI）開始ーーーー');
             $url = config('const.ai_server').'vc-incursion/register-camera';
-
+            if ($device_id == 'FvY6rnGWP12obPgFUj0a') {
+                $url = 'http://3.114.15.58/api/v1/'.'vc-incursion/register-camera';
+            }
             $ai_res = $this->sendPostApi($url, $header, $params, 'json');
             //save unsuccess api to AI------------------------
             // if ($ai_res != 200) {
@@ -524,12 +529,18 @@ class S3Command extends Command
                     $params['request_type'] = $is_night;
                     Log::info('ピット入退場解析リクエスト（BI→AI）開始ーーーー');
                     $url = config('const.ai_server').'pit/register-camera';
+                    if ($device_id == 'FvY6rnGWP12obPgFUj0a') {
+                        $url = 'http://3.114.15.58/api/v1/'.'pit/register-camera';
+                    }
                     $ai_res = $this->sendPostApi($url, $header, $params, 'json');
                     //save unsuccess api to AI------------------------
                     if ($ai_res != 200) {
                         if ($ai_res == 503 || $ai_res == 530) {
                             Log::info('解析を止める用API（BI→AI）開始--------');
                             $stop_url = config('const.ai_server').'stop-analysis';
+                            if ($device_id == 'FvY6rnGWP12obPgFUj0a') {
+                                $url = 'http://3.114.15.58/api/v1/'.'stop-analysis';
+                            }
                             $stop_params = [];
                             $stop_params['camera_info'] = [];
                             $stop_params['camera_info']['camera_id'] = $device_id;

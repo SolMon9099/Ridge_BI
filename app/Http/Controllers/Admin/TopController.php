@@ -120,6 +120,21 @@ class TopController extends AdminController
                         }
                     }
                     $unlimit_danger_detections = DangerService::searchDetections($request)->get()->toArray();
+                    $res = [];
+                    $start_times = [];
+                    foreach ($unlimit_danger_detections as $spec_item) {
+                        if (!isset($start_times[$spec_item['rule_id']])) {
+                            $start_times[$spec_item['rule_id']] = $spec_item['starttime'];
+                        } else {
+                            if (strtotime($start_times[$spec_item['rule_id']]) - strtotime($spec_item['starttime']) > 1) {
+                                $start_times[$spec_item['rule_id']] = $spec_item['starttime'];
+                            } else {
+                                continue;
+                            }
+                        }
+                        $res[] = $spec_item;
+                    }
+                    $unlimit_danger_detections = $res;
 
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
@@ -152,6 +167,23 @@ class TopController extends AdminController
                         }
                     }
                     $list_danger_detections = DangerService::searchDetections($request)->get()->toArray();
+
+                    $res = [];
+                    $start_times = [];
+                    foreach ($list_danger_detections as $spec_item) {
+                        if (!isset($start_times[$spec_item['rule_id']])) {
+                            $start_times[$spec_item['rule_id']] = $spec_item['starttime'];
+                        } else {
+                            if (strtotime($start_times[$spec_item['rule_id']]) - strtotime($spec_item['starttime']) > 1) {
+                                $start_times[$spec_item['rule_id']] = $spec_item['starttime'];
+                            } else {
+                                continue;
+                            }
+                        }
+                        $res[] = $spec_item;
+                    }
+                    $list_danger_detections = $res;
+
                     $item->starttime = $request['starttime'];
                     $item->endtime = $request['endtime'];
                     $item->selected_rules = isset($request['selected_rules']) ? $request['selected_rules'] : [];

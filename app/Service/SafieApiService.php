@@ -313,6 +313,16 @@ class SafieApiService
         if ($httpcode == 401) {
             $this->generateRefreshToken();
         }
+        if ($httpcode != 200){
+            $response = json_decode(curl_multi_getcontent($curl));
+            Log::info('Get Image Error -----------');
+            if (isset($response->detail) && isset($response->detail->type)){
+                Log::info($response->detail->type);
+            }
+            if (isset($response->detail) && isset($response->detail->message)){
+                Log::info($response->detail->message);
+            }
+        }
 
         if (curl_errno($curl)) {
             Log::debug('--- Curl エラー ---');
@@ -400,7 +410,9 @@ class SafieApiService
         $check_all_503_error = true;
         $count_40x_error = 0;
         if (count($media_history_data) == 50) {
-            $check_camera_enable = false;
+            // $check_camera_enable = false;
+            //20230512 連続50回映像取得に失敗しても止めないように変更出来ますか？
+            $check_camera_enable = true;
             foreach ($media_history_data as $item) {
                 if ($item->http_code != 503) {
                     $check_all_503_error = false;

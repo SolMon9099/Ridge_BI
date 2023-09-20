@@ -62,6 +62,9 @@
         <ul class="kenchi-list">
             @foreach ($vc_detections as $item)
             <?php
+                if(isset($item->none_display_item) && $item->none_display_item == true){
+                    continue;
+                }
                 $video_path = '';
                 $video_path .= asset('storage/video/').'/';
                 $video_path .= $item->video_file_path;

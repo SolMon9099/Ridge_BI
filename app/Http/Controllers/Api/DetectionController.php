@@ -773,7 +773,9 @@ class DetectionController extends Controller
 
     public function sendAlertMail($camera_serail_no, $detect_type)
     {
-        if ($camera_serail_no != 'B8A44F02E0B4') {
+        // if ($camera_serail_no != 'B8A44F02E0B4') {
+        // 20230516 こちらのカメラでも通知設定がされているようなので、このカメラのアカウントに登録されているメールアドレスに通知することは出来ますか？ - カメラS/N：0002D17E6BDA
+        if ($camera_serail_no != '0002D17E6BDA' && $camera_serail_no != '0002D17E389C') {
             return true;
         }
         $host = request()->getSchemeAndHttpHost();

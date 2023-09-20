@@ -64,23 +64,28 @@ class MailController extends Controller
             $contract_no = $camera_record->contract_no;
             $group_record = NotificationGroup::query()
                 ->where('contract_no', $contract_no)
-                ->where('name', '侵入検知')
+                // ->where('name', '侵入検知')
                 ->get()->first();
             if ($group_record != null) {
                 $mails = $group_record->emails;
                 if (!empty($mails)) {
                     $mails = explode(',', $mails);
-                    $mail_data = NotificationMsg::query()->where('title', 'Like', '%侵入もしくは入場%')
+                    $mail_data = NotificationMsg::query()
+                        // ->where('title', 'Like', '%侵入もしくは入場%')
                         ->where('contract_no', $contract_no)
                         ->get()->first();
                     if ($mail_data != null) {
                         $subject = $mail_data->title;
                         $subject = str_replace('〇〇(侵入もしくは入場)', $type_title, $subject);
-                        $content = $mail_data->content;
-                        $content = str_replace('〇〇', $camera_serial, $content);
-                        $content = str_replace('(侵入もしくは入場)', $type_title, $content);
-                        $content = str_replace('@URL@', '<a href="'.$host.'/admin/'.$type_url.'/list">'.$host.'/admin/'.$type_url.'/list </a>', $content);
-                        $mail_content = ['content' => nl2br($content)];
+
+                        $mail_content = 'シリアルNo : '.$camera_serial.'\n';
+                        $mail_content .= $mail_data->content.'\n';
+                        $mail_content .= '<a href="'.$host.'/admin/'.$type_url.'/list">'.$host.'/admin/'.$type_url.'/list </a>\n\n';
+                        $mail_content .= 'RiNoCa';
+                        // $content = str_replace('〇〇', $camera_serial, $content);
+                        // $content = str_replace('(侵入もしくは入場)', $type_title, $content);
+                        // $content = str_replace('@URL@', '<a href="'.$host.'/admin/'.$type_url.'/list">'.$host.'/admin/'.$type_url.'/list </a>', $content);
+                        $mail_content = ['content' => nl2br($mail_content)];
                         Mail::send('mail', $mail_content, function ($message) use ($mails, $subject) {
                             foreach ($mails as $mail) {
                                 $message->to($mail, '顧客')->subject($subject);

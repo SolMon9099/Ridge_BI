@@ -238,7 +238,19 @@ class DangerController extends AdminController
         $clone_danger_query = clone $danger_query;
         $danger_detections = $danger_query->paginate($this->per_page);
         $last_record = $clone_danger_query->get()->first();
+        $start_times = [];
         foreach ($danger_detections as $item) {
+            if (!isset($start_times[$item->rule_id])) {
+                $start_times[$item->rule_id] = $item->starttime;
+                $item->none_display_item = false;
+            } else {
+                if (strtotime($start_times[$item->rule_id]) - strtotime($item->starttime) > 1) {
+                    $start_times[$item->rule_id] = $item->starttime;
+                    $item->none_display_item = false;
+                } else {
+                    $item->none_display_item = true;
+                }
+            }
             $map_data = CameraMappingDetail::select('drawing.floor_number')
                 ->where('camera_id', $item->camera_id)
                 ->leftJoin('location_drawings as drawing', 'drawing.id', 'drawing_id')
